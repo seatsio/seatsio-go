@@ -1,0 +1,23 @@
+name: 'Build'
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v4
+      with:
+        go-version-file: 'go.mod'
+    - uses: zcong1993/setup-timezone@master
+      with:
+        timezone: Europe/Brussels
+    - run: go get .
+    - run: go build -v ./...
+    - run: go test -v ./...
