@@ -33,20 +33,20 @@ func ApiClient(secretKey string, baseUrl string) *req.Client {
 		SetCommonRetryCount(5).
 		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
 		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
-			return resp.StatusCode == 429
+			return err == nil && resp.StatusCode == 429
 		})
 }
 
 func (events *Events) Create(chartKey string) (*Event, error) {
-	var event *Event
+	var event Event
 	client := ApiClient(events.secretKey, events.baseUrl)
 	result, err := client.R().
 		SetBody(&createEventRequest{
 			chartKey,
 		}).
-		SetSuccessResult(event).
+		SetSuccessResult(&event).
 		Post("/events")
-	return AssertOk(result, err, event)
+	return AssertOk(result, err, &event)
 }
 
 func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, error) {
