@@ -14,10 +14,6 @@ type Events struct {
 	baseUrl   string
 }
 
-type createEventRequest struct {
-	ChartKey string `json:"chartKey"`
-}
-
 type SeatsioError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -37,13 +33,19 @@ func ApiClient(secretKey string, baseUrl string) *req.Client {
 		})
 }
 
-func (events *Events) Create(chartKey string) (*Event, error) {
+type EventCreationParams struct {
+	ChartKey           string                  `json:"chartKey"`
+	EventKey           string                  `json:"eventKey"`
+	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
+	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
+	Categories         []Category              `json:"categories,omitempty"`
+}
+
+func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 	var event Event
 	client := ApiClient(events.secretKey, events.baseUrl)
 	result, err := client.R().
-		SetBody(&createEventRequest{
-			chartKey,
-		}).
+		SetBody(params).
 		SetSuccessResult(&event).
 		Post("/events")
 	return AssertOk(result, err, &event)
