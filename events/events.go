@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/imroc/req/v3"
 	"strings"
+	"time"
 )
 
 type Events struct {
@@ -28,7 +29,12 @@ type SeatsioErrorResponse struct {
 
 func ApiClient(secretKey string, baseUrl string) *req.Client {
 	return req.C().SetBaseURL(baseUrl).
-		SetCommonBasicAuth(secretKey, "")
+		SetCommonBasicAuth(secretKey, "").
+		SetCommonRetryCount(5).
+		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
+		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
+			return resp.StatusCode == 429
+		})
 }
 
 func (events *Events) Create(chartKey string) (*Event, error) {
