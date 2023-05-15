@@ -2,6 +2,7 @@ package seatsio
 
 import (
 	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -18,11 +19,11 @@ func Test400(t *testing.T) {
 
 func Test500(t *testing.T) {
 	var event *events.Event
-	response, err := events.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
 		R().
 		Get("/status/500")
 
-	_, e := events.AssertOk(response, err, &event)
+	_, e := shared.AssertOk(response, err, &event)
 
 	require.EqualError(t, e, "server returned error 500. Body: ")
 }

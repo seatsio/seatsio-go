@@ -3,7 +3,7 @@ package test_util
 import (
 	"github.com/google/uuid"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/shared"
 	"log"
 	"os"
 	"testing"
@@ -33,7 +33,7 @@ func CreateTestCompany(t *testing.T) *TestCompany {
 		R().
 		SetSuccessResult(&testCompany).
 		Post("/system/public/users/actions/create-test-company")
-	_, e := events.AssertOk(result, err, &testCompany)
+	_, e := shared.AssertOk(result, err, &testCompany)
 	if e != nil {
 		t.Fatalf("unable to create test company: #{err}")
 	}
@@ -54,7 +54,7 @@ func createTestChart(t *testing.T, secretKey string, fileName string) string {
 		log.Fatalf("unable to read file: %v", err)
 	}
 	chartKey := uuid.New().String()
-	result, err := events.ApiClient(secretKey, BaseUrl).R().
+	result, err := shared.ApiClient(secretKey, BaseUrl).R().
 		SetBody(string(chartJson)).
 		Post(BaseUrl + "/system/public/charts/" + chartKey)
 	if err != nil {

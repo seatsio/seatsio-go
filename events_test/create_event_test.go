@@ -20,17 +20,17 @@ func TestChartKeyIsRequired(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, event.Id)
 	require.NotNil(t, event.Key)
-	require.Equal(t, event.ChartKey, chartKey)
-	require.Equal(t, event.TableBookingConfig, events.TableBookingConfig{Mode: "INHERIT"})
+	require.Equal(t, chartKey, event.ChartKey)
+	require.Equal(t, events.TableBookingConfig{Mode: "INHERIT"}, event.TableBookingConfig)
 	require.True(t, event.SupportsBestAvailable)
 	require.Nil(t, event.ForSaleConfig)
 	require.True(t, event.CreatedOn.After(start))
 	require.Nil(t, event.UpdatedOn)
-	require.Equal(t, event.Categories, []events.Category{
+	require.Equal(t, []events.Category{
 		{Key: events.CategoryKey{Key: 9}, Label: "Cat1", Color: "#87A9CD", Accessible: false},
 		{Key: events.CategoryKey{Key: 10}, Label: "Cat2", Color: "#5E42ED", Accessible: false},
 		{Key: events.CategoryKey{Key: "string11"}, Label: "Cat3", Color: "#5E42BB", Accessible: false},
-	})
+	}, event.Categories)
 }
 
 func TestEventKeyCanBePassedIn(t *testing.T) {
@@ -41,7 +41,7 @@ func TestEventKeyCanBePassedIn(t *testing.T) {
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, EventKey: "anEvent"})
 
 	require.NoError(t, err)
-	require.Equal(t, event.Key, "anEvent")
+	require.Equal(t, "anEvent", event.Key)
 }
 
 func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
@@ -55,7 +55,7 @@ func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 
 	require.NoError(t, err)
-	require.Equal(t, event.TableBookingConfig, tableBookingConfig)
+	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
 func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
@@ -67,7 +67,7 @@ func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 
 	require.NoError(t, err)
-	require.Equal(t, event.TableBookingConfig, tableBookingConfig)
+	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
 func TestObjectCategoriesCanBePassedIn(t *testing.T) {
@@ -81,7 +81,7 @@ func TestObjectCategoriesCanBePassedIn(t *testing.T) {
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, ObjectCategories: &objectCategories})
 
 	require.NoError(t, err)
-	require.Equal(t, event.ObjectCategories, objectCategories)
+	require.Equal(t, objectCategories, event.ObjectCategories)
 }
 
 func TestCategoriesCanBePassedIn(t *testing.T) {
