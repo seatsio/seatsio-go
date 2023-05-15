@@ -36,6 +36,14 @@ func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, erro
 	return data, nil
 }
 
+func AssertOkMap[T interface{}](result *req.Response, err error, data map[string]T) (map[string]T, error) {
+	err = AssertOkWithoutResult(result, err)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func AssertOkWithoutResult(result *req.Response, err error) error {
 	if err != nil {
 		return err

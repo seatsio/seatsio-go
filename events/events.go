@@ -143,6 +143,18 @@ func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extra
 	return shared.AssertOkWithoutResult(result, err)
 }
 
+func (events *Events) RetrieveObjectInfos(eventKey string, objectLabels []string) (map[string]EventObjectInfo, error) {
+	var eventObjectInfos map[string]EventObjectInfo
+	client := shared.ApiClient(events.secretKey, events.baseUrl)
+	request := client.R().
+		SetSuccessResult(&eventObjectInfos)
+	for _, objectLabel := range objectLabels {
+		request.AddQueryParam("label", objectLabel)
+	}
+	result, err := request.Get("/events/" + eventKey + "/objects")
+	return shared.AssertOkMap(result, err, eventObjectInfos)
+}
+
 func NewEvents(secretKey string, baseUrl string) *Events {
 	return &Events{secretKey, baseUrl}
 }

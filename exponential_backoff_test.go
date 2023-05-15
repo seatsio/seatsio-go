@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").R().Get("/status/200")
+	m.Run()
+}
+
 func TestAbortsEventuallyIfServerKeepsReturning429(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
