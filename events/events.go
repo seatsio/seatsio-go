@@ -1,14 +1,16 @@
 package events
 
-import "github.com/seatsio/seatsio-go/shared"
+import (
+	"github.com/imroc/req/v3"
+	"github.com/seatsio/seatsio-go/shared"
+)
 
 const ObjectStatusBooked = "booked"
 const ObjectStatusHeld = "reservedByToken"
 const ObjectStatusFree = "free"
 
 type Events struct {
-	secretKey string
-	baseUrl   string
+	Client *req.Client
 }
 
 type EventCreationParams struct {
@@ -37,8 +39,7 @@ type EventCreationResult struct {
 
 func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 	var event Event
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(params).
 		SetSuccessResult(&event).
 		Post("/events")
@@ -47,8 +48,7 @@ func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 
 func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCreationParams) (*EventCreationResult, error) {
 	var eventCreationResult EventCreationResult
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(&CreateMultipleEventsRequest{
 			ChartKey: chartKey,
 			Events:   params,
@@ -155,8 +155,7 @@ type ExtraData = map[string]string
 
 func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	var changeObjectStatusResult ChangeObjectStatusResult
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(statusChangeparams).
 		SetQueryParam("expand", "objects").
 		SetSuccessResult(&changeObjectStatusResult).
@@ -166,8 +165,7 @@ func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams)
 
 func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams []StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
 	var changeObjectStatusInBatchResult ChangeObjectStatusInBatchResult
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(&StatusChangeInBatchRequest{
 			StatusChanges: statusChangeInBatchParams,
 		}).
@@ -179,8 +177,7 @@ func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams []Stat
 
 func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
 	var bestAvailableResult BestAvailableResult
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(bestAvailableStatusChangeParams).
 		SetSuccessResult(&bestAvailableResult).
 		SetPathParam("event", eventKey).
@@ -193,8 +190,7 @@ type updateExtraDataRequest struct {
 }
 
 func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extraData ExtraData) error {
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	result, err := client.R().
+	result, err := events.Client.R().
 		SetBody(&updateExtraDataRequest{
 			ExtraData: extraData,
 		}).
@@ -207,16 +203,11 @@ func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extra
 
 func (events *Events) RetrieveObjectInfos(eventKey string, objectLabels []string) (map[string]EventObjectInfo, error) {
 	var eventObjectInfos map[string]EventObjectInfo
-	client := shared.ApiClient(events.secretKey, events.baseUrl)
-	request := client.R().
+	request := events.Client.R().
 		SetSuccessResult(&eventObjectInfos)
 	for _, objectLabel := range objectLabels {
 		request.AddQueryParam("label", objectLabel)
 	}
 	result, err := request.Get("/events/" + eventKey + "/objects")
 	return shared.AssertOkMap(result, err, eventObjectInfos)
-}
-
-func NewEvents(secretKey string, baseUrl string) *Events {
-	return &Events{secretKey, baseUrl}
 }
