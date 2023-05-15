@@ -3,6 +3,7 @@ package events_test
 import (
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -218,8 +219,8 @@ func TestAllowedPreviousStatus(t *testing.T) {
 		},
 		AllowedPreviousStatuses: []string{"onlyAllowedPreviousStatus"},
 	})
-	// TODO: assert on error code instead of message
-	require.EqualError(t, err, "Cannot change from [free] to [booked]: free is not in the list of allowed previous statuses")
+
+	require.Equal(t, "ILLEGAL_STATUS_CHANGE", err.(*shared.SeatsioError).Code)
 }
 
 func TestRejectedPreviousStatus(t *testing.T) {
@@ -238,6 +239,6 @@ func TestRejectedPreviousStatus(t *testing.T) {
 		},
 		RejectedPreviousStatuses: []string{"free"},
 	})
-	// TODO: assert on error code instead of message
-	require.EqualError(t, err, "Cannot change from [free] to [booked]: free is in the list of rejected previous statuses")
+
+	require.Equal(t, "ILLEGAL_STATUS_CHANGE", err.(*shared.SeatsioError).Code)
 }

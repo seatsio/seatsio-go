@@ -2,20 +2,19 @@ package shared
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/imroc/req/v3"
 	"strings"
 	"time"
 )
 
-type SeatsioError struct {
+type SeatsioErrorTO struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
 type SeatsioErrorResponse struct {
-	Errors []SeatsioError `json:"errors"`
+	Errors []SeatsioErrorTO `json:"errors"`
 }
 
 func ApiClient(secretKey string, baseUrl string) *req.Client {
@@ -55,11 +54,20 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 			if err != nil {
 				return err
 			}
-			return errors.New(errorResponse.Errors[0].Message)
+			return &SeatsioError{Message: errorResponse.Errors[0].Message, Code: errorResponse.Errors[0].Code}
 		} else {
 			return fmt.Errorf("server returned error %v. Body: %v", result.StatusCode, string(result.Bytes()))
 		}
 	}
 	// TODO: what about 'unknown' state?
 	return nil
+}
+
+type SeatsioError struct {
+	Code    string
+	Message string
+}
+
+func (m *SeatsioError) Error() string {
+	return m.Message
 }
