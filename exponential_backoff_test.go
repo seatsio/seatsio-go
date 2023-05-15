@@ -8,6 +8,7 @@ import (
 )
 
 func TestAbortsEventuallyIfServerKeepsReturning429(t *testing.T) {
+	t.Parallel()
 	start := time.Now()
 
 	response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
@@ -21,6 +22,7 @@ func TestAbortsEventuallyIfServerKeepsReturning429(t *testing.T) {
 }
 
 func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
+	t.Parallel()
 	start := time.Now()
 
 	response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
@@ -33,6 +35,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 }
 
 func TestReturnsSuccessfullyWhenServerSends429FirstAndThenSuccess(t *testing.T) {
+	t.Parallel()
 	for i := 0; i < 20; i++ {
 		response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
 			R().

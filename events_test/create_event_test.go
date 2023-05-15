@@ -10,6 +10,7 @@ import (
 )
 
 func TestChartKeyIsRequired(t *testing.T) {
+	t.Parallel()
 	start := time.Now()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -34,6 +35,7 @@ func TestChartKeyIsRequired(t *testing.T) {
 }
 
 func TestEventKeyCanBePassedIn(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -45,6 +47,7 @@ func TestEventKeyCanBePassedIn(t *testing.T) {
 }
 
 func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -59,6 +62,7 @@ func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
 }
 
 func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -71,6 +75,7 @@ func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
 }
 
 func TestObjectCategoriesCanBePassedIn(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -85,6 +90,7 @@ func TestObjectCategoriesCanBePassedIn(t *testing.T) {
 }
 
 func TestCategoriesCanBePassedIn(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)

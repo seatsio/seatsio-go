@@ -9,6 +9,7 @@ import (
 )
 
 func TestChangeObjectStatus(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -27,6 +28,7 @@ func TestChangeObjectStatus(t *testing.T) {
 }
 
 func TestObjectDetails(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -62,6 +64,7 @@ func TestObjectDetails(t *testing.T) {
 }
 
 func TestHoldToken(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -84,6 +87,7 @@ func TestHoldToken(t *testing.T) {
 }
 
 func TestExtraData(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -103,6 +107,7 @@ func TestExtraData(t *testing.T) {
 }
 
 func TestKeepExtraData(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -125,7 +130,32 @@ func TestKeepExtraData(t *testing.T) {
 	require.Equal(t, map[string]string{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
 }
 
+func TestKeepExtraDataFalse(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	err = client.Events.UpdateExtraData(event.Key, "A-1", map[string]string{"foo": "bar"})
+	require.NoError(t, err)
+
+	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Status: events.ObjectStatusBooked,
+		Events: []string{event.Key},
+		Objects: []events.ObjectProperties{
+			{ObjectId: "A-1"},
+		},
+		KeepExtraData: false,
+	})
+	require.NoError(t, err)
+
+	require.Nil(t, objects.Objects["A-1"].ExtraData)
+}
+
 func TestTicketType(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -145,6 +175,7 @@ func TestTicketType(t *testing.T) {
 }
 
 func TestQuantity(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -172,6 +203,7 @@ func TestIgnoreChannels(t *testing.T) {
 }
 
 func TestAllowedPreviousStatus(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
@@ -191,6 +223,7 @@ func TestAllowedPreviousStatus(t *testing.T) {
 }
 
 func TestRejectedPreviousStatus(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)

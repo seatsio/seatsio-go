@@ -9,6 +9,7 @@ import (
 )
 
 func Test400(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
@@ -18,6 +19,7 @@ func Test400(t *testing.T) {
 }
 
 func Test500(t *testing.T) {
+	t.Parallel()
 	var event *events.Event
 	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
 		R().
@@ -29,6 +31,7 @@ func Test500(t *testing.T) {
 }
 
 func TestWeirdError(t *testing.T) {
+	t.Parallel()
 	client := NewSeatsioClient("someSecretKey", "unknownProtocol://")
 
 	_, err := client.Events.Create(&events.EventCreationParams{ChartKey: "foo"})

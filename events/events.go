@@ -47,28 +47,34 @@ type LabelAndType struct {
 }
 
 type EventObjectInfo struct {
-	Status         string            `json:"status"`
-	OrderId        string            `json:"orderId"`
-	ExtraData      map[string]string `json:"extraData"`
-	Label          string            `json:"label"`
-	Labels         Labels            `json:"labels"`
-	IDs            IDs               `json:"ids"`
-	CategoryLabel  string            `json:"categoryLabel"`
-	CategoryKey    CategoryKey       `json:"categoryKey"`
-	TicketType     string            `json:"ticketType"`
-	ForSale        bool              `json:"forSale"`
-	Section        string            `json:"section"`
-	Entrance       string            `json:"entrance"`
-	NumBooked      int               `json:"numBooked"`
-	Capacity       int               `json:"capacity"`
-	ObjectType     string            `json:"objectType"`
-	LeftNeighbour  string            `json:"leftNeighbour"`
-	RightNeighbour string            `json:"rightNeighbour"`
-	HoldToken      string            `json:"holdToken"`
+	Status         string      `json:"status"`
+	OrderId        string      `json:"orderId"`
+	ExtraData      ExtraData   `json:"extraData"`
+	Label          string      `json:"label"`
+	Labels         Labels      `json:"labels"`
+	IDs            IDs         `json:"ids"`
+	CategoryLabel  string      `json:"categoryLabel"`
+	CategoryKey    CategoryKey `json:"categoryKey"`
+	TicketType     string      `json:"ticketType"`
+	ForSale        bool        `json:"forSale"`
+	Section        string      `json:"section"`
+	Entrance       string      `json:"entrance"`
+	NumBooked      int         `json:"numBooked"`
+	Capacity       int         `json:"capacity"`
+	ObjectType     string      `json:"objectType"`
+	LeftNeighbour  string      `json:"leftNeighbour"`
+	RightNeighbour string      `json:"rightNeighbour"`
+	HoldToken      string      `json:"holdToken"`
 }
 
 type ChangeObjectStatusResult struct {
 	Objects map[string]EventObjectInfo `json:"objects"`
+}
+
+type BestAvailableResult struct {
+	NextToEachOther bool                       `json:"nextToEachOther"`
+	Objects         []string                   `json:"objects"`
+	ObjectDetails   map[string]EventObjectInfo `json:"objectDetails"`
 }
 
 type StatusChangeParams struct {
@@ -82,6 +88,23 @@ type StatusChangeParams struct {
 	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
 }
 
+type BestAvailableStatusChangeParams struct {
+	Status        string              `json:"status"`
+	BestAvailable BestAvailableParams `json:"bestAvailable"`
+	HoldToken     string              `json:"holdToken,omitempty"`
+	OrderId       string              `json:"orderId,omitempty"`
+	KeepExtraData bool                `json:"keepExtraData"`
+}
+
+type BestAvailableParams struct {
+	Number      int           `json:"number"`
+	Categories  []CategoryKey `json:"categories,omitempty"`
+	ExtraData   []ExtraData   `json:"extraData,omitempty"`
+	TicketTypes []string      `json:"ticketTypes,omitempty"`
+}
+
+type ExtraData = map[string]string
+
 func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	var changeObjectStatusResult ChangeObjectStatusResult
 	client := shared.ApiClient(events.secretKey, events.baseUrl)
@@ -93,11 +116,22 @@ func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams)
 	return shared.AssertOk(result, err, &changeObjectStatusResult)
 }
 
-type updateExtraDataRequest struct {
-	ExtraData map[string]string `json:"extraData"`
+func (events *Events) ChangeBestAvailableObjectStatus(event string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
+	var bestAvailableResult BestAvailableResult
+	client := shared.ApiClient(events.secretKey, events.baseUrl)
+	result, err := client.R().
+		SetBody(bestAvailableStatusChangeParams).
+		SetSuccessResult(&bestAvailableResult).
+		// TODO: encode url args
+		Post("/events/" + event + "/actions/change-object-status")
+	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
-func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extraData map[string]string) error {
+type updateExtraDataRequest struct {
+	ExtraData ExtraData `json:"extraData"`
+}
+
+func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extraData ExtraData) error {
 	client := shared.ApiClient(events.secretKey, events.baseUrl)
 	result, err := client.R().
 		SetBody(&updateExtraDataRequest{
