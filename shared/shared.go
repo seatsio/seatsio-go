@@ -47,7 +47,7 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	if err != nil {
 		return err
 	}
-	if result.IsErrorState() {
+	if !result.IsSuccessState() {
 		if strings.Contains(result.GetHeader("content-type"), "application/json") {
 			errorResponse := &SeatsioErrorResponse{}
 			err := json.Unmarshal(result.Bytes(), errorResponse)
@@ -59,7 +59,6 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 			return fmt.Errorf("server returned error %v. Body: %v", result.StatusCode, string(result.Bytes()))
 		}
 	}
-	// TODO: what about 'unknown' state?
 	return nil
 }
 

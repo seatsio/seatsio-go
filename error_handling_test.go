@@ -8,6 +8,30 @@ import (
 	"testing"
 )
 
+func Test300(t *testing.T) {
+	t.Parallel()
+	var event *events.Event
+	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+		R().
+		Get("/status/300")
+
+	_, e := shared.AssertOk(response, err, &event)
+
+	require.EqualError(t, e, "server returned error 300. Body: ")
+}
+
+func Test301(t *testing.T) {
+	t.Parallel()
+	var event *events.Event
+	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+		R().
+		Get("/status/301")
+
+	_, e := shared.AssertOk(response, err, &event)
+
+	require.NoError(t, e)
+}
+
 func Test400(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
