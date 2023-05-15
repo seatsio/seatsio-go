@@ -19,6 +19,22 @@ type EventCreationParams struct {
 	Categories         []Category              `json:"categories,omitempty"`
 }
 
+type MultipleEventCreationParams struct {
+	EventKey           string                  `json:"eventKey"`
+	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
+	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
+	Categories         []Category              `json:"categories,omitempty"`
+}
+
+type CreateMultipleEventsRequest struct {
+	ChartKey string                        `json:"chartKey"`
+	Events   []MultipleEventCreationParams `json:"events"`
+}
+
+type EventCreationResult struct {
+	Events []Event `json:"events"`
+}
+
 func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 	var event Event
 	client := shared.ApiClient(events.secretKey, events.baseUrl)
@@ -27,6 +43,19 @@ func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 		SetSuccessResult(&event).
 		Post("/events")
 	return shared.AssertOk(result, err, &event)
+}
+
+func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCreationParams) (*EventCreationResult, error) {
+	var eventCreationResult EventCreationResult
+	client := shared.ApiClient(events.secretKey, events.baseUrl)
+	result, err := client.R().
+		SetBody(&CreateMultipleEventsRequest{
+			ChartKey: chartKey,
+			Events:   params,
+		}).
+		SetSuccessResult(&eventCreationResult).
+		Post("/events/actions/create-multiple")
+	return shared.AssertOk(result, err, &eventCreationResult)
 }
 
 type IDs struct {

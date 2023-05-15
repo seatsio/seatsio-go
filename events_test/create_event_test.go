@@ -17,8 +17,8 @@ func TestChartKeyIsRequired(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
-
 	require.NoError(t, err)
+
 	require.NotZero(t, event.Id)
 	require.NotNil(t, event.Key)
 	require.Equal(t, chartKey, event.ChartKey)
@@ -41,8 +41,8 @@ func TestEventKeyCanBePassedIn(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, EventKey: "anEvent"})
-
 	require.NoError(t, err)
+
 	require.Equal(t, "anEvent", event.Key)
 }
 
@@ -56,8 +56,8 @@ func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
 		"T1": "BY_TABLE", "T2": "BY_SEAT",
 	}}
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
-
 	require.NoError(t, err)
+
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
@@ -69,8 +69,8 @@ func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
 
 	tableBookingConfig := events.TableBookingConfig{Mode: "INHERIT"}
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
-
 	require.NoError(t, err)
+
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
@@ -84,8 +84,8 @@ func TestObjectCategoriesCanBePassedIn(t *testing.T) {
 		"A-1": {10},
 	}
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, ObjectCategories: &objectCategories})
-
 	require.NoError(t, err)
+
 	require.Equal(t, objectCategories, event.ObjectCategories)
 }
 
@@ -100,7 +100,7 @@ func TestCategoriesCanBePassedIn(t *testing.T) {
 		category,
 	}
 	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, Categories: categories})
-
 	require.NoError(t, err)
+
 	require.Contains(t, event.Categories, category)
 }
