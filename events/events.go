@@ -116,14 +116,14 @@ func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams)
 	return shared.AssertOk(result, err, &changeObjectStatusResult)
 }
 
-func (events *Events) ChangeBestAvailableObjectStatus(event string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
+func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
 	var bestAvailableResult BestAvailableResult
 	client := shared.ApiClient(events.secretKey, events.baseUrl)
 	result, err := client.R().
 		SetBody(bestAvailableStatusChangeParams).
 		SetSuccessResult(&bestAvailableResult).
-		// TODO: encode url args
-		Post("/events/" + event + "/actions/change-object-status")
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/change-object-status")
 	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
@@ -138,8 +138,9 @@ func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extra
 			ExtraData: extraData,
 		}).
 		SetQueryParam("expand", "objects").
-		// TODO: encode url args
-		Post("/events/" + eventKey + "/objects/" + objectLabel + "/actions/update-extra-data")
+		SetPathParam("event", eventKey).
+		SetPathParam("object", objectLabel).
+		Post("/events/{event}/objects/{object}/actions/update-extra-data")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
