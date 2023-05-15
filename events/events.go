@@ -71,6 +71,10 @@ type ChangeObjectStatusResult struct {
 	Objects map[string]EventObjectInfo `json:"objects"`
 }
 
+type ChangeObjectStatusInBatchResult struct {
+	Results []ChangeObjectStatusResult `json:"results"`
+}
+
 type BestAvailableResult struct {
 	NextToEachOther bool                       `json:"nextToEachOther"`
 	Objects         []string                   `json:"objects"`
@@ -79,6 +83,21 @@ type BestAvailableResult struct {
 
 type StatusChangeParams struct {
 	Events                   []string           `json:"events"`
+	Status                   string             `json:"status"`
+	Objects                  []ObjectProperties `json:"objects"`
+	HoldToken                string             `json:"holdToken,omitempty"`
+	OrderId                  string             `json:"orderId,omitempty"`
+	KeepExtraData            bool               `json:"keepExtraData"`
+	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
+	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
+}
+
+type StatusChangeInBatchRequest struct {
+	StatusChanges []StatusChangeInBatchParams `json:"statusChanges"`
+}
+
+type StatusChangeInBatchParams struct {
+	Event                    string             `json:"event"`
 	Status                   string             `json:"status"`
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
@@ -114,6 +133,19 @@ func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams)
 		SetSuccessResult(&changeObjectStatusResult).
 		Post("/events/groups/actions/change-object-status")
 	return shared.AssertOk(result, err, &changeObjectStatusResult)
+}
+
+func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams []StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
+	var changeObjectStatusInBatchResult ChangeObjectStatusInBatchResult
+	client := shared.ApiClient(events.secretKey, events.baseUrl)
+	result, err := client.R().
+		SetBody(&StatusChangeInBatchRequest{
+			StatusChanges: statusChangeInBatchParams,
+		}).
+		SetQueryParam("expand", "objects").
+		SetSuccessResult(&changeObjectStatusInBatchResult).
+		Post("/events/actions/change-object-status")
+	return shared.AssertOk(result, err, &changeObjectStatusInBatchResult)
 }
 
 func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {

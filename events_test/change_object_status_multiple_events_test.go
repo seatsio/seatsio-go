@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test(t *testing.T) {
+func TestChangeObjectStatusInMultipleEvents(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
