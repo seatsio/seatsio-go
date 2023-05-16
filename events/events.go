@@ -3,7 +3,7 @@ package events
 import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/shared"
-	"strconv"
+	"time"
 )
 
 const ObjectStatusBooked = "booked"
@@ -230,78 +230,75 @@ func (events *Events) Retrieve(eventKey string) (*Event, error) {
 	return shared.AssertOk(result, err, &event)
 }
 
-type Page[T interface{}] struct {
-	Items                  []T   `json:"items"`
-	NextPageStartsAfter    int64 `json:"next_page_starts_after"`
-	PreviousPageEndsBefore int64 `json:"previous_page_ends_before"`
+type StatusChangeOrigin struct {
+	Type string `json:"type"`
+	Ip   string `json:"ip"`
 }
 
-type PageJson[T interface{}] struct {
-	Items                  []T    `json:"items"`
-	NextPageStartsAfter    string `json:"next_page_starts_after"`
-	PreviousPageEndsBefore string `json:"previous_page_ends_before"`
+type StatusChange struct {
+	Id                      int64              `json:"id"`
+	EventId                 int64              `json:"eventId"`
+	Status                  string             `json:"status"`
+	Date                    *time.Time         `json:"date"`
+	OrderId                 string             `json:"orderId"`
+	ObjectLabel             string             `json:"objectLabel"`
+	ExtraData               ExtraData          `json:"extraData"`
+	Origin                  StatusChangeOrigin `json:"origin"`
+	IsPresentOnChart        bool               `json:"isPresentOnChart"`
+	NotPresentOnChartReason string             `json:"notPresentOnChartReason"`
+	HoldToken               string             `json:"holdToken"`
+}
+
+func (events *Events) StatusChanges(eventKey string, filter string, sortField string, sortDirection string) *shared.Lister[StatusChange] {
+	pageFetcher := shared.PageFetcher[StatusChange]{
+		Client:      events.Client,
+		Url:         "/events/{eventKey}/status-changes",
+		UrlParams:   map[string]string{"eventKey": eventKey},
+		QueryParams: map[string]string{"filter": filter, "sort": toSort(sortField, sortDirection)},
+	}
+	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
+}
+
+func toSort(sortField string, sortDirection string) string {
+	if sortField == "" {
+		return ""
+	}
+	if sortDirection == "" {
+		return sortField
+	}
+	return sortField + ":" + sortDirection
+}
+
+func (events *Events) StatusChangesForObject(eventKey string, objectLabel string) *shared.Lister[StatusChange] {
+	pageFetcher := shared.PageFetcher[StatusChange]{
+		Client:    events.Client,
+		Url:       "/events/{eventKey}/objects/{objectLabel}/status-changes",
+		UrlParams: map[string]string{"eventKey": eventKey, "objectLabel": objectLabel},
+	}
+	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
 }
 
 func (events *Events) ListAll(pageSize int) ([]Event, error) {
-	firstPage, err := events.ListFirstPage(pageSize)
-	if err != nil {
-		return nil, err
-	}
-	result := firstPage.Items
-	currentPage := firstPage
-	for currentPage.NextPageStartsAfter != 0 {
-		currentPage, err = events.ListPageAfter(currentPage.NextPageStartsAfter, pageSize)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, currentPage.Items...)
-	}
-	return result, nil
+	return events.lister().All(pageSize)
 }
 
-func (events *Events) ListFirstPage(pageSize int) (*Page[Event], error) {
-	return events.fetchPage(pageSize, map[string]string{})
+func (events *Events) lister() *shared.Lister[Event] {
+	pageFetcher := shared.PageFetcher[Event]{
+		Client:    events.Client,
+		Url:       "/events",
+		UrlParams: map[string]string{},
+	}
+	return &shared.Lister[Event]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) ListPageAfter(id int64, pageSize int) (*Page[Event], error) {
-	return events.fetchPage(pageSize, map[string]string{"start_after_id": strconv.FormatInt(id, 10)})
+func (events *Events) ListFirstPage(pageSize int) (*shared.Page[Event], error) {
+	return events.lister().ListFirstPage(pageSize)
 }
 
-func (events *Events) ListPageBefore(id int64, pageSize int) (*Page[Event], error) {
-	return events.fetchPage(pageSize, map[string]string{"end_before_id": strconv.FormatInt(id, 10)})
+func (events *Events) ListPageAfter(id int64, pageSize int) (*shared.Page[Event], error) {
+	return events.lister().ListPageAfter(id, pageSize)
 }
 
-func (events *Events) fetchPage(pageSize int, queryParams map[string]string) (*Page[Event], error) {
-	var eventsPage PageJson[Event]
-	request := events.Client.R().
-		SetSuccessResult(&eventsPage).
-		SetQueryParam("limit", strconv.Itoa(pageSize))
-	for key, value := range queryParams {
-		request.AddQueryParam(key, value)
-	}
-	result, err := request.
-		Get("/events")
-	_, err = shared.AssertOk(result, err, &eventsPage)
-	if err != nil {
-		return nil, err
-	}
-
-	nextPageStartsAfterInt, err := optionalIdToInt(eventsPage.NextPageStartsAfter)
-	if err != nil {
-		return nil, err
-	}
-
-	previousPageEndsBeforeInt, err := optionalIdToInt(eventsPage.PreviousPageEndsBefore)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Page[Event]{eventsPage.Items, nextPageStartsAfterInt, previousPageEndsBeforeInt}, nil
-}
-
-func optionalIdToInt(id string) (int64, error) {
-	if id == "" {
-		return 0, nil
-	}
-	return strconv.ParseInt(id, 10, 64)
+func (events *Events) ListPageBefore(id int64, pageSize int) (*shared.Page[Event], error) {
+	return events.lister().ListPageBefore(id, pageSize)
 }
