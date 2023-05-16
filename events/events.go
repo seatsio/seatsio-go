@@ -3,6 +3,7 @@ package events
 import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/shared"
+	"strconv"
 )
 
 const ObjectStatusBooked = "booked"
@@ -227,4 +228,80 @@ func (events *Events) Retrieve(eventKey string) (*Event, error) {
 		SetPathParam("event", eventKey).
 		Get("/events/{event}")
 	return shared.AssertOk(result, err, &event)
+}
+
+type Page[T interface{}] struct {
+	Items                  []T   `json:"items"`
+	NextPageStartsAfter    int64 `json:"next_page_starts_after"`
+	PreviousPageEndsBefore int64 `json:"previous_page_ends_before"`
+}
+
+type PageJson[T interface{}] struct {
+	Items                  []T    `json:"items"`
+	NextPageStartsAfter    string `json:"next_page_starts_after"`
+	PreviousPageEndsBefore string `json:"previous_page_ends_before"`
+}
+
+func (events *Events) ListAll(pageSize int) ([]Event, error) {
+	firstPage, err := events.ListFirstPage(pageSize)
+	if err != nil {
+		return nil, err
+	}
+	result := firstPage.Items
+	currentPage := firstPage
+	for currentPage.NextPageStartsAfter != 0 {
+		currentPage, err = events.ListPageAfter(currentPage.NextPageStartsAfter, pageSize)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, currentPage.Items...)
+	}
+	return result, nil
+}
+
+func (events *Events) ListFirstPage(pageSize int) (*Page[Event], error) {
+	return events.fetchPage(pageSize, map[string]string{})
+}
+
+func (events *Events) ListPageAfter(id int64, pageSize int) (*Page[Event], error) {
+	return events.fetchPage(pageSize, map[string]string{"start_after_id": strconv.FormatInt(id, 10)})
+}
+
+func (events *Events) ListPageBefore(id int64, pageSize int) (*Page[Event], error) {
+	return events.fetchPage(pageSize, map[string]string{"end_before_id": strconv.FormatInt(id, 10)})
+}
+
+func (events *Events) fetchPage(pageSize int, queryParams map[string]string) (*Page[Event], error) {
+	var eventsPage PageJson[Event]
+	request := events.Client.R().
+		SetSuccessResult(&eventsPage).
+		SetQueryParam("limit", strconv.Itoa(pageSize))
+	for key, value := range queryParams {
+		request.AddQueryParam(key, value)
+	}
+	result, err := request.
+		Get("/events")
+	_, err = shared.AssertOk(result, err, &eventsPage)
+	if err != nil {
+		return nil, err
+	}
+
+	nextPageStartsAfterInt, err := optionalIdToInt(eventsPage.NextPageStartsAfter)
+	if err != nil {
+		return nil, err
+	}
+
+	previousPageEndsBeforeInt, err := optionalIdToInt(eventsPage.PreviousPageEndsBefore)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Page[Event]{eventsPage.Items, nextPageStartsAfterInt, previousPageEndsBeforeInt}, nil
+}
+
+func optionalIdToInt(id string) (int64, error) {
+	if id == "" {
+		return 0, nil
+	}
+	return strconv.ParseInt(id, 10, 64)
 }
