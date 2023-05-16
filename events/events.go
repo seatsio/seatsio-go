@@ -211,3 +211,20 @@ func (events *Events) RetrieveObjectInfos(eventKey string, objectLabels []string
 	result, err := request.Get("/events/" + eventKey + "/objects")
 	return shared.AssertOkMap(result, err, eventObjectInfos)
 }
+
+func (events *Events) Delete(eventKey string) error {
+	result, err := events.Client.R().
+		SetQueryParam("expand", "objects").
+		SetPathParam("event", eventKey).
+		Delete("/events/{event}")
+	return shared.AssertOkNoBody(result, err)
+}
+
+func (events *Events) Retrieve(eventKey string) (*Event, error) {
+	var event Event
+	result, err := events.Client.R().
+		SetSuccessResult(&event).
+		SetPathParam("event", eventKey).
+		Get("/events/{event}")
+	return shared.AssertOk(result, err, &event)
+}
