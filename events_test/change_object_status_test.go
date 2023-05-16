@@ -115,7 +115,7 @@ func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, "A-1", map[string]string{"foo": "bar"})
+	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -139,7 +139,7 @@ func TestChangeObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, "A-1", map[string]string{"foo": "bar"})
+	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{

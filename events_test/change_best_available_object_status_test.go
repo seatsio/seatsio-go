@@ -60,8 +60,8 @@ func TestChangeBestAvailableObjectStatusWithExtraData(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, map[string]string{"foo": "bar"}, bestAvailableResult.ObjectDetails["A-4"].ExtraData)
-	require.Equal(t, map[string]string{"foo": "baz"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
+	require.Equal(t, events.ExtraData{"foo": "bar"}, bestAvailableResult.ObjectDetails["A-4"].ExtraData)
+	require.Equal(t, events.ExtraData{"foo": "baz"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
 }
 
 func TestChangeBestAvailableObjectStatusWithTicketTypes(t *testing.T) {
@@ -90,7 +90,7 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraData(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, "A-5", map[string]string{"foo": "bar"})
+	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
@@ -100,7 +100,7 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraData(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, map[string]string{"foo": "bar"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
+	require.Equal(t, events.ExtraData{"foo": "bar"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
 }
 
 func TestChangeBestAvailableObjectStatusWithKeepExtraDataFalse(t *testing.T) {
@@ -111,7 +111,7 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, "A-5", map[string]string{"foo": "bar"})
+	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{

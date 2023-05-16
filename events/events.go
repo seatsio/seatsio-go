@@ -108,6 +108,10 @@ type ForSaleConfigParams struct {
 	Categories []string       `json:"categories,omitempty"`
 }
 
+type updateExtraDatasRequest struct {
+	ExtraData map[string]ExtraData `json:"extraData"`
+}
+
 func (events *Events) Create(params *CreateEventParams) (*Event, error) {
 	var event Event
 	result, err := events.Client.R().
@@ -169,19 +173,13 @@ func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvail
 	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
-type updateExtraDataRequest struct {
-	ExtraData ExtraData `json:"extraData"`
-}
-
-func (events *Events) UpdateExtraData(eventKey string, objectLabel string, extraData ExtraData) error {
+func (events *Events) UpdateExtraDatas(eventKey string, extraData map[string]ExtraData) error {
 	result, err := events.Client.R().
-		SetBody(&updateExtraDataRequest{
+		SetBody(&updateExtraDatasRequest{
 			ExtraData: extraData,
 		}).
-		SetQueryParam("expand", "objects").
 		SetPathParam("event", eventKey).
-		SetPathParam("object", objectLabel).
-		Post("/events/{event}/objects/{object}/actions/update-extra-data")
+		Post("/events/{event}/actions/update-extra-data")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
