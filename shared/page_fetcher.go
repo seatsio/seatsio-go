@@ -69,3 +69,13 @@ func optionalIdToInt(id string) (int64, error) {
 	}
 	return strconv.ParseInt(id, 10, 64)
 }
+
+func ToSort(sortField string, sortDirection string) string {
+	if sortField == "" {
+		return ""
+	}
+	if sortDirection == "" {
+		return sortField
+	}
+	return sortField + ":" + sortDirection
+}

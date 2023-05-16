@@ -3,7 +3,6 @@ package events
 import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/shared"
-	"time"
 )
 
 const ObjectStatusBooked = "booked"
@@ -36,65 +35,6 @@ type CreateMultipleEventsRequest struct {
 
 type EventCreationResult struct {
 	Events []Event `json:"events"`
-}
-
-func (events *Events) Create(params *EventCreationParams) (*Event, error) {
-	var event Event
-	result, err := events.Client.R().
-		SetBody(params).
-		SetSuccessResult(&event).
-		Post("/events")
-	return shared.AssertOk(result, err, &event)
-}
-
-func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCreationParams) (*EventCreationResult, error) {
-	var eventCreationResult EventCreationResult
-	result, err := events.Client.R().
-		SetBody(&CreateMultipleEventsRequest{
-			ChartKey: chartKey,
-			Events:   params,
-		}).
-		SetSuccessResult(&eventCreationResult).
-		Post("/events/actions/create-multiple")
-	return shared.AssertOk(result, err, &eventCreationResult)
-}
-
-type IDs struct {
-	Own     string `json:"own"`
-	Parent  string `json:"parent"`
-	Section string `json:"section"`
-}
-
-type Labels struct {
-	Own     LabelAndType `json:"own"`
-	Parent  LabelAndType `json:"parent"`
-	Section string       `json:"section"`
-}
-
-type LabelAndType struct {
-	Label string `json:"label"`
-	Type  string `json:"type"`
-}
-
-type EventObjectInfo struct {
-	Status         string      `json:"status"`
-	OrderId        string      `json:"orderId"`
-	ExtraData      ExtraData   `json:"extraData"`
-	Label          string      `json:"label"`
-	Labels         Labels      `json:"labels"`
-	IDs            IDs         `json:"ids"`
-	CategoryLabel  string      `json:"categoryLabel"`
-	CategoryKey    CategoryKey `json:"categoryKey"`
-	TicketType     string      `json:"ticketType"`
-	ForSale        bool        `json:"forSale"`
-	Section        string      `json:"section"`
-	Entrance       string      `json:"entrance"`
-	NumBooked      int         `json:"numBooked"`
-	Capacity       int         `json:"capacity"`
-	ObjectType     string      `json:"objectType"`
-	LeftNeighbour  string      `json:"leftNeighbour"`
-	RightNeighbour string      `json:"rightNeighbour"`
-	HoldToken      string      `json:"holdToken"`
 }
 
 type ChangeObjectStatusResult struct {
@@ -153,6 +93,27 @@ type BestAvailableParams struct {
 }
 
 type ExtraData = map[string]string
+
+func (events *Events) Create(params *EventCreationParams) (*Event, error) {
+	var event Event
+	result, err := events.Client.R().
+		SetBody(params).
+		SetSuccessResult(&event).
+		Post("/events")
+	return shared.AssertOk(result, err, &event)
+}
+
+func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCreationParams) (*EventCreationResult, error) {
+	var eventCreationResult EventCreationResult
+	result, err := events.Client.R().
+		SetBody(&CreateMultipleEventsRequest{
+			ChartKey: chartKey,
+			Events:   params,
+		}).
+		SetSuccessResult(&eventCreationResult).
+		Post("/events/actions/create-multiple")
+	return shared.AssertOk(result, err, &eventCreationResult)
+}
 
 func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	var changeObjectStatusResult ChangeObjectStatusResult
@@ -230,43 +191,14 @@ func (events *Events) Retrieve(eventKey string) (*Event, error) {
 	return shared.AssertOk(result, err, &event)
 }
 
-type StatusChangeOrigin struct {
-	Type string `json:"type"`
-	Ip   string `json:"ip"`
-}
-
-type StatusChange struct {
-	Id                      int64              `json:"id"`
-	EventId                 int64              `json:"eventId"`
-	Status                  string             `json:"status"`
-	Date                    *time.Time         `json:"date"`
-	OrderId                 string             `json:"orderId"`
-	ObjectLabel             string             `json:"objectLabel"`
-	ExtraData               ExtraData          `json:"extraData"`
-	Origin                  StatusChangeOrigin `json:"origin"`
-	IsPresentOnChart        bool               `json:"isPresentOnChart"`
-	NotPresentOnChartReason string             `json:"notPresentOnChartReason"`
-	HoldToken               string             `json:"holdToken"`
-}
-
 func (events *Events) StatusChanges(eventKey string, filter string, sortField string, sortDirection string) *shared.Lister[StatusChange] {
 	pageFetcher := shared.PageFetcher[StatusChange]{
 		Client:      events.Client,
 		Url:         "/events/{eventKey}/status-changes",
 		UrlParams:   map[string]string{"eventKey": eventKey},
-		QueryParams: map[string]string{"filter": filter, "sort": toSort(sortField, sortDirection)},
+		QueryParams: map[string]string{"filter": filter, "sort": shared.ToSort(sortField, sortDirection)},
 	}
 	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
-}
-
-func toSort(sortField string, sortDirection string) string {
-	if sortField == "" {
-		return ""
-	}
-	if sortDirection == "" {
-		return sortField
-	}
-	return sortField + ":" + sortDirection
 }
 
 func (events *Events) StatusChangesForObject(eventKey string, objectLabel string) *shared.Lister[StatusChange] {

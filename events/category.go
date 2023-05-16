@@ -6,10 +6,12 @@ type CategoryKey struct {
 	Key interface{}
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (categoryKey CategoryKey) MarshalJSON() ([]byte, error) {
 	return json.Marshal(categoryKey.Key)
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (categoryKey *CategoryKey) UnmarshalJSON(data []byte) error {
 	var categoryKeyJson interface{}
 	if err := json.Unmarshal(data, &categoryKeyJson); err != nil {
