@@ -48,8 +48,16 @@ func CreateTestChartWithTables(t *testing.T, secretKey string) string {
 	return createTestChart(t, secretKey, "sampleChartWithTables.json")
 }
 
+func CreateTestChartWithSections(t *testing.T, secretKey string) string {
+	return createTestChart(t, secretKey, "sampleChartWithSections.json")
+}
+
+func CreateTestChartWithErrors(t *testing.T, secretKey string) string {
+	return createTestChart(t, secretKey, "sampleChartWithErros.json")
+}
+
 func createTestChart(t *testing.T, secretKey string, fileName string) string {
-	chartJson, err := os.ReadFile(fileName)
+	chartJson, err := os.ReadFile("../test_util/charts/" + fileName)
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}

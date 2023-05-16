@@ -94,6 +94,12 @@ type BestAvailableParams struct {
 
 type ExtraData = map[string]string
 
+type ForSaleConfigParams struct {
+	Objects    []string       `json:"objects,omitempty"`
+	AreaPlaces map[string]int `json:"areaPlaces,omitempty"`
+	Categories []string       `json:"categories,omitempty"`
+}
+
 func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 	var event Event
 	result, err := events.Client.R().
@@ -189,6 +195,29 @@ func (events *Events) Retrieve(eventKey string) (*Event, error) {
 		SetPathParam("event", eventKey).
 		Get("/events/{event}")
 	return shared.AssertOk(result, err, &event)
+}
+
+func (events *Events) MarkAsNotForSale(eventKey string, forSaleConfig *ForSaleConfigParams) error {
+	result, err := events.Client.R().
+		SetBody(forSaleConfig).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/mark-as-not-for-sale")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (events *Events) MarkAsForSale(eventKey string, forSaleConfig *ForSaleConfigParams) error {
+	result, err := events.Client.R().
+		SetBody(forSaleConfig).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/mark-as-for-sale")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (events *Events) MarkEverythingAsForSale(eventKey string) error {
+	result, err := events.Client.R().
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/mark-everything-as-for-sale")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (events *Events) StatusChanges(eventKey string, filter string, sortField string, sortDirection string) *shared.Lister[StatusChange] {

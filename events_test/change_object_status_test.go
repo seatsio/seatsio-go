@@ -28,7 +28,7 @@ func TestChangeObjectStatus(t *testing.T) {
 	require.Equal(t, events.ObjectStatusBooked, objects.Objects["A-2"].Status)
 }
 
-func TestObjectDetails(t *testing.T) {
+func TestChangeObjectStatusWithObjectDetails(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -64,7 +64,7 @@ func TestObjectDetails(t *testing.T) {
 	require.Equal(t, "A-2", eventObjectInfo.RightNeighbour)
 }
 
-func TestHoldToken(t *testing.T) {
+func TestChangeObjectStatusWithHoldToken(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -87,7 +87,7 @@ func TestHoldToken(t *testing.T) {
 	require.Equal(t, holdToken.HoldToken, objects.Objects["A-1"].HoldToken)
 }
 
-func TestExtraData(t *testing.T) {
+func TestChangeObjectStatusWithExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -107,7 +107,7 @@ func TestExtraData(t *testing.T) {
 	require.Equal(t, map[string]string{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
 }
 
-func TestKeepExtraData(t *testing.T) {
+func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -131,7 +131,7 @@ func TestKeepExtraData(t *testing.T) {
 	require.Equal(t, map[string]string{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
 }
 
-func TestKeepExtraDataFalse(t *testing.T) {
+func TestChangeObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -155,7 +155,7 @@ func TestKeepExtraDataFalse(t *testing.T) {
 	require.Nil(t, objects.Objects["A-1"].ExtraData)
 }
 
-func TestTicketType(t *testing.T) {
+func TestChangeObjectStatusWithTicketType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -175,7 +175,7 @@ func TestTicketType(t *testing.T) {
 	require.Equal(t, "adult", objects.Objects["A-1"].TicketType)
 }
 
-func TestQuantity(t *testing.T) {
+func TestChangeObjectStatusWithQuantity(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -195,15 +195,15 @@ func TestQuantity(t *testing.T) {
 	require.Equal(t, 5, objects.Objects["GA1"].NumBooked)
 }
 
-func TestChannelsKeys(t *testing.T) {
+func TestChangeObjectStatusWithChannelsKeys(t *testing.T) {
 	// TODO
 }
 
-func TestIgnoreChannels(t *testing.T) {
+func TestChangeObjectStatusWithIgnoreChannels(t *testing.T) {
 	// TODO
 }
 
-func TestAllowedPreviousStatus(t *testing.T) {
+func TestChangeObjectStatusWithAllowedPreviousStatus(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -223,7 +223,7 @@ func TestAllowedPreviousStatus(t *testing.T) {
 	require.Equal(t, "ILLEGAL_STATUS_CHANGE", err.(*shared.SeatsioError).Code)
 }
 
-func TestRejectedPreviousStatus(t *testing.T) {
+func TestChangeObjectStatusWithRejectedPreviousStatus(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)

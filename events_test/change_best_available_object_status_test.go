@@ -1,4 +1,4 @@
-package events
+package events_test
 
 import (
 	"github.com/seatsio/seatsio-go"
@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestNumber(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithNumber(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -29,7 +29,7 @@ func TestNumber(t *testing.T) {
 	require.Equal(t, events.ObjectStatusBooked, bestAvailableResult.ObjectDetails["A-6"].Status)
 }
 
-func TestCategories(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -46,7 +46,7 @@ func TestCategories(t *testing.T) {
 	require.Equal(t, []string{"C-4", "C-5", "C-6"}, bestAvailableResult.Objects)
 }
 
-func TestExtraData(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -64,7 +64,7 @@ func TestExtraData(t *testing.T) {
 	require.Equal(t, map[string]string{"foo": "baz"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
 }
 
-func TestTicketTypes(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithTicketTypes(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -82,7 +82,7 @@ func TestTicketTypes(t *testing.T) {
 	require.Equal(t, "child", bestAvailableResult.ObjectDetails["A-5"].TicketType)
 }
 
-func TestKeepExtraData(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithKeepExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -103,7 +103,7 @@ func TestKeepExtraData(t *testing.T) {
 	require.Equal(t, map[string]string{"foo": "bar"}, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
 }
 
-func TestKeepExtraDataFalse(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -124,7 +124,7 @@ func TestKeepExtraDataFalse(t *testing.T) {
 	require.Nil(t, bestAvailableResult.ObjectDetails["A-5"].ExtraData)
 }
 
-func TestOrderId(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithOrderId(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -145,7 +145,7 @@ func TestOrderId(t *testing.T) {
 	require.Equal(t, "anOrder", bestAvailableResult.ObjectDetails["A-5"].OrderId)
 }
 
-func TestHoldToken(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithHoldToken(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -169,10 +169,10 @@ func TestHoldToken(t *testing.T) {
 	require.Equal(t, holdToken.HoldToken, bestAvailableResult.ObjectDetails["A-5"].HoldToken)
 }
 
-func TestChannelsKeys(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithChannelsKeys(t *testing.T) {
 	// TODO
 }
 
-func TestIgnoreChannels(t *testing.T) {
+func TestChangeBestAvailableObjectStatusWithIgnoreChannels(t *testing.T) {
 	// TODO
 }

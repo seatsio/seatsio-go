@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestChartKeyIsRequired(t *testing.T) {
+func TestCreateEventWithChartKey(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 	company := test_util.CreateTestCompany(t)
@@ -34,7 +34,7 @@ func TestChartKeyIsRequired(t *testing.T) {
 	}, event.Categories)
 }
 
-func TestEventKeyCanBePassedIn(t *testing.T) {
+func TestCreateEventWithEventKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -46,7 +46,7 @@ func TestEventKeyCanBePassedIn(t *testing.T) {
 	require.Equal(t, "anEvent", event.Key)
 }
 
-func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
+func TestCreateEventWithTableBookingConfigCustom(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
@@ -61,7 +61,7 @@ func TestTableBookingConfigCustomCanBePassedIn(t *testing.T) {
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
-func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
+func TestCreateEventWithTableBookingConfigInherit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
@@ -74,7 +74,7 @@ func TestTableBookingConfigInheritCanBePassedIn(t *testing.T) {
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
 }
 
-func TestObjectCategoriesCanBePassedIn(t *testing.T) {
+func TestCreateEventWithObjectCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -89,7 +89,7 @@ func TestObjectCategoriesCanBePassedIn(t *testing.T) {
 	require.Equal(t, objectCategories, event.ObjectCategories)
 }
 
-func TestCategoriesCanBePassedIn(t *testing.T) {
+func TestCreateEventWithCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
