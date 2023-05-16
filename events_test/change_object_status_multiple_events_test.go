@@ -13,9 +13,9 @@ func TestChangeObjectStatusInMultipleEvents(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
-	event1, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
-	event2, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{

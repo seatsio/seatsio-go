@@ -14,7 +14,7 @@ func TestCreateMultipleEventsWithDefaultValues(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	result, err := client.Events.CreateMultiple(chartKey, []events.MultipleEventCreationParams{
+	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
 		{},
 		{},
 	})
@@ -30,7 +30,7 @@ func TestCreateMultipleEventsWithEventKey(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	result, err := client.Events.CreateMultiple(chartKey, []events.MultipleEventCreationParams{
+	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
 		{EventKey: "event1"},
 		{EventKey: "event2"},
 	})
@@ -49,7 +49,7 @@ func TestCreateMultipleEventsWithTableBookingConfig(t *testing.T) {
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]string{
 		"T1": "BY_TABLE", "T2": "BY_SEAT",
 	}}
-	result, err := client.Events.CreateMultiple(chartKey, []events.MultipleEventCreationParams{
+	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
 		{TableBookingConfig: &tableBookingConfig},
 		{TableBookingConfig: &tableBookingConfig},
 	})
@@ -68,7 +68,7 @@ func TestCreateMultipleEventsWithObjectCategories(t *testing.T) {
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
 	}
-	result, err := client.Events.CreateMultiple(chartKey, []events.MultipleEventCreationParams{
+	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
 		{ObjectCategories: &objectCategories},
 		{ObjectCategories: &objectCategories},
 	})
@@ -88,9 +88,9 @@ func TestCreateMultipleEventsWithCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	result, err := client.Events.CreateMultiple(chartKey, []events.MultipleEventCreationParams{
-		{Categories: categories},
-		{Categories: categories},
+	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
+		{Categories: &categories},
+		{Categories: &categories},
 	})
 	require.NoError(t, err)
 

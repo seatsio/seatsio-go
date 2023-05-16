@@ -13,27 +13,35 @@ type Events struct {
 	Client *req.Client
 }
 
-type EventCreationParams struct {
+type CreateEventParams struct {
 	ChartKey           string                  `json:"chartKey"`
 	EventKey           string                  `json:"eventKey"`
 	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
 	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
-	Categories         []Category              `json:"categories,omitempty"`
+	Categories         *[]Category             `json:"categories,omitempty"`
 }
 
-type MultipleEventCreationParams struct {
+type UpdateEventParams struct {
+	ChartKey           string                  `json:"chartKey,omitempty"`
+	EventKey           string                  `json:"eventKey,omitempty"`
+	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
+	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
+	Categories         *[]Category             `json:"categories,omitempty"`
+}
+
+type CreateMultipleEventsParams struct {
 	EventKey           string                  `json:"eventKey"`
 	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
 	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
-	Categories         []Category              `json:"categories,omitempty"`
+	Categories         *[]Category             `json:"categories,omitempty"`
 }
 
 type CreateMultipleEventsRequest struct {
-	ChartKey string                        `json:"chartKey"`
-	Events   []MultipleEventCreationParams `json:"events"`
+	ChartKey string                       `json:"chartKey"`
+	Events   []CreateMultipleEventsParams `json:"events"`
 }
 
-type EventCreationResult struct {
+type CreateEventResult struct {
 	Events []Event `json:"events"`
 }
 
@@ -100,7 +108,7 @@ type ForSaleConfigParams struct {
 	Categories []string       `json:"categories,omitempty"`
 }
 
-func (events *Events) Create(params *EventCreationParams) (*Event, error) {
+func (events *Events) Create(params *CreateEventParams) (*Event, error) {
 	var event Event
 	result, err := events.Client.R().
 		SetBody(params).
@@ -109,8 +117,8 @@ func (events *Events) Create(params *EventCreationParams) (*Event, error) {
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCreationParams) (*EventCreationResult, error) {
-	var eventCreationResult EventCreationResult
+func (events *Events) CreateMultiple(chartKey string, params []CreateMultipleEventsParams) (*CreateEventResult, error) {
+	var eventCreationResult CreateEventResult
 	result, err := events.Client.R().
 		SetBody(&CreateMultipleEventsRequest{
 			ChartKey: chartKey,
@@ -119,6 +127,14 @@ func (events *Events) CreateMultiple(chartKey string, params []MultipleEventCrea
 		SetSuccessResult(&eventCreationResult).
 		Post("/events/actions/create-multiple")
 	return shared.AssertOk(result, err, &eventCreationResult)
+}
+
+func (events *Events) Update(eventKey string, params *UpdateEventParams) error {
+	result, err := events.Client.R().
+		SetBody(params).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {

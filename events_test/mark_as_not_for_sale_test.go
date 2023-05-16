@@ -14,7 +14,7 @@ func TestMarkAsNotForSaleObjectsAndAreaPlacesAndCategories(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	err = client.Events.MarkAsNotForSale(event.Key, &events.ForSaleConfigParams{
@@ -41,7 +41,7 @@ func TestMarkAsNotForSaleObjects(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	err = client.Events.MarkAsNotForSale(event.Key, &events.ForSaleConfigParams{
@@ -66,7 +66,7 @@ func TestMarkAsNotForSaleAreaPlaces(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	err = client.Events.MarkAsNotForSale(event.Key, &events.ForSaleConfigParams{
@@ -91,7 +91,7 @@ func TestMarkAsNotForSaleCategories(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	err = client.Events.MarkAsNotForSale(event.Key, &events.ForSaleConfigParams{

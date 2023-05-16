@@ -37,7 +37,7 @@ func Test400(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	_, err := client.Events.Create(&events.EventCreationParams{ChartKey: "foo"})
+	_, err := client.Events.Create(&events.CreateEventParams{ChartKey: "foo"})
 
 	require.EqualError(t, err, "Chart not found: foo")
 }
@@ -58,7 +58,7 @@ func TestWeirdError(t *testing.T) {
 	t.Parallel()
 	client := NewSeatsioClient("someSecretKey", "unknownProtocol://")
 
-	_, err := client.Events.Create(&events.EventCreationParams{ChartKey: "foo"})
+	_, err := client.Events.Create(&events.CreateEventParams{ChartKey: "foo"})
 
 	require.EqualError(t, err, "Post \"unknownprotocol:/events\": unsupported protocol scheme \"unknownprotocol\"")
 }

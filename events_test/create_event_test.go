@@ -16,7 +16,7 @@ func TestCreateEventWithChartKey(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	require.NotZero(t, event.Id)
@@ -40,7 +40,7 @@ func TestCreateEventWithEventKey(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, EventKey: "anEvent"})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventKey: "anEvent"})
 	require.NoError(t, err)
 
 	require.Equal(t, "anEvent", event.Key)
@@ -55,7 +55,7 @@ func TestCreateEventWithTableBookingConfigCustom(t *testing.T) {
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]string{
 		"T1": "BY_TABLE", "T2": "BY_SEAT",
 	}}
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 	require.NoError(t, err)
 
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
@@ -68,7 +68,7 @@ func TestCreateEventWithTableBookingConfigInherit(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
 	tableBookingConfig := events.TableBookingConfig{Mode: "INHERIT"}
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 	require.NoError(t, err)
 
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
@@ -83,7 +83,7 @@ func TestCreateEventWithObjectCategories(t *testing.T) {
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
 	}
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, ObjectCategories: &objectCategories})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, ObjectCategories: &objectCategories})
 	require.NoError(t, err)
 
 	require.Equal(t, objectCategories, event.ObjectCategories)
@@ -99,7 +99,7 @@ func TestCreateEventWithCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey, Categories: categories})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, Categories: &categories})
 	require.NoError(t, err)
 
 	require.Contains(t, event.Categories, category)

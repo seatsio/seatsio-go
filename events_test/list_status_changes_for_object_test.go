@@ -14,7 +14,7 @@ func TestListStatusChangesForObject(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.EventCreationParams{ChartKey: chartKey})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
