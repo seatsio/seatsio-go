@@ -25,3 +25,12 @@ func (charts *Charts) AddTag(chartKey string, tag string) error {
 		Post("/charts/{key}/tags/{tag}")
 	return shared.AssertOkWithoutResult(result, err)
 }
+
+func (charts *Charts) Copy(chartKey string) (*Chart, error) {
+	var chart Chart
+	result, err := charts.Client.R().
+		SetSuccessResult(&chart).
+		SetPathParam("key", chartKey).
+		Post("/charts/{key}/version/published/actions/copy")
+	return shared.AssertOk(result, err, &chart)
+}
