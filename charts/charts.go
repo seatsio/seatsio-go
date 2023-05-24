@@ -34,3 +34,13 @@ func (charts *Charts) Copy(chartKey string) (*Chart, error) {
 		Post("/charts/{key}/version/published/actions/copy")
 	return shared.AssertOk(result, err, &chart)
 }
+
+func (charts *Charts) CopyToWorkspace(chartKey string, targetWorkspaceKey string) (*Chart, error) {
+	var chart Chart
+	result, err := charts.Client.R().
+		SetSuccessResult(&chart).
+		SetPathParam("chartKey", chartKey).
+		SetPathParam("targetWorkspaceKey", targetWorkspaceKey).
+		Post("/charts/{chartKey}/version/published/actions/copy-to-workspace/{targetWorkspaceKey}")
+	return shared.AssertOk(result, err, &chart)
+}
