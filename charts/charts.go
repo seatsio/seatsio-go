@@ -2,6 +2,7 @@ package charts
 
 import (
 	"github.com/imroc/req/v3"
+	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/shared"
 )
 
@@ -9,8 +10,23 @@ type Charts struct {
 	Client *req.Client
 }
 
+type CreateChartParams struct {
+	Name       string            `json:"name,omitempty"`
+	VenueType  string            `json:"venueType,omitempty"`
+	Categories []events.Category `json:"categories,omitempty"`
+}
+
 type UpdateChartParams struct {
 	Name string `json:"name,omitempty"`
+}
+
+func (charts *Charts) Create(params *CreateChartParams) (*Chart, error) {
+	var chart Chart
+	result, err := charts.Client.R().
+		SetSuccessResult(&chart).
+		SetBody(params).
+		Post("/charts")
+	return shared.AssertOk(result, err, &chart)
 }
 
 func (charts *Charts) Update(chartKey string, params *UpdateChartParams) error {
@@ -64,4 +80,13 @@ func (charts *Charts) CopyDraftVersion(chartKey string) (*Chart, error) {
 		SetPathParam("key", chartKey).
 		Post("/charts/{key}/version/draft/actions/copy")
 	return shared.AssertOk(result, err, &chart)
+}
+
+func (charts *Charts) RetrievePublishedVersion(chartKey string) (map[string]interface{}, error) {
+	var drawing map[string]interface{}
+	result, err := charts.Client.R().
+		SetSuccessResult(&drawing).
+		SetPathParam("key", chartKey).
+		Get("/charts/{key}/version/published")
+	return shared.AssertOkMap(result, err, drawing)
 }
