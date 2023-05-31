@@ -90,3 +90,11 @@ func (charts *Charts) RetrievePublishedVersion(chartKey string) (map[string]inte
 		Get("/charts/{key}/version/published")
 	return shared.AssertOkMap(result, err, drawing)
 }
+
+func (charts *Charts) DiscardDraftVersion(chartKey string) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		Post("/charts/{key}/version/draft/actions/discard")
+	return shared.AssertOkWithoutResult(result, err)
+
+}
