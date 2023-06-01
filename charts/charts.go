@@ -7,6 +7,11 @@ import (
 )
 
 type Charts struct {
+	Client  *req.Client
+	Archive *Archive
+}
+
+type Archive struct {
 	Client *req.Client
 }
 
@@ -96,6 +101,42 @@ func (charts *Charts) DiscardDraftVersion(chartKey string) error {
 		SetPathParam("key", chartKey).
 		Post("/charts/{key}/version/draft/actions/discard")
 	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (charts *Charts) MoveToArchive(chartKey string) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		Post("/charts/{key}/actions/move-to-archive")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (charts *Charts) MoveOutOfArchive(chartKey string) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		Post("/charts/{key}/actions/move-out-of-archive")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (charts *Charts) lister() *shared.Lister[Chart] {
+	pageFetcher := shared.PageFetcher[Chart]{
+		Client:    charts.Client,
+		Url:       "/charts",
+		UrlParams: map[string]string{},
+	}
+	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
+}
+
+func (archive *Archive) lister() *shared.Lister[Chart] {
+	pageFetcher := shared.PageFetcher[Chart]{
+		Client:    archive.Client,
+		Url:       "/charts/archive",
+		UrlParams: map[string]string{},
+	}
+	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
+}
+
+func (archive *Archive) All(pageSize int) ([]Chart, error) {
+	return archive.lister().All(pageSize)
 }
 
 /*  TODO

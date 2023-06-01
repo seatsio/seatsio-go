@@ -23,7 +23,10 @@ func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
 		baseUrl:    baseUrl,
 		secretKey:  secretKey,
 		Workspaces: &workspaces.Workspaces{Client: apiClient},
-		Charts:     &charts.Charts{Client: apiClient},
+		Charts: &charts.Charts{
+			Client:  apiClient,
+			Archive: &charts.Archive{Client: apiClient},
+		},
 		Events:     &events.Events{Client: apiClient},
 		HoldTokens: &holdtokens.HoldTokens{Client: apiClient},
 	}
