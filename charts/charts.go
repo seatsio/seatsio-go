@@ -96,5 +96,14 @@ func (charts *Charts) DiscardDraftVersion(chartKey string) error {
 		SetPathParam("key", chartKey).
 		Post("/charts/{key}/version/draft/actions/discard")
 	return shared.AssertOkWithoutResult(result, err)
-
 }
+
+/*  TODO
+func (charts *Charts) ListAllTags() (*[]string, error) {
+	var tags Tags
+	result, err := charts.Client.R().
+		SetSuccessResult(&tags).
+		Get("/charts/tags")
+	return shared.AssertOk(result, err, &tags.Tags)
+}
+*/

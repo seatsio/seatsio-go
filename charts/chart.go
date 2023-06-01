@@ -13,3 +13,7 @@ type Chart struct {
 	Events                       []events.Event `json:"events"`
 	Archived                     bool           `json:"archived"`
 }
+
+type Tags struct {
+	Tags []string `json:"tags"`
+}
