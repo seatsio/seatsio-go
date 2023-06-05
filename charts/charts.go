@@ -166,6 +166,35 @@ func (charts *Charts) ListFirstPage(params *ListChartParams, pageSize int) (*sha
 	return charts.List(params).ListFirstPage(pageSize)
 }
 
+func (charts *Charts) AddCategory(chartKey string, category events.Category) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		SetBody(category).
+		Post("/charts/{key}/categories")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (charts *Charts) RemoveCategory(chartKey string, categoryKey events.CategoryKey) error {
+	result, err := charts.Client.R().
+		SetPathParam("chartKey", chartKey).
+		SetPathParam("categoryKey", categoryKey.KeyAsString()).
+		Delete("/charts/{chartKey}/categories/{categoryKey}")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+type ListCategoriesResponse struct {
+	Categories []events.Category `json:"categories"`
+}
+
+func (charts *Charts) ListCategories(chartKey string) (*ListCategoriesResponse, error) {
+	var response ListCategoriesResponse
+	result, err := charts.Client.R().
+		SetSuccessResult(&response).
+		SetPathParam("chartKey", chartKey).
+		Get("/charts/{chartKey}/categories")
+	return shared.AssertOk(result, err, &response)
+}
+
 func (archive *Archive) lister() *shared.Lister[Chart] {
 	pageFetcher := shared.PageFetcher[Chart]{
 		Client:    archive.Client,

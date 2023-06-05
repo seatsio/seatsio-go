@@ -81,8 +81,3 @@ func TestCreateChartWithCategories(t *testing.T) {
 		map[string]interface{}{"key": "anotherCat", "label": "Category 2", "color": "#bbbbbb", "accessible": true})
 
 }
-
-func getCategories(drawing map[string]interface{}) []interface{} {
-	categories := drawing["categories"].(map[string]interface{})
-	return categories["list"].([]interface{})
-}

@@ -1,6 +1,9 @@
 package events
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type CategoryKey struct {
 	Key interface{}
@@ -25,6 +28,22 @@ func (categoryKey *CategoryKey) UnmarshalJSON(data []byte) error {
 		categoryKey.Key = categoryKeyAsString
 	}
 	return nil
+}
+
+func (categoryKey CategoryKey) KeyAsString() string {
+	if categoryKey.isInt() {
+		return strconv.Itoa(categoryKey.Key.(int))
+	} else {
+		return categoryKey.Key.(string)
+	}
+}
+
+func (categoryKey CategoryKey) isInt() bool {
+	if _, isInt := categoryKey.Key.(int); isInt {
+		return true
+	} else {
+		return false
+	}
 }
 
 type Category struct {
