@@ -25,6 +25,21 @@ type UpdateChartParams struct {
 	Name string `json:"name,omitempty"`
 }
 
+type ListChartParams struct {
+	Filter     string `json:"filter,omitempty"`
+	Tag        string `json:"tag,omitempty"`
+	Expand     bool   `json:"expand,omitempty"`
+	Validation bool   `json:"validation,omitempty"`
+}
+
+func (params ListChartParams) asMap() map[string]string {
+	result := map[string]string{"filter": params.Filter, "tag": params.Tag}
+	if params.Expand {
+		result["expand"] = "events"
+	}
+	return result
+}
+
 func (charts *Charts) Create(params *CreateChartParams) (*Chart, error) {
 	var chart Chart
 	result, err := charts.Client.R().
@@ -126,6 +141,31 @@ func (charts *Charts) lister() *shared.Lister[Chart] {
 	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
 }
 
+func (charts *Charts) ListAll() ([]Chart, error) {
+	return charts.lister().All(10)
+}
+
+func (charts *Charts) List(params *ListChartParams) *shared.Lister[Chart] {
+	queryParams := queryParamsToMap(params)
+	pageFetcher := shared.PageFetcher[Chart]{
+		Client:      charts.Client,
+		Url:         "/charts",
+		QueryParams: queryParams, // "sort": shared.ToSort(sortField, sortDirection)},
+	}
+	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
+}
+
+func queryParamsToMap(params *ListChartParams) map[string]string {
+	if params == nil {
+		return map[string]string{}
+	}
+	return params.asMap()
+}
+
+func (charts *Charts) ListFirstPage(params *ListChartParams, pageSize int) (*shared.Page[Chart], error) {
+	return charts.List(params).ListFirstPage(pageSize)
+}
+
 func (archive *Archive) lister() *shared.Lister[Chart] {
 	pageFetcher := shared.PageFetcher[Chart]{
 		Client:    archive.Client,
@@ -139,7 +179,7 @@ func (archive *Archive) All(pageSize int) ([]Chart, error) {
 	return archive.lister().All(pageSize)
 }
 
-/*  TODO
+/* TODO
 func (charts *Charts) ListAllTags() (*[]string, error) {
 	var tags Tags
 	result, err := charts.Client.R().
