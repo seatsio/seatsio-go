@@ -74,6 +74,14 @@ func (charts *Charts) AddTag(chartKey string, tag string) error {
 	return shared.AssertOkWithoutResult(result, err)
 }
 
+func (charts *Charts) RemoveTag(chartKey string, tag string) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		SetPathParam("tag", tag).
+		Delete("/charts/{key}/tags/{tag}")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
 func (charts *Charts) Copy(chartKey string) (*Chart, error) {
 	var chart Chart
 	result, err := charts.Client.R().
@@ -193,6 +201,13 @@ func (charts *Charts) ListCategories(chartKey string) (*ListCategoriesResponse, 
 		SetPathParam("chartKey", chartKey).
 		Get("/charts/{chartKey}/categories")
 	return shared.AssertOk(result, err, &response)
+}
+
+func (charts *Charts) PublishDraftVersion(chartKey string) error {
+	result, err := charts.Client.R().
+		SetPathParam("key", chartKey).
+		Post("/charts/{key}/version/draft/actions/publish")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (archive *Archive) lister() *shared.Lister[Chart] {
