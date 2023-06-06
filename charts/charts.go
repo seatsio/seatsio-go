@@ -22,7 +22,8 @@ type CreateChartParams struct {
 }
 
 type UpdateChartParams struct {
-	Name string `json:"name,omitempty"`
+	Name       string            `json:"name,omitempty"`
+	Categories []events.Category `json:"categories,omitempty"`
 }
 
 type ListChartParams struct {
