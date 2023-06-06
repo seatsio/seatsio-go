@@ -229,6 +229,24 @@ func (charts *Charts) RetrieveDraftVersion(chartKey string) (map[string]interfac
 	return shared.AssertOkMap(result, err, drawing)
 }
 
+func (charts *Charts) ValidatePublishedVersion(key string) (*ChartValidationResult, error) {
+	var response ChartValidationResult
+	result, err := charts.Client.R().
+		SetSuccessResult(&response).
+		SetPathParam("key", key).
+		Post("/charts/{key}/version/published/actions/validate")
+	return shared.AssertOk(result, err, &response)
+}
+
+func (charts *Charts) ValidateDraftVersion(key string) (*ChartValidationResult, error) {
+	var response ChartValidationResult
+	result, err := charts.Client.R().
+		SetSuccessResult(&response).
+		SetPathParam("chartKey", key).
+		Post("/charts/{chartKey}/version/draft/actions/validate")
+	return shared.AssertOk(result, err, &response)
+}
+
 func (archive *Archive) lister() *shared.Lister[Chart] {
 	pageFetcher := shared.PageFetcher[Chart]{
 		Client:    archive.Client,
