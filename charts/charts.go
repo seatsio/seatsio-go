@@ -66,6 +66,15 @@ func (charts *Charts) Retrieve(chartKey string) (*Chart, error) {
 	return shared.AssertOk(result, err, &chart)
 }
 
+func (charts *Charts) RetrieveWithEvents(chartKey string) (*Chart, error) {
+	var chart Chart
+	result, err := charts.Client.R().
+		SetSuccessResult(&chart).
+		SetPathParam("key", chartKey).
+		Get("/charts/{key}?expand=events")
+	return shared.AssertOk(result, err, &chart)
+}
+
 func (charts *Charts) AddTag(chartKey string, tag string) error {
 	result, err := charts.Client.R().
 		SetPathParam("key", chartKey).
@@ -108,15 +117,6 @@ func (charts *Charts) CopyDraftVersion(chartKey string) (*Chart, error) {
 		SetPathParam("key", chartKey).
 		Post("/charts/{key}/version/draft/actions/copy")
 	return shared.AssertOk(result, err, &chart)
-}
-
-func (charts *Charts) RetrievePublishedVersion(chartKey string) (map[string]interface{}, error) {
-	var drawing map[string]interface{}
-	result, err := charts.Client.R().
-		SetSuccessResult(&drawing).
-		SetPathParam("key", chartKey).
-		Get("/charts/{key}/version/published")
-	return shared.AssertOkMap(result, err, drawing)
 }
 
 func (charts *Charts) DiscardDraftVersion(chartKey string) error {
@@ -208,6 +208,24 @@ func (charts *Charts) PublishDraftVersion(chartKey string) error {
 		SetPathParam("key", chartKey).
 		Post("/charts/{key}/version/draft/actions/publish")
 	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (charts *Charts) RetrievePublishedVersion(chartKey string) (map[string]interface{}, error) {
+	var drawing map[string]interface{}
+	result, err := charts.Client.R().
+		SetSuccessResult(&drawing).
+		SetPathParam("key", chartKey).
+		Get("/charts/{key}/version/published")
+	return shared.AssertOkMap(result, err, drawing)
+}
+
+func (charts *Charts) RetrieveDraftVersion(chartKey string) (map[string]interface{}, error) {
+	var drawing map[string]interface{}
+	result, err := charts.Client.R().
+		SetSuccessResult(&drawing).
+		SetPathParam("key", chartKey).
+		Get("/charts/{key}/version/draft")
+	return shared.AssertOkMap(result, err, drawing)
 }
 
 func (archive *Archive) lister() *shared.Lister[Chart] {
