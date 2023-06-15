@@ -17,9 +17,18 @@ func TestSummaryByObjectType(t *testing.T) {
 	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey)
 
 	require.NoError(t, err)
-	seatReportItem := reports.ChartSummaryReportItem{Count: 32}
-	gaReportItem := reports.ChartSummaryReportItem{Count: 200}
-	emptyReportItem := reports.ChartSummaryReportItem{Count: 0}
+	seatReportItem := reports.ChartSummaryReportItem{
+		BySection: map[string]interface{}{"NO_SECTION": float64(32)},
+		Count:     32,
+	}
+	gaReportItem := reports.ChartSummaryReportItem{
+		Count:     200,
+		BySection: map[string]interface{}{"NO_SECTION": float64(200)},
+	}
+	emptyReportItem := reports.ChartSummaryReportItem{
+		Count:     0,
+		BySection: map[string]interface{}{},
+	}
 	require.Equal(t, seatReportItem, summaryChartReport.Items["seat"])
 	require.Equal(t, gaReportItem, summaryChartReport.Items["generalAdmission"])
 	require.Equal(t, emptyReportItem, summaryChartReport.Items["booth"])
