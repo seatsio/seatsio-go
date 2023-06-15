@@ -18,16 +18,34 @@ func TestSummaryByObjectType(t *testing.T) {
 
 	require.NoError(t, err)
 	seatReportItem := reports.ChartSummaryReportItem{
-		BySection: map[string]interface{}{"NO_SECTION": float64(32)},
 		Count:     32,
+		BySection: map[string]interface{}{"NO_SECTION": float64(32)},
+		ByCategoryKey: map[string]interface{}{
+			"9":  float64(16),
+			"10": float64(16),
+		},
+		ByCategoryLabel: map[string]interface{}{
+			"Cat1": float64(16),
+			"Cat2": float64(16),
+		},
 	}
 	gaReportItem := reports.ChartSummaryReportItem{
 		Count:     200,
 		BySection: map[string]interface{}{"NO_SECTION": float64(200)},
+		ByCategoryKey: map[string]interface{}{
+			"9":  float64(100),
+			"10": float64(100),
+		},
+		ByCategoryLabel: map[string]interface{}{
+			"Cat1": float64(100),
+			"Cat2": float64(100),
+		},
 	}
 	emptyReportItem := reports.ChartSummaryReportItem{
-		Count:     0,
-		BySection: map[string]interface{}{},
+		Count:           0,
+		BySection:       map[string]interface{}{},
+		ByCategoryKey:   map[string]interface{}{},
+		ByCategoryLabel: map[string]interface{}{},
 	}
 	require.Equal(t, seatReportItem, summaryChartReport.Items["seat"])
 	require.Equal(t, gaReportItem, summaryChartReport.Items["generalAdmission"])

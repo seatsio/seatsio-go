@@ -14,8 +14,10 @@ type ChartSummaryReport struct {
 }
 
 type ChartSummaryReportItem struct {
-	Count     int                    `json:"count,omitempty"`
-	BySection map[string]interface{} `json:"bySection,omitempty"`
+	Count           int                    `json:"count,omitempty"`
+	BySection       map[string]interface{} `json:"bySection,omitempty"`
+	ByCategoryKey   map[string]interface{} `json:"byCategoryKey,omitempty"`
+	ByCategoryLabel map[string]interface{} `json:"byCategoryLabel,omitempty"`
 }
 
 func (reports *ChartReports) SummaryByObjectType(chartKey string) (*ChartSummaryReport, error) {
