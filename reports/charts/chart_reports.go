@@ -2,6 +2,7 @@ package reports
 
 import (
 	"github.com/imroc/req/v3"
+	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/shared"
 )
 
@@ -21,6 +22,25 @@ type ChartSummaryReportItem struct {
 	ByObjectType    map[string]interface{} `json:"byObjectType,omitempty"`
 }
 
+type ChartReport struct {
+	Items map[string][]ChartReportItem
+}
+
+type ChartReportItem struct {
+	Label                string        `json:"label,omitempty"`
+	Labels               events.Labels `json:"labels,omitempty"`
+	IDs                  events.IDs    `json:"ids,omitempty"`
+	CategoryLabel        string        `json:"categoryLabel,omitempty"`
+	CategoryKey          string        `json:"categoryKey,omitempty"`
+	Section              string        `json:"section,omitempty"`
+	Entrance             string        `json:"entrance,omitempty"`
+	Capacity             int           `json:"capacity,omitempty"`
+	ObjectType           string        `json:"objectType,omitempty"`
+	LeftNeighbour        string        `json:"leftNeighbour,omitempty"`
+	RightNeighbour       string        `json:"rightNeighbour,omitempty"`
+	DistanceToFocalPoint float64       `json:"distanceToFocalPoint,omitempty"`
+}
+
 func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
 	return reports.fetchSummaryChartReport("byObjectType", chartKey, bookWholeTablesMode)
 }
@@ -35,6 +55,22 @@ func (reports *ChartReports) SummaryByCategoryLabel(chartKey string, bookWholeTa
 
 func (reports *ChartReports) SummaryBySection(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
 	return reports.fetchSummaryChartReport("bySection", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) ByLabel(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	return reports.fetchChartReport("byLabel", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) fetchChartReport(reportType string, chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	var report map[string][]ChartReportItem
+	result, err := reports.Client.R().
+		SetSuccessResult(&report).
+		SetPathParam("reportItemType", "charts").
+		SetPathParam("key", chartKey).
+		SetPathParam("reportType", reportType).
+		SetQueryParams(toQueryParams(bookWholeTablesMode)).
+		Get("/reports/{reportItemType}/{key}/{reportType}")
+	return shared.AssertOk(result, err, &ChartReport{Items: report})
 }
 
 func (reports *ChartReports) fetchSummaryChartReport(reportType string, chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
