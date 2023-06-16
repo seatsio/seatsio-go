@@ -4,7 +4,7 @@ import (
 	"github.com/seatsio/seatsio-go/charts"
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/holdtokens"
-	reports "github.com/seatsio/seatsio-go/reports/charts"
+	"github.com/seatsio/seatsio-go/reports"
 	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/workspaces"
 )

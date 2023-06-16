@@ -2,7 +2,7 @@ package reports_test
 
 import (
 	"github.com/seatsio/seatsio-go"
-	reports "github.com/seatsio/seatsio-go/reports/charts"
+	"github.com/seatsio/seatsio-go/reports"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
