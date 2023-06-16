@@ -39,6 +39,8 @@ type ChartReportItem struct {
 	LeftNeighbour        string        `json:"leftNeighbour,omitempty"`
 	RightNeighbour       string        `json:"rightNeighbour,omitempty"`
 	DistanceToFocalPoint float64       `json:"distanceToFocalPoint,omitempty"`
+	BookAsAWhole         bool          `json:"bookAsAWhole,omitempty"`
+	NumSeats             int           `json:"numSeats,omitempty"`
 }
 
 func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
@@ -59,6 +61,22 @@ func (reports *ChartReports) SummaryBySection(chartKey string, bookWholeTablesMo
 
 func (reports *ChartReports) ByLabel(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
 	return reports.fetchChartReport("byLabel", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) ByObjectType(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	return reports.fetchChartReport("byObjectType", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) ByCategoryKey(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	return reports.fetchChartReport("byCategoryKey", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) ByCategoryLabel(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	return reports.fetchChartReport("byCategoryLabel", chartKey, bookWholeTablesMode)
+}
+
+func (reports *ChartReports) BySection(chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
+	return reports.fetchChartReport("bySection", chartKey, bookWholeTablesMode)
 }
 
 func (reports *ChartReports) fetchChartReport(reportType string, chartKey string, bookWholeTablesMode string) (*ChartReport, error) {
