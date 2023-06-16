@@ -83,3 +83,44 @@ func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 	require.Equal(t, emptyReportItem, summaryChartReport.Items["booth"])
 	require.Equal(t, tableReportItem, summaryChartReport.Items["table"])
 }
+
+func TestSummaryByCategoryKey(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+
+	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(chartKey, "false")
+
+	require.NoError(t, err)
+	cat9Report := reports.ChartSummaryReportItem{
+		Count:     116,
+		BySection: map[string]interface{}{"NO_SECTION": float64(116)},
+		ByObjectType: map[string]interface{}{
+			"seat":             float64(16),
+			"generalAdmission": float64(100),
+		},
+	}
+	cat10Report := reports.ChartSummaryReportItem{
+		Count:     116,
+		BySection: map[string]interface{}{"NO_SECTION": float64(116)},
+		ByObjectType: map[string]interface{}{
+			"seat":             float64(16),
+			"generalAdmission": float64(100),
+		},
+	}
+	cat11Report := reports.ChartSummaryReportItem{
+		Count:        0,
+		BySection:    map[string]interface{}{},
+		ByObjectType: map[string]interface{}{},
+	}
+	noCategoryReport := reports.ChartSummaryReportItem{
+		Count:        0,
+		BySection:    map[string]interface{}{},
+		ByObjectType: map[string]interface{}{},
+	}
+	require.Equal(t, cat9Report, summaryChartReport.Items["9"])
+	require.Equal(t, cat10Report, summaryChartReport.Items["10"])
+	require.Equal(t, cat11Report, summaryChartReport.Items["string11"])
+	require.Equal(t, noCategoryReport, summaryChartReport.Items["NO_CATEGORY"])
+}
