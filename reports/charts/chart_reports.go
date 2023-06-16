@@ -20,7 +20,7 @@ type ChartSummaryReportItem struct {
 	ByCategoryLabel map[string]interface{} `json:"byCategoryLabel,omitempty"`
 }
 
-func (reports *ChartReports) SummaryByObjectType(chartKey string) (*ChartSummaryReport, error) {
+func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
 	reportType := "byObjectType"
 	var report map[string]ChartSummaryReportItem
 	result, err := reports.Client.R().
@@ -28,6 +28,7 @@ func (reports *ChartReports) SummaryByObjectType(chartKey string) (*ChartSummary
 		SetPathParam("reportItemType", "charts").
 		SetPathParam("key", chartKey).
 		SetPathParam("reportType", reportType).
+		SetQueryParams(toQueryParams(bookWholeTablesMode)).
 		Get("/reports/{reportItemType}/{key}/{reportType}/summary")
 	return shared.AssertOk(result, err, &ChartSummaryReport{Items: report})
 }
