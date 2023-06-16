@@ -22,22 +22,22 @@ type ChartSummaryReportItem struct {
 }
 
 func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
-	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byObjectType")
+	return reports.fetchSummaryChartReport("byObjectType", chartKey, bookWholeTablesMode)
 }
 
 func (reports *ChartReports) SummaryByCategoryKey(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
-	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byCategoryKey")
+	return reports.fetchSummaryChartReport("byCategoryKey", chartKey, bookWholeTablesMode)
 }
 
 func (reports *ChartReports) SummaryByCategoryLabel(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
-	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byCategoryLabel")
+	return reports.fetchSummaryChartReport("byCategoryLabel", chartKey, bookWholeTablesMode)
 }
 
 func (reports *ChartReports) SummaryBySection(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
-	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "bySection")
+	return reports.fetchSummaryChartReport("bySection", chartKey, bookWholeTablesMode)
 }
 
-func fetchChartReport(chartKey string, bookWholeTablesMode string, reports *ChartReports, reportType string) (*ChartSummaryReport, error) {
+func (reports *ChartReports) fetchSummaryChartReport(reportType string, chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
 	var report map[string]ChartSummaryReportItem
 	result, err := reports.Client.R().
 		SetSuccessResult(&report).
