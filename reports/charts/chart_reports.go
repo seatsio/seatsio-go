@@ -25,6 +25,18 @@ func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTable
 	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byObjectType")
 }
 
+func (reports *ChartReports) SummaryByCategoryKey(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
+	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byCategoryKey")
+}
+
+func (reports *ChartReports) SummaryByCategoryLabel(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
+	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byCategoryLabel")
+}
+
+func (reports *ChartReports) SummaryBySection(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
+	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "bySection")
+}
+
 func fetchChartReport(chartKey string, bookWholeTablesMode string, reports *ChartReports, reportType string) (*ChartSummaryReport, error) {
 	var report map[string]ChartSummaryReportItem
 	result, err := reports.Client.R().
@@ -35,10 +47,6 @@ func fetchChartReport(chartKey string, bookWholeTablesMode string, reports *Char
 		SetQueryParams(toQueryParams(bookWholeTablesMode)).
 		Get("/reports/{reportItemType}/{key}/{reportType}/summary")
 	return shared.AssertOk(result, err, &ChartSummaryReport{Items: report})
-}
-
-func (reports *ChartReports) SummaryByCategoryKey(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
-	return fetchChartReport(chartKey, bookWholeTablesMode, reports, "byCategoryKey")
 }
 
 func toQueryParams(bookWholeTablesMode string) map[string]string {
