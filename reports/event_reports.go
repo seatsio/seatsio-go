@@ -13,6 +13,10 @@ type EventDeepSummaryReport struct {
 	Items map[string]EventDeepSummaryReportItem
 }
 
+type EventSummaryReport struct {
+	Items map[string]EventSummaryReportItem
+}
+
 type EventDeepSummaryReportItem struct {
 	Count           int                               `json:"count,omitempty"`
 	ByStatus        map[string]EventSummaryReportItem `json:"byStatus,omitempty"`
@@ -32,6 +36,10 @@ type EventSummaryReportItem struct {
 	ByAvailability       map[string]int `json:"byAvailability,omitempty"`
 	ByAvailabilityReason map[string]int `json:"byAvailabilityReason,omitempty"`
 	ByChannel            map[string]int `json:"byChannel,omitempty"`
+}
+
+func (reports *EventReports) SummaryByStatus(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byStatus", eventKey)
 }
 
 func (reports *EventReports) DeepSummaryByStatus(eventKey string) (*EventDeepSummaryReport, error) {
@@ -75,4 +83,15 @@ func (reports *EventReports) fetchEventDeepSummaryReport(reportType string, even
 		SetPathParam("reportType", reportType).
 		Get("/reports/events/{key}/{reportType}/summary/deep")
 	return shared.AssertOk(result, err, &EventDeepSummaryReport{Items: report})
+}
+
+func (reports *EventReports) fetchEventSummaryReport(reportType string, eventKey string) (*EventSummaryReport, error) {
+	var report map[string]EventSummaryReportItem
+	result, err := reports.Client.R().
+		SetSuccessResult(&report).
+		SetPathParam("reportItemType", "charts").
+		SetPathParam("key", eventKey).
+		SetPathParam("reportType", reportType).
+		Get("/reports/events/{key}/{reportType}/summary")
+	return shared.AssertOk(result, err, &EventSummaryReport{Items: report})
 }
