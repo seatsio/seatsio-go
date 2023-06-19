@@ -42,6 +42,34 @@ func (reports *EventReports) SummaryByStatus(eventKey string) (*EventSummaryRepo
 	return reports.fetchEventSummaryReport("byStatus", eventKey)
 }
 
+func (reports *EventReports) SummaryByObjectType(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byObjectType", eventKey)
+}
+
+func (reports *EventReports) SummaryByCategoryKey(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byCategoryKey", eventKey)
+}
+
+func (reports *EventReports) SummaryByCategoryLabel(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byCategoryLabel", eventKey)
+}
+
+func (reports *EventReports) SummaryBySection(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("bySection", eventKey)
+}
+
+func (reports *EventReports) SummaryByAvailability(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byAvailability", eventKey)
+}
+
+func (reports *EventReports) SummaryByAvailabilityReason(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byAvailabilityReason", eventKey)
+}
+
+func (reports *EventReports) SummaryByChannel(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byChannel", eventKey)
+}
+
 func (reports *EventReports) DeepSummaryByStatus(eventKey string) (*EventDeepSummaryReport, error) {
 	return reports.fetchEventDeepSummaryReport("byStatus", eventKey)
 }
