@@ -33,6 +33,9 @@ func TestReportItemProperties(t *testing.T) {
 	require.Empty(t, item.LeftNeighbour)
 	require.Equal(t, "A-2", item.RightNeighbour)
 	require.NotEmpty(t, item.DistanceToFocalPoint)
+	require.NotNil(t, item.IsAccessible)
+	require.NotNil(t, item.IsCompanionSeat)
+	require.NotNil(t, item.HasRestrictedView)
 }
 
 func TestReportItemPropertiesForGA(t *testing.T) {

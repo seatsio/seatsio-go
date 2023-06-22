@@ -41,6 +41,9 @@ type ChartReportItem struct {
 	DistanceToFocalPoint float64       `json:"distanceToFocalPoint,omitempty"`
 	BookAsAWhole         bool          `json:"bookAsAWhole,omitempty"`
 	NumSeats             int           `json:"numSeats,omitempty"`
+	IsAccessible         bool          `json:"isAccessible,omitempty"`
+	IsCompanionSeat      bool          `json:"isCompanionSeat,omitempty"`
+	HasRestrictedView    bool          `json:"hasRestrictedView,omitempty"`
 }
 
 func (reports *ChartReports) SummaryByObjectType(chartKey string, bookWholeTablesMode string) (*ChartSummaryReport, error) {
