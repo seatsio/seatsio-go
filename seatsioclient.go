@@ -18,6 +18,7 @@ type SeatsioClient struct {
 	HoldTokens   *holdtokens.HoldTokens
 	ChartReports *reports.ChartReports
 	EventReports *reports.EventReports
+	Channels     *events.Channels
 }
 
 func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
@@ -34,5 +35,6 @@ func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
 		HoldTokens:   &holdtokens.HoldTokens{Client: apiClient},
 		ChartReports: &reports.ChartReports{Client: apiClient},
 		EventReports: &reports.EventReports{Client: apiClient},
+		Channels:     &events.Channels{Client: apiClient},
 	}
 }
