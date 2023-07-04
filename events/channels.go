@@ -79,14 +79,6 @@ func (channels *Channels) AddObjects(eventKey string, channelKey string, objects
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) SetObjects(eventKey string, channelConfig map[string][]string) error {
-	result, err := channels.Client.R().
-		SetBody(setObjectsRequest{channelConfig}).
-		SetPathParam("eventKey", eventKey).
-		Post("/events/{eventKey}/channels/assign-objects")
-	return shared.AssertOkNoBody(result, err)
-}
-
 func (channels *Channels) RemoveObjects(eventKey string, channelKey string, objects []string) error {
 	result, err := channels.Client.R().
 		SetBody(changeChannelObjectsRequest{objects}).
@@ -104,26 +96,26 @@ func (channels *Channels) Replace(eventKey string, newChannels []Channel) error 
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) WithIndex(Index int32) CreateChannelParamsOption {
+func (channels *Channels) WithIndex(index int32) CreateChannelParamsOption {
 	return func(params *CreateChannelParams) {
-		params.Index = Index
+		params.Index = index
 	}
 }
 
-func (channels *Channels) WithObjects(Objects []string) CreateChannelParamsOption {
+func (channels *Channels) WithObjects(objects []string) CreateChannelParamsOption {
 	return func(params *CreateChannelParams) {
-		params.Objects = Objects
+		params.Objects = objects
 	}
 }
 
-func (channels *Channels) NewCreateChannelParams(Key string, Name string, Color string, opts ...CreateChannelParamsOption) *CreateChannelParams {
-	params := &CreateChannelParams{Key, Name, Color, 0, []string{}}
+func (channels *Channels) NewCreateChannelParams(key string, name string, color string, opts ...CreateChannelParamsOption) *CreateChannelParams {
+	params := &CreateChannelParams{key, name, color, 0, []string{}}
 	for _, opt := range opts {
 		opt(params)
 	}
 	return params
 }
 
-func (channels *Channels) NewUpdateChannelParams(Channel Channel) UpdateChannelParams {
-	return UpdateChannelParams{Name: Channel.Name, Color: Channel.Color, Objects: Channel.Objects}
+func (channels *Channels) NewUpdateChannelParams(channel Channel) UpdateChannelParams {
+	return UpdateChannelParams{Name: channel.Name, Color: channel.Color, Objects: channel.Objects}
 }
