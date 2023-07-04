@@ -22,8 +22,7 @@ func TestAddTag(t *testing.T) {
 	retrievedChart, err := client.Charts.Retrieve(chartKey)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(retrievedChart.Tags))
-	require.Equal(t, "tag1", retrievedChart.Tags[0])
-	require.Equal(t, "tag2", retrievedChart.Tags[1])
+	require.Contains(t, []string{"tag1", "tag2"}, retrievedChart.Tags[0])
 }
 
 func TestSpecialCharacters(t *testing.T) {

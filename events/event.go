@@ -14,4 +14,5 @@ type Event struct {
 	UpdatedOn             *time.Time             `json:"updatedOn"`
 	Categories            []Category             `json:"categories"`
 	ObjectCategories      map[string]CategoryKey `json:"objectCategories"`
+	Channels              []Channel              `json:"channels"`
 }
