@@ -52,7 +52,7 @@ func TestIndexIsOptional(t *testing.T) {
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventKey: "anEvent"})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(event.Key, client.Channels.NewCreateChannelParams("foo", "bar", "#ED303D", client.Channels.WithObjects([]string{"A-1"})))
+	err := client.Channels.Create(event.Key, events.NewCreateChannelParams("foo", "bar", "#ED303D", events.ChannelSupport.WithObjects([]string{"A-1"})))
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(event.Key)
@@ -70,8 +70,7 @@ func TestObjectsIsOptional(t *testing.T) {
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventKey: "anEvent"})
 	require.Equal(t, 0, len(event.Channels))
 
-	channels := client.Channels
-	err := channels.Create(event.Key, channels.NewCreateChannelParams("foo", "bar", "#ED303D", channels.WithIndex(1)))
+	err := client.Channels.Create(event.Key, events.NewCreateChannelParams("foo", "bar", "#ED303D", events.ChannelSupport.WithIndex(1)))
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(event.Key)

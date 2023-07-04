@@ -151,7 +151,7 @@ func (charts *Charts) lister() *shared.Lister[Chart] {
 }
 
 func (charts *Charts) ListAll() ([]Chart, error) {
-	return charts.lister().All(10)
+	return charts.lister().All()
 }
 
 func (charts *Charts) List(params *ListChartParams) *shared.Lister[Chart] {
@@ -171,8 +171,8 @@ func queryParamsToMap(params *ListChartParams) map[string]string {
 	return params.asMap()
 }
 
-func (charts *Charts) ListFirstPage(params *ListChartParams, pageSize int) (*shared.Page[Chart], error) {
-	return charts.List(params).ListFirstPage(pageSize)
+func (charts *Charts) ListFirstPage(params *ListChartParams, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return charts.List(params).ListFirstPage(opts...)
 }
 
 func (charts *Charts) AddCategory(chartKey string, category events.Category) error {
@@ -256,8 +256,8 @@ func (archive *Archive) lister() *shared.Lister[Chart] {
 	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
 }
 
-func (archive *Archive) All(pageSize int) ([]Chart, error) {
-	return archive.lister().All(pageSize)
+func (archive *Archive) All(opts ...shared.PaginationParamsOption) ([]Chart, error) {
+	return archive.lister().All(opts...)
 }
 
 /* TODO

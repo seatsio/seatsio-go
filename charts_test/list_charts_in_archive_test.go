@@ -21,7 +21,7 @@ func TestListChartsInArchive(t *testing.T) {
 	err2 := client.Charts.MoveToArchive(chartKey2)
 	require.NoError(t, err2)
 
-	charts, err := client.Charts.Archive.All(20)
+	charts, err := client.Charts.Archive.All()
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(charts))

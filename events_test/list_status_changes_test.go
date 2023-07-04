@@ -3,6 +3,7 @@ package events_test
 import (
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -24,7 +25,31 @@ func TestListStatusChanges(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(2)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All()
+	require.NoError(t, err)
+
+	require.Equal(t, "s3", statusChanges[0].Status)
+	require.Equal(t, "s2", statusChanges[1].Status)
+	require.Equal(t, "s1", statusChanges[2].Status)
+}
+
+func TestListStatusChangesWithLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)
@@ -44,7 +69,7 @@ func TestPropertiesOfStatusChange(t *testing.T) {
 	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{Status: "s1", Events: []string{event.Key}, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(1)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(1))
 	require.NoError(t, err)
 
 	statusChange := statusChanges[0]
@@ -79,7 +104,7 @@ func TestPropertiesOfStatusChangeHoldToken(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(1)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(1))
 	require.NoError(t, err)
 
 	statusChange := statusChanges[0]
@@ -103,7 +128,32 @@ func TestListStatusChangesWithFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All(2)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All()
+	require.NoError(t, err)
+
+	require.Equal(t, "s4", statusChanges[0].Status)
+	require.Equal(t, "s2", statusChanges[1].Status)
+	require.Equal(t, "s1", statusChanges[2].Status)
+}
+
+func TestListStatusChangesWithFilterAndLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "B-1"}}},
+		{Status: "s4", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s4", statusChanges[0].Status)
@@ -127,7 +177,31 @@ func TestListStatusChangesSortAsc(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All(2)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All()
+	require.NoError(t, err)
+
+	require.Equal(t, "s1", statusChanges[0].Status)
+	require.Equal(t, "s2", statusChanges[1].Status)
+	require.Equal(t, "s3", statusChanges[2].Status)
+}
+
+func TestListStatusChangesSortAscWithLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s1", statusChanges[0].Status)
@@ -152,10 +226,37 @@ func TestListStatusChangesSortAscPageBefore(t *testing.T) {
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
-	statusChanges, err := statusChangeLister.All(10)
+	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
-	statusChangesPage, err := statusChangeLister.ListPageBefore(statusChanges[2].Id, 10)
+	statusChangesPage, err := statusChangeLister.ListPageBefore(statusChanges[2].Id)
+	require.NoError(t, err)
+
+	require.Equal(t, "s1", statusChangesPage.Items[0].Status)
+	require.Equal(t, "s2", statusChangesPage.Items[1].Status)
+}
+
+func TestListStatusChangesSortAscPageBeforeWithLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChanges, err := statusChangeLister.All()
+	require.NoError(t, err)
+
+	statusChangesPage, err := statusChangeLister.ListPageBefore(statusChanges[2].Id, shared.Pagination.PageSize(10))
 	require.NoError(t, err)
 
 	require.Equal(t, "s1", statusChangesPage.Items[0].Status)
@@ -179,14 +280,41 @@ func TestListStatusChangesSortAscPageAfter(t *testing.T) {
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
-	statusChanges, err := statusChangeLister.All(10)
+	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
-	statusChangesPage, err := statusChangeLister.ListPageAfter(statusChanges[0].Id, 10)
+	statusChangesPage, err := statusChangeLister.ListPageAfter(statusChanges[0].Id)
 	require.NoError(t, err)
 
 	require.Equal(t, "s2", statusChangesPage.Items[0].Status)
 	require.Equal(t, "s3", statusChangesPage.Items[1].Status)
+}
+
+func TestListStatusChangesSortAscPageAfterWithLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChanges, err := statusChangeLister.All()
+	require.NoError(t, err)
+
+	statusChangesPage, err := statusChangeLister.ListPageAfter(statusChanges[0].Id, shared.Pagination.PageSize(1))
+	require.NoError(t, err)
+
+	require.Equal(t, "s2", statusChangesPage.Items[0].Status)
+	//	require.Equal(t, "s3", statusChangesPage.Items[1].Status)
 }
 
 func TestListStatusChangesSortDesc(t *testing.T) {
@@ -205,7 +333,31 @@ func TestListStatusChangesSortDesc(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All(2)
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All()
+	require.NoError(t, err)
+
+	require.Equal(t, "s3", statusChanges[0].Status)
+	require.Equal(t, "s2", statusChanges[1].Status)
+	require.Equal(t, "s1", statusChanges[2].Status)
+}
+
+func TestListStatusChangesSortDescWithLimit(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
+		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
+		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
+		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
+	})
+	require.NoError(t, err)
+
+	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)

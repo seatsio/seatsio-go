@@ -33,9 +33,9 @@ type replaceChannelsRequest struct {
 	Channels []Channel `json:"channels"`
 }
 
-type setObjectsRequest struct {
-	ChannelConfig map[string][]string `json:"channelConfig"`
-}
+type channelSupportNS struct{}
+
+var ChannelSupport channelSupportNS
 
 func (channels *Channels) Create(eventKey string, params *CreateChannelParams) error {
 	result, err := channels.Client.R().
@@ -96,19 +96,19 @@ func (channels *Channels) Replace(eventKey string, newChannels []Channel) error 
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) WithIndex(index int32) CreateChannelParamsOption {
+func (channelSupportNS) WithIndex(index int32) CreateChannelParamsOption {
 	return func(params *CreateChannelParams) {
 		params.Index = index
 	}
 }
 
-func (channels *Channels) WithObjects(objects []string) CreateChannelParamsOption {
+func (channelSupportNS) WithObjects(objects []string) CreateChannelParamsOption {
 	return func(params *CreateChannelParams) {
 		params.Objects = objects
 	}
 }
 
-func (channels *Channels) NewCreateChannelParams(key string, name string, color string, opts ...CreateChannelParamsOption) *CreateChannelParams {
+func NewCreateChannelParams(key string, name string, color string, opts ...CreateChannelParamsOption) *CreateChannelParams {
 	params := &CreateChannelParams{key, name, color, 0, []string{}}
 	for _, opt := range opts {
 		opt(params)
