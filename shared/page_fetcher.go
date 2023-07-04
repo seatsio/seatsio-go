@@ -24,14 +24,22 @@ type PageJson[T interface{}] struct {
 	PreviousPageEndsBefore string `json:"previous_page_ends_before"`
 }
 
-func (pageFetcher *PageFetcher[T]) fetchPage(pageSize int, queryParams map[string]string) (*Page[T], error) {
+func (pageFetcher *PageFetcher[T]) fetchPage(opts ...PaginationParamsOption) (*Page[T], error) {
+	paginationParams := Pagination.newParams()
+	for _, opt := range opts {
+		opt(paginationParams)
+	}
 	var page PageJson[T]
 	request := pageFetcher.Client.R().
-		SetSuccessResult(&page).
-		SetQueryParam("limit", strconv.Itoa(pageSize))
+		SetSuccessResult(&page)
 
-	for key, value := range queryParams {
-		request.AddQueryParam(key, value)
+	if paginationParams.PageSize != nil {
+		request.SetQueryParam("limit", strconv.Itoa(*paginationParams.PageSize))
+	}
+	if paginationParams.QueryParams != nil {
+		for key, value := range paginationParams.QueryParams {
+			request.AddQueryParam(key, value)
+		}
 	}
 
 	if pageFetcher.QueryParams != nil {

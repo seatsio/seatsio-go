@@ -253,8 +253,8 @@ func (events *Events) StatusChangesForObject(eventKey string, objectLabel string
 	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) ListAll(pageSize int) ([]Event, error) {
-	return events.lister().All(pageSize)
+func (events *Events) ListAll(opts ...shared.PaginationParamsOption) ([]Event, error) {
+	return events.lister().All(opts...)
 }
 
 func (events *Events) lister() *shared.Lister[Event] {
@@ -266,14 +266,14 @@ func (events *Events) lister() *shared.Lister[Event] {
 	return &shared.Lister[Event]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) ListFirstPage(pageSize int) (*shared.Page[Event], error) {
-	return events.lister().ListFirstPage(pageSize)
+func (events *Events) ListFirstPage(opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister().ListFirstPage(opts...)
 }
 
-func (events *Events) ListPageAfter(id int64, pageSize int) (*shared.Page[Event], error) {
-	return events.lister().ListPageAfter(id, pageSize)
+func (events *Events) ListPageAfter(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister().ListPageAfter(id, opts...)
 }
 
-func (events *Events) ListPageBefore(id int64, pageSize int) (*shared.Page[Event], error) {
-	return events.lister().ListPageBefore(id, pageSize)
+func (events *Events) ListPageBefore(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister().ListPageBefore(id, opts...)
 }
