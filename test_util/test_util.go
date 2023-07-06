@@ -18,6 +18,7 @@ type User struct {
 }
 
 type Workspace struct {
+	Key       string `json:"key"`
 	SecretKey string `json:"secretKey"`
 }
 

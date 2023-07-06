@@ -1,0 +1,25 @@
+package workspaces
+
+import (
+	"github.com/seatsio/seatsio-go"
+	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/stretchr/testify/require"
+	"testing"
+)
+
+func TestRegenerateSecretKey(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	workspace, err := client.Workspaces.CreateProductionWorkspace("my workspace")
+	require.NoError(t, err)
+
+	newKey, err := client.Workspaces.RegenerateSecretKey(workspace.Key)
+	require.NoError(t, err)
+	require.NotEqual(t, newKey, workspace.SecretKey)
+
+	retrievedWorkspace, err := client.Workspaces.Retrieve(workspace.Key)
+	require.NoError(t, err)
+	require.Equal(t, *newKey, retrievedWorkspace.SecretKey)
+}
