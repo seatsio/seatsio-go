@@ -8,6 +8,7 @@ import (
 )
 
 func TestCreateProductionWorkspace(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
@@ -22,6 +23,7 @@ func TestCreateProductionWorkspace(t *testing.T) {
 }
 
 func TestCreateTestWorkspace(t *testing.T) {
+	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
