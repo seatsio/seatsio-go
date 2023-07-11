@@ -5,6 +5,7 @@ import (
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/holdtokens"
 	"github.com/seatsio/seatsio-go/reports"
+	"github.com/seatsio/seatsio-go/seasons"
 	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/workspaces"
 )
@@ -19,6 +20,7 @@ type SeatsioClient struct {
 	ChartReports *reports.ChartReports
 	EventReports *reports.EventReports
 	Channels     *events.Channels
+	Seasons      *seasons.Seasons
 }
 
 func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
@@ -36,5 +38,6 @@ func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
 		ChartReports: &reports.ChartReports{Client: apiClient},
 		EventReports: &reports.EventReports{Client: apiClient},
 		Channels:     &events.Channels{Client: apiClient},
+		Seasons:      &seasons.Seasons{Client: apiClient},
 	}
 }
