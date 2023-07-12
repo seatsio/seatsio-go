@@ -53,7 +53,7 @@ func TestUpdateEventTableBookingConfig(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]string{
+	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
 		"T1": "BY_TABLE", "T2": "BY_SEAT",
 	}}
 	err = client.Events.Update(event.Key, &events.UpdateEventParams{

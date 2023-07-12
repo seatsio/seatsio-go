@@ -22,7 +22,7 @@ func TestCreateEventWithChartKey(t *testing.T) {
 	require.NotZero(t, event.Id)
 	require.NotNil(t, event.Key)
 	require.Equal(t, chartKey, event.ChartKey)
-	require.Equal(t, events.TableBookingConfig{Mode: "INHERIT"}, event.TableBookingConfig)
+	require.Equal(t, events.TableBookingConfig{Mode: events.INHERIT}, event.TableBookingConfig)
 	require.True(t, event.SupportsBestAvailable)
 	require.Nil(t, event.ForSaleConfig)
 	require.True(t, event.CreatedOn.After(start))
@@ -52,8 +52,8 @@ func TestCreateEventWithTableBookingConfigCustom(t *testing.T) {
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]string{
-		"T1": "BY_TABLE", "T2": "BY_SEAT",
+	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
+		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
 	}}
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 	require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestCreateEventWithTableBookingConfigInherit(t *testing.T) {
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	tableBookingConfig := events.TableBookingConfig{Mode: "INHERIT"}
+	tableBookingConfig := events.TableBookingSupport.Inherit()
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
 	require.NoError(t, err)
 

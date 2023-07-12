@@ -46,8 +46,8 @@ func TestCreateMultipleEventsWithTableBookingConfig(t *testing.T) {
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]string{
-		"T1": "BY_TABLE", "T2": "BY_SEAT",
+	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
+		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
 	}}
 	result, err := client.Events.CreateMultiple(chartKey, []events.CreateMultipleEventsParams{
 		{TableBookingConfig: &tableBookingConfig},
