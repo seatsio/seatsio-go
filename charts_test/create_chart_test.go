@@ -79,5 +79,27 @@ func TestCreateChartWithCategories(t *testing.T) {
 	require.Contains(t,
 		getCategories(drawing),
 		map[string]interface{}{"key": "anotherCat", "label": "Category 2", "color": "#bbbbbb", "accessible": true})
+}
+
+func TestCreateChartInSpecificWorkspace(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	defaultClient := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	workspace, err := defaultClient.Workspaces.CreateTestWorkspace("anotherWorkspace")
+	require.NoError(t, err)
+
+	workspaceClient := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl, seatsio.ClientSupport.WorkspaceKey(workspace.Key))
+	chart, err := workspaceClient.Charts.Create(&charts.CreateChartParams{})
+	require.NoError(t, err)
+
+	retrievedDefaultWorkspaceCharts, err := defaultClient.Charts.ListAll()
+	require.NoError(t, err)
+	require.Len(t, retrievedDefaultWorkspaceCharts, 0)
+
+	workspaceCharts, err := workspaceClient.Charts.ListAll()
+	require.NoError(t, err)
+	require.Len(t, workspaceCharts, 1)
+	require.Equal(t, chart.Key, workspaceCharts[0].Key)
 
 }

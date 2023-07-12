@@ -8,14 +8,20 @@ import (
 	"time"
 )
 
-func ApiClient(secretKey string, baseUrl string) *req.Client {
-	return req.C().SetBaseURL(baseUrl).
+type AdditionalConfig func(client *req.Client)
+
+func ApiClient(secretKey string, baseUrl string, additionalConfig ...AdditionalConfig) *req.Client {
+	client := req.C().SetBaseURL(baseUrl).
 		SetCommonBasicAuth(secretKey, "").
 		SetCommonRetryCount(5).
 		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
 		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
 			return err == nil && resp.StatusCode == 429
 		})
+	for _, opt := range additionalConfig {
+		opt(client)
+	}
+	return client
 }
 
 func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, error) {
@@ -59,4 +65,10 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 		}
 	}
 	return nil
+}
+
+func AdditionalHeader(key string, value string) AdditionalConfig {
+	return func(client *req.Client) {
+		client.SetCommonHeader(key, value)
+	}
 }

@@ -9,9 +9,14 @@ import (
 	"github.com/seatsio/seatsio-go/workspaces"
 )
 
+type seatsioClientNS struct{}
+
+var ClientSupport seatsioClientNS
+
 type SeatsioClient struct {
 	baseUrl      string
 	secretKey    string
+	workspaceKey string
 	Workspaces   *workspaces.Workspaces
 	Charts       *charts.Charts
 	Events       *events.Events
@@ -21,9 +26,9 @@ type SeatsioClient struct {
 	Channels     *events.Channels
 }
 
-func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
-	apiClient := shared.ApiClient(secretKey, baseUrl)
-	return &SeatsioClient{
+func NewSeatsioClient(secretKey string, baseUrl string, additionalClientConfig ...shared.AdditionalConfig) *SeatsioClient {
+	apiClient := shared.ApiClient(secretKey, baseUrl, additionalClientConfig...)
+	client := &SeatsioClient{
 		baseUrl:    baseUrl,
 		secretKey:  secretKey,
 		Workspaces: &workspaces.Workspaces{Client: apiClient},
@@ -37,4 +42,9 @@ func NewSeatsioClient(secretKey string, baseUrl string) *SeatsioClient {
 		EventReports: &reports.EventReports{Client: apiClient},
 		Channels:     &events.Channels{Client: apiClient},
 	}
+	return client
+}
+
+func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalConfig {
+	return shared.AdditionalHeader("X-Workspace-Key", key)
 }
