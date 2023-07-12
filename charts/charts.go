@@ -4,6 +4,7 @@ import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/shared"
+	"strconv"
 )
 
 type Charts struct {
@@ -26,20 +27,9 @@ type UpdateChartParams struct {
 	Categories []events.Category `json:"categories,omitempty"`
 }
 
-type ListChartParams struct {
-	Filter     string `json:"filter,omitempty"`
-	Tag        string `json:"tag,omitempty"`
-	Expand     bool   `json:"expand,omitempty"`
-	Validation bool   `json:"validation,omitempty"`
-}
+type chartSupportNS struct{}
 
-func (params ListChartParams) asMap() map[string]string {
-	result := map[string]string{"filter": params.Filter, "tag": params.Tag}
-	if params.Expand {
-		result["expand"] = "events"
-	}
-	return result
-}
+var ChartSupport chartSupportNS
 
 func (charts *Charts) Create(params *CreateChartParams) (*Chart, error) {
 	var chart Chart
@@ -154,25 +144,17 @@ func (charts *Charts) ListAll() ([]Chart, error) {
 	return charts.lister().All()
 }
 
-func (charts *Charts) List(params *ListChartParams) *shared.Lister[Chart] {
-	queryParams := queryParamsToMap(params)
+func (charts *Charts) List() *shared.Lister[Chart] {
 	pageFetcher := shared.PageFetcher[Chart]{
-		Client:      charts.Client,
-		Url:         "/charts",
-		QueryParams: queryParams, // "sort": shared.ToSort(sortField, sortDirection)},
+		Client:    charts.Client,
+		Url:       "/charts",
+		UrlParams: map[string]string{},
 	}
 	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
 }
 
-func queryParamsToMap(params *ListChartParams) map[string]string {
-	if params == nil {
-		return map[string]string{}
-	}
-	return params.asMap()
-}
-
-func (charts *Charts) ListFirstPage(params *ListChartParams, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
-	return charts.List(params).ListFirstPage(opts...)
+func (charts *Charts) ListFirstPage(opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return charts.List().ListFirstPage(opts...)
 }
 
 func (charts *Charts) AddCategory(chartKey string, category events.Category) error {
@@ -260,12 +242,45 @@ func (archive *Archive) All(opts ...shared.PaginationParamsOption) ([]Chart, err
 	return archive.lister().All(opts...)
 }
 
-/* TODO
-func (charts *Charts) ListAllTags() (*[]string, error) {
+func (charts *Charts) ListAllTags() ([]string, error) {
 	var tags Tags
 	result, err := charts.Client.R().
 		SetSuccessResult(&tags).
 		Get("/charts/tags")
-	return shared.AssertOk(result, err, &tags.Tags)
+	ok, err := shared.AssertOk(result, err, &tags)
+	if err != nil {
+		return nil, err
+	} else {
+		return ok.Tags, nil
+	}
 }
-*/
+
+func (chartSupportNS) WithFilter(filterValue string) shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.QueryParams["filter"] = filterValue
+	}
+}
+
+func (chartSupportNS) WithTag(tag string) shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.QueryParams["tag"] = tag
+	}
+}
+
+func (chartSupportNS) WithValidation(validate bool) shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.QueryParams["validation"] = strconv.FormatBool(validate)
+	}
+}
+
+func (chartSupportNS) WithExpand() shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.QueryParams["expand"] = "events"
+	}
+}
+
+func (chartSupportNS) WithEventsLimit(limit int) shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.QueryParams["eventsLimit"] = strconv.Itoa(limit)
+	}
+}
