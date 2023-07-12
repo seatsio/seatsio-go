@@ -1,6 +1,12 @@
 package charts
 
-/* TODO
+import (
+	"github.com/seatsio/seatsio-go"
+	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/stretchr/testify/require"
+	"testing"
+)
+
 func TestListAllTags(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -16,9 +22,6 @@ func TestListAllTags(t *testing.T) {
 	list, err := client.Charts.ListAllTags()
 	require.NoError(t, err)
 
-	require.Equal(t, 3, len(list))
-	require.Contains(t, list, "tag1")
-	require.Contains(t, list, "tag2")
-	require.Contains(t, list, "tag3")
+	require.Len(t, list, 3)
+	require.Subset(t, list, []string{"tag1", "tag2", "tag3"})
 }
-*/

@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+var sup = charts.ChartSupport
+
 func TestListAll(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -39,7 +41,7 @@ func TestFilter(t *testing.T) {
 	_ = client.Charts.Update(chartKey2, &charts.UpdateChartParams{Name: "bar"})
 	_ = client.Charts.Update(chartKey3, &charts.UpdateChartParams{Name: "foofoo"})
 
-	retrievedCharts, err := client.Charts.List(&charts.ListChartParams{Filter: "foo"}).All()
+	retrievedCharts, err := client.Charts.List().All(sup.WithFilter("foo"))
 	require.NoError(t, err)
 
 	require.Equal(t, chartKey3, retrievedCharts[0].Key)
@@ -60,7 +62,7 @@ func TestTag(t *testing.T) {
 	_ = client.Charts.AddTag(chartKey2, "anotherTag")
 	_ = client.Charts.AddTag(chartKey3, "aTag")
 
-	retrievedCharts, err := client.Charts.List(&charts.ListChartParams{Tag: "aTag"}).All()
+	retrievedCharts, err := client.Charts.List().All(sup.WithTag("aTag"))
 	require.NoError(t, err)
 	require.Equal(t, chartKey3, retrievedCharts[0].Key)
 	require.Equal(t, chartKey1, retrievedCharts[1].Key)
@@ -87,7 +89,7 @@ func TestTagAndFilter(t *testing.T) {
 	chartKey4 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	_ = client.Charts.Update(chartKey4, &charts.UpdateChartParams{Name: "bar"})
 
-	retrievedCharts, err := client.Charts.List(&charts.ListChartParams{Filter: "bar", Tag: "foo"}).All()
+	retrievedCharts, err := client.Charts.List().All(sup.WithFilter("bar"), sup.WithTag("foo"))
 	require.NoError(t, err)
 	require.Equal(t, chartKey3, retrievedCharts[0].Key)
 	require.Equal(t, chartKey1, retrievedCharts[1].Key)
@@ -103,7 +105,7 @@ func TestExpand(t *testing.T) {
 	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 
-	retrievedCharts, err := client.Charts.List(&charts.ListChartParams{Expand: true}).All()
+	retrievedCharts, err := client.Charts.List().All(sup.WithExpand())
 	require.NoError(t, err)
 	require.Equal(t, 1, len(retrievedCharts))
 	require.Equal(t, event1.Key, retrievedCharts[0].Events[1].Key)
@@ -119,7 +121,7 @@ func TestPageSize(t *testing.T) {
 	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
 	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartsPage, err := client.Charts.ListFirstPage(nil)
+	chartsPage, err := client.Charts.ListFirstPage()
 	require.NoError(t, err)
 	require.Equal(t, 3, len(chartsPage.Items))
 
@@ -132,7 +134,7 @@ func TestListChartsWithValidation(t *testing.T) {
 
 	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
-	chartsPage, err := client.Charts.ListFirstPage(&charts.ListChartParams{Validation: true})
+	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(true))
 	require.NoError(t, err)
 	retrievedCharts := chartsPage.Items
 	require.Equal(t, 1, len(retrievedCharts))
@@ -146,7 +148,7 @@ func TestListChartsWithoutValidation(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
-	chartsPage, err := client.Charts.ListFirstPage(&charts.ListChartParams{Validation: true})
+	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(true))
 	require.NoError(t, err)
 	retrievedCharts := chartsPage.Items
 	require.Equal(t, 1, len(retrievedCharts))
