@@ -26,8 +26,8 @@ type SeatsioClient struct {
 	Channels     *events.Channels
 }
 
-func NewSeatsioClient(secretKey string, baseUrl string, additionalClientConfig ...shared.AdditionalConfig) *SeatsioClient {
-	apiClient := shared.ApiClient(secretKey, baseUrl, additionalClientConfig...)
+func NewSeatsioClient(secretKey string, baseUrl string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
+	apiClient := shared.ApiClient(secretKey, baseUrl, additionalHeaders...)
 	client := &SeatsioClient{
 		baseUrl:    baseUrl,
 		secretKey:  secretKey,
@@ -45,6 +45,6 @@ func NewSeatsioClient(secretKey string, baseUrl string, additionalClientConfig .
 	return client
 }
 
-func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalConfig {
-	return shared.AdditionalHeader("X-Workspace-Key", key)
+func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalHeader {
+	return shared.WithAdditionalHeader("X-Workspace-Key", key)
 }
