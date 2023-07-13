@@ -3,6 +3,7 @@ package reports
 import (
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/reports"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,7 +15,7 @@ func TestReportItemProperties(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "false")
+	chartReport, err := client.ChartReports.ByLabel(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["A-1"], 1)
 	item := chartReport.Items["A-1"][0]
@@ -44,7 +45,7 @@ func TestReportItemPropertiesForGA(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "false")
+	chartReport, err := client.ChartReports.ByLabel(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["GA1"], 1)
 	item := chartReport.Items["GA1"][0]
@@ -59,7 +60,7 @@ func TestReportItemPropertiesForTable(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "true")
+	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.True())
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["T1"], 1)
 	item := chartReport.Items["T1"][0]
@@ -73,7 +74,7 @@ func TestByLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "false")
+	chartReport, err := client.ChartReports.ByLabel(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["A-1"], 1)
 	require.Len(t, chartReport.Items["A-2"], 1)
@@ -85,7 +86,7 @@ func TestByLabel_BookWholeTablesTrue(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "true")
+	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.True())
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items, 2)
 	require.Nil(t, chartReport.Items["T1-1"])
@@ -100,7 +101,7 @@ func TestByLabel_BookWholeTablesChart(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByLabel(chartKey, "chart")
+	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.Chart())
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items, 7)
 	require.NotNil(t, chartReport.Items["T1-1"])
@@ -118,7 +119,7 @@ func TestByObjectType(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByObjectType(chartKey, "false")
+	chartReport, err := client.ChartReports.ByObjectType(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["seat"], 32)
 	require.Len(t, chartReport.Items["generalAdmission"], 2)
@@ -130,7 +131,7 @@ func TestByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByCategoryKey(chartKey, "false")
+	chartReport, err := client.ChartReports.ByCategoryKey(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["9"], 17)
 	require.Len(t, chartReport.Items["10"], 17)
@@ -142,7 +143,7 @@ func TestByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.ByCategoryLabel(chartKey, "false")
+	chartReport, err := client.ChartReports.ByCategoryLabel(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["Cat1"], 17)
 	require.Len(t, chartReport.Items["Cat2"], 17)
@@ -154,7 +155,7 @@ func TestBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChartWithSections(t, company.Admin.SecretKey)
 
-	chartReport, err := client.ChartReports.BySection(chartKey, "false")
+	chartReport, err := client.ChartReports.BySection(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["Section A"], 36)
 	require.Len(t, chartReport.Items["Section B"], 35)
