@@ -15,10 +15,12 @@ func TestSummaryByStatus(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryByStatus(event.Key)
@@ -115,10 +117,12 @@ func TestSummaryByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryByCategoryKey(event.Key)
@@ -168,10 +172,12 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryByCategoryLabel(event.Key)
@@ -221,10 +227,12 @@ func TestSummaryBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryBySection(event.Key)
@@ -254,10 +262,12 @@ func TestSummaryByAvailability(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryByAvailability(event.Key)
@@ -298,10 +308,12 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.SummaryByAvailabilityReason(event.Key)
@@ -347,4 +359,44 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 	require.Equal(t, emptyReport, report.Items["not_for_sale"])
 }
 
-// TODO summaryByChannel
+func TestSummaryByChannel(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	err := client.Channels.Replace(event.Key, events.Channel{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
+
+	report, err := client.EventReports.SummaryByChannel(event.Key)
+	require.NoError(t, err)
+
+	channelReport := reports.EventSummaryReportItem{
+		Count:                2,
+		BySection:            map[string]int{"NO_SECTION": 2},
+		ByStatus:             map[string]int{string(events.FREE): 2},
+		ByCategoryKey:        map[string]int{"9": 2},
+		ByCategoryLabel:      map[string]int{"Cat1": 2},
+		ByAvailability:       map[string]int{"available": 2},
+		ByAvailabilityReason: map[string]int{"available": 2},
+	}
+	noChannelReport := reports.EventSummaryReportItem{
+		Count:     230,
+		BySection: map[string]int{"NO_SECTION": 230},
+		ByStatus:  map[string]int{string(events.FREE): 230},
+		ByCategoryKey: map[string]int{
+			"9":  114,
+			"10": 116,
+		},
+		ByCategoryLabel: map[string]int{
+			"Cat1": 114,
+			"Cat2": 116,
+		},
+		ByAvailability:       map[string]int{"available": 230},
+		ByAvailabilityReason: map[string]int{"available": 230},
+	}
+
+	require.Equal(t, map[string]reports.EventSummaryReportItem{
+		"channel1":   channelReport,
+		"NO_CHANNEL": noChannelReport,
+	}, report.Items)
+}

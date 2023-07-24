@@ -41,7 +41,7 @@ func TestKeyCanBePassedIn(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	season, err := client.Seasons.CreateSeason(chartKey, seasons.SeasonSupport.WithKey("aSeason"))
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason"})
 	require.NoError(t, err)
 	require.Equal(t, "aSeason", season.Key)
 }
@@ -50,10 +50,9 @@ func TestNumberOfEventsCanBePassedIn(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	support := seasons.SeasonSupport
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	season, err := client.Seasons.CreateSeason(chartKey, support.WithKey("aSeason"), support.WithNumberOfEvents(2))
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason", NumberOfEvents: 2})
 	require.NoError(t, err)
 	require.Equal(t, 2, len(season.Events))
 }
@@ -62,10 +61,9 @@ func TestEventKeysCanBePassedIn(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	support := seasons.SeasonSupport
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	season, err := client.Seasons.CreateSeason(chartKey, support.WithKey("aSeason"), support.WithEventKeys("event1", "event2"))
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason", EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)
 	require.Subset(t, []string{season.Events[0].Key, season.Events[1].Key}, []string{"event1", "event2"})
 }

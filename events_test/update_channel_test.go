@@ -10,9 +10,7 @@ func TestUpdateName(t *testing.T) {
 	t.Parallel()
 
 	event, client := CreateChannel(t, &events.CreateChannelParams{Key: "channelKey1", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
-	retrievedEvent, _ := client.Events.Retrieve(event.Key)
-	updateParams := client.Channels.NewUpdateChannelParams(retrievedEvent.Channels[0])
-	updateParams.Name = "hurdy"
+	updateParams := events.UpdateChannelParams{Name: "hurdy"}
 	err := client.Channels.Update(event.Key, "channelKey1", updateParams)
 	require.NoError(t, err)
 
@@ -24,9 +22,7 @@ func TestUpdateColor(t *testing.T) {
 	t.Parallel()
 
 	event, client := CreateChannel(t, &events.CreateChannelParams{Key: "channelKey1", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
-	retrievedEvent, _ := client.Events.Retrieve(event.Key)
-	updateParams := client.Channels.NewUpdateChannelParams(retrievedEvent.Channels[0])
-	updateParams.Color = "#1E1E1E"
+	updateParams := events.UpdateChannelParams{Color: "#1E1E1E"}
 	err := client.Channels.Update(event.Key, "channelKey1", updateParams)
 	require.NoError(t, err)
 
@@ -38,9 +34,7 @@ func TestUpdateObjects(t *testing.T) {
 	t.Parallel()
 
 	event, client := CreateChannel(t, &events.CreateChannelParams{Key: "channelKey1", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
-	retrievedEvent, _ := client.Events.Retrieve(event.Key)
-	updateParams := client.Channels.NewUpdateChannelParams(retrievedEvent.Channels[0])
-	updateParams.Objects = []string{"A-3", "A-4"}
+	updateParams := events.UpdateChannelParams{Objects: []string{"A-3", "A-4"}}
 	err := client.Channels.Update(event.Key, "channelKey1", updateParams)
 	require.NoError(t, err)
 

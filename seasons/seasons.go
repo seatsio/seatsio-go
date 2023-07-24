@@ -10,74 +10,52 @@ type Seasons struct {
 	Client *req.Client
 }
 
-type createSeasonParams struct {
+type CreateSeasonParams struct {
 	ChartKey           string                     `json:"chartKey"`
-	Key                *string                    `json:"key,omitempty"`
+	Key                string                     `json:"key,omitempty"`
 	TableBookingConfig *events.TableBookingConfig `json:"tableBookingConfig,omitempty"`
-	EventKeys          *[]string                  `json:"eventKeys,omitempty"`
-	NumberOfEvents     *int32                     `json:"numberOfEvents,omitempty"`
+	EventKeys          []string                   `json:"eventKeys,omitempty"`
+	NumberOfEvents     int32                      `json:"numberOfEvents,omitempty"`
 }
 
-type CreateSeasonParamsOption func(Params *createSeasonParams)
-
-type createPartialSeasonParams struct {
-	Key       *string   `json:"key,omitempty"`
-	EventKeys *[]string `json:"eventKeys,omitempty"`
+type CreatePartialSeasonParams struct {
+	Key       string   `json:"key,omitempty"`
+	EventKeys []string `json:"eventKeys,omitempty"`
 }
-
-type CreatePartialSeasonParamsOption func(Params *createPartialSeasonParams)
 
 type eventsCreationResponse struct {
 	Events []*events.Event `json:"events"`
 }
 
 type createEventsParams struct {
-	EventKeys      *[]string `json:"eventKeys,omitempty"`
-	NumberOfEvents *int32    `json:"numberOfEvents,omitempty"`
+	EventKeys      []string `json:"eventKeys,omitempty"`
+	NumberOfEvents int32    `json:"numberOfEvents,omitempty"`
 }
 
 type addEventsToPartialSeasonParams struct {
 	EventKeys []string `json:"eventKeys"`
 }
 
-type seasonSupportNS struct{}
+func (seasons *Seasons) CreateSeason(chartKey string) (*Season, error) {
+	return seasons.CreateSeasonWithOptions(chartKey, &CreateSeasonParams{})
+}
 
-var SeasonSupport seasonSupportNS
-
-type partialSeasonSupportNS struct{}
-
-var PartialSeasonSupport partialSeasonSupportNS
-
-func (seasons *Seasons) CreateSeason(chartKey string, opts ...CreateSeasonParamsOption) (*Season, error) {
-
+func (seasons *Seasons) CreateSeasonWithOptions(chartKey string, params *CreateSeasonParams) (*Season, error) {
+	params.ChartKey = chartKey
 	var season Season
 	result, err := seasons.Client.R().
-		SetBody(seasons.newCreateSeasonParams(chartKey, opts...)).
+		SetBody(params).
 		SetSuccessResult(&season).
 		Post("/seasons")
 	return shared.AssertOk(result, err, &season)
 }
 
-func (seasons *Seasons) newCreateSeasonParams(chartKey string, opts ...CreateSeasonParamsOption) *createSeasonParams {
-	params := &createSeasonParams{
-		ChartKey:           chartKey,
-		Key:                nil,
-		EventKeys:          nil,
-		NumberOfEvents:     nil,
-		TableBookingConfig: nil,
-	}
-	for _, opt := range opts {
-		opt(params)
-	}
-	return params
-}
-
 func (seasons *Seasons) CreateEventsWithEventKeys(seasonKey string, eventKeys ...string) ([]*events.Event, error) {
-	return seasons.createEvents(seasonKey, createEventsParams{EventKeys: &eventKeys, NumberOfEvents: nil})
+	return seasons.createEvents(seasonKey, createEventsParams{EventKeys: eventKeys})
 }
 
 func (seasons *Seasons) CreateNumberOfEvents(seasonKey string, numberOfEvents int32) ([]*events.Event, error) {
-	return seasons.createEvents(seasonKey, createEventsParams{EventKeys: nil, NumberOfEvents: &numberOfEvents})
+	return seasons.createEvents(seasonKey, createEventsParams{NumberOfEvents: numberOfEvents})
 }
 
 func (seasons *Seasons) createEvents(seasonKey string, params createEventsParams) ([]*events.Event, error) {
@@ -95,25 +73,18 @@ func (seasons *Seasons) createEvents(seasonKey string, params createEventsParams
 	}
 }
 
-func (seasons *Seasons) CreatePartialSeason(topLevelSeasonKey string, opts ...CreatePartialSeasonParamsOption) (*Season, error) {
+func (seasons *Seasons) CreatePartialSeason(topLevelSeasonKey string) (*Season, error) {
+	return seasons.CreatePartialSeasonWithOptions(topLevelSeasonKey, &CreatePartialSeasonParams{})
+}
+
+func (seasons *Seasons) CreatePartialSeasonWithOptions(topLevelSeasonKey string, params *CreatePartialSeasonParams) (*Season, error) {
 	var season Season
 	result, err := seasons.Client.R().
 		SetPathParam("topLevelSeasonKey", topLevelSeasonKey).
-		SetBody(seasons.newCreatePartialSeasonParams(opts...)).
+		SetBody(params).
 		SetSuccessResult(&season).
 		Post("/seasons/{topLevelSeasonKey}/partial-seasons")
 	return shared.AssertOk(result, err, &season)
-}
-
-func (seasons *Seasons) newCreatePartialSeasonParams(opts ...CreatePartialSeasonParamsOption) *createPartialSeasonParams {
-	params := &createPartialSeasonParams{
-		Key:       nil,
-		EventKeys: nil,
-	}
-	for _, opt := range opts {
-		opt(params)
-	}
-	return params
 }
 
 func (seasons *Seasons) RemoveEventFromPartialSeason(topLevelSeasonKey string, partialSeasonKey string, eventKey string) (*Season, error) {
@@ -145,36 +116,4 @@ func (seasons *Seasons) Retrieve(key string) (*Season, error) {
 		SetSuccessResult(&season).
 		Get("/events/{key}")
 	return shared.AssertOk(result, err, &season)
-}
-
-func (seasonSupportNS) WithKey(key string) CreateSeasonParamsOption {
-	return func(params *createSeasonParams) {
-		params.Key = &key
-	}
-}
-
-func (seasonSupportNS) WithNumberOfEvents(numberOfEvents int32) CreateSeasonParamsOption {
-	return func(params *createSeasonParams) {
-		params.NumberOfEvents = &numberOfEvents
-		params.EventKeys = nil
-	}
-}
-
-func (seasonSupportNS) WithEventKeys(eventKeys ...string) CreateSeasonParamsOption {
-	return func(params *createSeasonParams) {
-		params.EventKeys = &eventKeys
-		params.NumberOfEvents = nil
-	}
-}
-
-func (partialSeasonSupportNS) WithKey(key string) CreatePartialSeasonParamsOption {
-	return func(params *createPartialSeasonParams) {
-		params.Key = &key
-	}
-}
-
-func (partialSeasonSupportNS) WithEventKeys(eventKeys ...string) CreatePartialSeasonParamsOption {
-	return func(params *createPartialSeasonParams) {
-		params.EventKeys = &eventKeys
-	}
 }

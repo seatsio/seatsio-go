@@ -12,7 +12,9 @@ func CreateChannel(t *testing.T, params *events.CreateChannelParams) (*events.Ev
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	c := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
-	event, _ := c.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventKey: "anEvent"})
+	event, _ := c.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		EventKey: "anEvent",
+	}})
 	err := c.Channels.Create(event.Key, params)
 	require.NoError(t, err)
 	return event, c

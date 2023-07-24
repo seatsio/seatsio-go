@@ -3,12 +3,48 @@ package events_test
 import (
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/shared"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestChangeObjectStatusInMultipleEvents(t *testing.T) {
+func TestStatusChange(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	results, err := client.Events.ChangeObjectStatus(
+		&events.StatusChangeParams{
+			Events: []string{event1.Key, event2.Key},
+			StatusChanges: events.StatusChanges{
+				Status:  "foo",
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, "foo", string(results.Objects["A-1"].Status))
+	require.Equal(t, "foo", string(results.Objects["A-2"].Status))
+
+	event1Data, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	event2Data, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, "foo", string(event1Data["A-1"].Status))
+	require.Equal(t, "foo", string(event1Data["A-2"].Status))
+	require.Equal(t, "foo", string(event2Data["A-1"].Status))
+	require.Equal(t, "foo", string(event2Data["A-2"].Status))
+}
+
+func TestBook(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -19,21 +55,155 @@ func TestChangeObjectStatusInMultipleEvents(t *testing.T) {
 	require.NoError(t, err)
 
 	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event1.Key, event2.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		},
 	})
 	require.NoError(t, err)
 
-	event1ObjectInfos, err := client.Events.RetrieveObjectInfos(event1.Key, []string{"A-1", "A-2"})
+	event1ObjectInfos, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
 	require.NoError(t, err)
-	event2ObjectInfos, err := client.Events.RetrieveObjectInfos(event2.Key, []string{"A-1", "A-2"})
+	event2ObjectInfos, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
 	require.NoError(t, err)
 
-	require.Equal(t, events.ObjectStatusBooked, objects.Objects["A-1"].Status)
-	require.Equal(t, events.ObjectStatusBooked, objects.Objects["A-2"].Status)
-	require.Equal(t, events.ObjectStatusBooked, event1ObjectInfos["A-1"].Status)
-	require.Equal(t, events.ObjectStatusBooked, event1ObjectInfos["A-2"].Status)
-	require.Equal(t, events.ObjectStatusBooked, event2ObjectInfos["A-1"].Status)
-	require.Equal(t, events.ObjectStatusBooked, event2ObjectInfos["A-2"].Status)
+	require.Equal(t, events.BOOKED, objects.Objects["A-1"].Status)
+	require.Equal(t, events.BOOKED, objects.Objects["A-2"].Status)
+	require.Equal(t, events.BOOKED, event1ObjectInfos["A-1"].Status)
+	require.Equal(t, events.BOOKED, event1ObjectInfos["A-2"].Status)
+	require.Equal(t, events.BOOKED, event2ObjectInfos["A-1"].Status)
+	require.Equal(t, events.BOOKED, event2ObjectInfos["A-2"].Status)
+}
+
+func TestHold(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	holdToken, err := client.HoldTokens.Create()
+	require.NoError(t, err)
+
+	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:    events.HELD,
+			HoldToken: holdToken.HoldToken,
+			Objects:   []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		},
+	})
+	require.NoError(t, err)
+
+	event1ObjectInfos, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	event2ObjectInfos, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, events.HELD, objects.Objects["A-1"].Status)
+	require.Equal(t, events.HELD, objects.Objects["A-2"].Status)
+	require.Equal(t, events.HELD, event1ObjectInfos["A-1"].Status)
+	require.Equal(t, events.HELD, event1ObjectInfos["A-2"].Status)
+	require.Equal(t, events.HELD, event2ObjectInfos["A-1"].Status)
+	require.Equal(t, events.HELD, event2ObjectInfos["A-2"].Status)
+}
+
+func TestRelease(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		},
+	})
+	require.NoError(t, err)
+
+	event1ObjectInfo, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	event2ObjectInfo, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, events.BOOKED, objects.Objects["A-1"].Status)
+	require.Equal(t, events.BOOKED, objects.Objects["A-2"].Status)
+	require.Equal(t, events.BOOKED, event1ObjectInfo["A-1"].Status)
+	require.Equal(t, events.BOOKED, event1ObjectInfo["A-2"].Status)
+	require.Equal(t, events.BOOKED, event2ObjectInfo["A-1"].Status)
+	require.Equal(t, events.BOOKED, event2ObjectInfo["A-2"].Status)
+
+	releasedObjects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.FREE,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		},
+	})
+	require.NoError(t, err)
+
+	event1ReleasedObjectInfo, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	event2ReleasedObjectInfo, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, events.FREE, releasedObjects.Objects["A-1"].Status)
+	require.Equal(t, events.FREE, releasedObjects.Objects["A-2"].Status)
+	require.Equal(t, events.FREE, event1ReleasedObjectInfo["A-1"].Status)
+	require.Equal(t, events.FREE, event1ReleasedObjectInfo["A-2"].Status)
+	require.Equal(t, events.FREE, event2ReleasedObjectInfo["A-1"].Status)
+	require.Equal(t, events.FREE, event2ReleasedObjectInfo["A-2"].Status)
+}
+
+func TestAllowedPreviousStatuses(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:                  events.BOOKED,
+			Objects:                 []events.ObjectProperties{{ObjectId: "A-1"}},
+			AllowedPreviousStatuses: []events.ObjectStatus{"MustBeThisStatus"},
+		},
+	})
+	seatsioErr := err.(*shared.SeatsioError)
+	require.Equal(t, "ILLEGAL_STATUS_CHANGE", seatsioErr.Code)
+}
+
+func TestRejectedPreviousStatuses(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:                   events.BOOKED,
+			Objects:                  []events.ObjectProperties{{ObjectId: "A-1"}},
+			RejectedPreviousStatuses: []events.ObjectStatus{events.FREE},
+		},
+	})
+	seatsioErr := err.(*shared.SeatsioError)
+	require.Equal(t, "ILLEGAL_STATUS_CHANGE", seatsioErr.Code)
 }

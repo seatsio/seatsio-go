@@ -17,16 +17,16 @@ func TestChangeBestAvailableObjectStatusWithNumber(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 3},
 	})
 	require.NoError(t, err)
 
 	require.True(t, bestAvailableResult.NextToEachOther)
 	require.Equal(t, []string{"A-4", "A-5", "A-6"}, bestAvailableResult.Objects)
-	require.Equal(t, events.ObjectStatusBooked, bestAvailableResult.ObjectDetails["A-4"].Status)
-	require.Equal(t, events.ObjectStatusBooked, bestAvailableResult.ObjectDetails["A-5"].Status)
-	require.Equal(t, events.ObjectStatusBooked, bestAvailableResult.ObjectDetails["A-6"].Status)
+	require.Equal(t, events.BOOKED, bestAvailableResult.ObjectDetails["A-4"].Status)
+	require.Equal(t, events.BOOKED, bestAvailableResult.ObjectDetails["A-5"].Status)
+	require.Equal(t, events.BOOKED, bestAvailableResult.ObjectDetails["A-6"].Status)
 }
 
 func TestChangeBestAvailableObjectStatusWithCategories(t *testing.T) {
@@ -38,7 +38,7 @@ func TestChangeBestAvailableObjectStatusWithCategories(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 3, Categories: []events.CategoryKey{{Key: "cat2"}}},
 	})
 	require.NoError(t, err)
@@ -55,7 +55,7 @@ func TestChangeBestAvailableObjectStatusWithExtraData(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2, ExtraData: []events.ExtraData{{"foo": "bar"}, {"foo": "baz"}}},
 	})
 	require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestChangeBestAvailableObjectStatusWithTicketTypes(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2, TicketTypes: []string{"adult", "child"}},
 	})
 	require.NoError(t, err)
@@ -90,11 +90,11 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraData(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1},
 		KeepExtraData: true,
 	})
@@ -111,11 +111,11 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1},
 		KeepExtraData: false,
 	})
@@ -133,7 +133,7 @@ func TestChangeBestAvailableObjectStatusWithOrderId(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusBooked,
+		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2},
 		OrderId:       "anOrder",
 	})
@@ -157,7 +157,7 @@ func TestChangeBestAvailableObjectStatusWithHoldToken(t *testing.T) {
 	require.NoError(t, err)
 
 	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
-		Status:        events.ObjectStatusHeld,
+		Status:        events.HELD,
 		BestAvailable: events.BestAvailableParams{Number: 2},
 		HoldToken:     holdToken.HoldToken,
 	})
@@ -170,9 +170,42 @@ func TestChangeBestAvailableObjectStatusWithHoldToken(t *testing.T) {
 }
 
 func TestChangeBestAvailableObjectStatusWithChannelsKeys(t *testing.T) {
-	// TODO
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"B-6"}})
+	require.NoError(t, err)
+
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+		Status:        "foo",
+		BestAvailable: events.BestAvailableParams{Number: 1},
+		ChannelKeys:   []string{"channelKey1"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"B-6"}, bestAvailableResult.Objects)
 }
 
 func TestChangeBestAvailableObjectStatusWithIgnoreChannels(t *testing.T) {
-	// TODO
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-5"}})
+	require.NoError(t, err)
+
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+		Status:         "foo",
+		BestAvailable:  events.BestAvailableParams{Number: 1},
+		IgnoreChannels: true,
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, []string{"A-5"}, bestAvailableResult.Objects)
 }

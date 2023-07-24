@@ -25,5 +25,18 @@ func TestDeleteEvent(t *testing.T) {
 }
 
 func TestDeleteSeason(t *testing.T) {
-	// TODO
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	season, err := client.Seasons.CreateSeason(chartKey)
+	require.NoError(t, err)
+
+	err = client.Events.Delete(season.Key)
+	require.NoError(t, err)
+
+	_, err = client.Seasons.Retrieve(season.Key)
+	seatsioError := err.(*shared.SeatsioError)
+	require.Equal(t, "EVENT_NOT_FOUND", seatsioError.Code)
 }

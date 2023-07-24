@@ -6,6 +6,7 @@ import (
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestUpdateEventChartKey(t *testing.T) {
@@ -18,7 +19,7 @@ func TestUpdateEventChartKey(t *testing.T) {
 	require.NoError(t, err)
 
 	err = client.Events.Update(event.Key, &events.UpdateEventParams{
-		ChartKey: chartKey2,
+		ChartKey: &chartKey2,
 	})
 	require.NoError(t, err)
 
@@ -35,14 +36,54 @@ func TestUpdateEventEventKey(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
-		EventKey: "newKey",
-	})
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{EventKey: "newKey"}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve("newKey")
 	require.NoError(t, err)
 	require.Equal(t, "newKey", updatedEvent.Key)
+}
+
+func TestUpdateEventName(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Name: "foo",
+	}})
+	require.NoError(t, err)
+
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
+		Name: "bar",
+	}})
+	require.NoError(t, err)
+
+	updatedEvent, err := client.Events.Retrieve(event.Key)
+	require.NoError(t, err)
+	require.Equal(t, "bar", updatedEvent.Name)
+}
+
+func TestUpdateEventDate(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	now, _ := time.Parse(time.DateOnly, "2023-07-18")
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Date: events.DateFormat(&now),
+	}})
+	require.NoError(t, err)
+
+	updatedDate := "2023-08-03"
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
+		Date: updatedDate,
+	}})
+	require.NoError(t, err)
+
+	updatedEvent, err := client.Events.Retrieve(event.Key)
+	require.NoError(t, err)
+	require.Equal(t, updatedDate, updatedEvent.Date)
 }
 
 func TestUpdateEventTableBookingConfig(t *testing.T) {
@@ -56,9 +97,9 @@ func TestUpdateEventTableBookingConfig(t *testing.T) {
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
 		"T1": "BY_TABLE", "T2": "BY_SEAT",
 	}}
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
 		TableBookingConfig: &tableBookingConfig,
-	})
+	}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve(event.Key)
@@ -77,9 +118,9 @@ func TestUpdateEventObjectCategories(t *testing.T) {
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
 	}
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
 		ObjectCategories: &objectCategories,
-	})
+	}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve(event.Key)
@@ -92,15 +133,17 @@ func TestUpdateEventRemoveObjectCategories(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, ObjectCategories: &map[string]events.CategoryKey{
-		"A-1": {10},
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		ObjectCategories: &map[string]events.CategoryKey{
+			"A-1": {10},
+		},
 	}})
 	require.NoError(t, err)
 
 	objectCategories := map[string]events.CategoryKey{}
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
 		ObjectCategories: &objectCategories,
-	})
+	}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve(event.Key)
@@ -120,9 +163,9 @@ func TestUpdateEventCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
 		Categories: &categories,
-	})
+	}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve(event.Key)
@@ -139,15 +182,14 @@ func TestUpdateEventRemoveCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	event, err := client.Events.Create(&events.CreateEventParams{
-		ChartKey:   chartKey,
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Categories: &categories,
-	})
+	}})
 	require.NoError(t, err)
 
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
+	err = client.Events.Update(event.Key, &events.UpdateEventParams{EventParams: &events.EventParams{
 		Categories: &[]events.Category{},
-	})
+	}})
 	require.NoError(t, err)
 
 	updatedEvent, err := client.Events.Retrieve(event.Key)

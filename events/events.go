@@ -3,42 +3,35 @@ package events
 import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/shared"
+	"time"
 )
-
-const ObjectStatusBooked = "booked"
-const ObjectStatusHeld = "reservedByToken"
-const ObjectStatusFree = "free"
 
 type Events struct {
 	Client *req.Client
 }
 
-type CreateEventParams struct {
-	ChartKey           string                  `json:"chartKey"`
-	EventKey           string                  `json:"eventKey"`
+type EventParams struct {
+	EventKey           string                  `json:"eventKey,omitempty"`
+	Name               string                  `json:"name,omitempty"`
+	Date               string                  `json:"date,omitempty"`
 	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
 	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
 	Categories         *[]Category             `json:"categories,omitempty"`
+}
+
+type CreateEventParams struct {
+	ChartKey string `json:"chartKey"`
+	*EventParams
 }
 
 type UpdateEventParams struct {
-	ChartKey           string                  `json:"chartKey,omitempty"`
-	EventKey           string                  `json:"eventKey,omitempty"`
-	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
-	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
-	Categories         *[]Category             `json:"categories,omitempty"`
-}
-
-type CreateMultipleEventsParams struct {
-	EventKey           string                  `json:"eventKey"`
-	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
-	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
-	Categories         *[]Category             `json:"categories,omitempty"`
+	ChartKey *string `json:"chartKey,omitempty"`
+	*EventParams
 }
 
 type CreateMultipleEventsRequest struct {
-	ChartKey string                       `json:"chartKey"`
-	Events   []CreateMultipleEventsParams `json:"events"`
+	ChartKey string        `json:"chartKey"`
+	Events   []EventParams `json:"events"`
 }
 
 type CreateEventResult struct {
@@ -59,15 +52,29 @@ type BestAvailableResult struct {
 	ObjectDetails   map[string]EventObjectInfo `json:"objectDetails"`
 }
 
-type StatusChangeParams struct {
-	Events                   []string           `json:"events"`
-	Status                   string             `json:"status"`
+type ObjectStatus string
+
+const (
+	FREE   ObjectStatus = "free"
+	BOOKED ObjectStatus = "booked"
+	HELD   ObjectStatus = "reservedByToken"
+)
+
+type StatusChanges struct {
+	Status                   ObjectStatus       `json:"status"`
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
 	OrderId                  string             `json:"orderId,omitempty"`
 	KeepExtraData            bool               `json:"keepExtraData"`
-	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
-	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
+	IgnoreChannels           bool               `json:"ignoreChannels"`
+	ChannelKeys              []string           `json:"channelKeys,omitempty"`
+	AllowedPreviousStatuses  []ObjectStatus     `json:"allowedPreviousStatuses,omitempty"`
+	RejectedPreviousStatuses []ObjectStatus     `json:"rejectedPreviousStatuses,omitempty"`
+}
+
+type StatusChangeParams struct {
+	Events []string `json:"events"`
+	StatusChanges
 }
 
 type StatusChangeInBatchRequest struct {
@@ -75,22 +82,18 @@ type StatusChangeInBatchRequest struct {
 }
 
 type StatusChangeInBatchParams struct {
-	Event                    string             `json:"event"`
-	Status                   string             `json:"status"`
-	Objects                  []ObjectProperties `json:"objects"`
-	HoldToken                string             `json:"holdToken,omitempty"`
-	OrderId                  string             `json:"orderId,omitempty"`
-	KeepExtraData            bool               `json:"keepExtraData"`
-	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
-	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
+	Event string `json:"event"`
+	StatusChanges
 }
 
 type BestAvailableStatusChangeParams struct {
-	Status        string              `json:"status"`
-	BestAvailable BestAvailableParams `json:"bestAvailable"`
-	HoldToken     string              `json:"holdToken,omitempty"`
-	OrderId       string              `json:"orderId,omitempty"`
-	KeepExtraData bool                `json:"keepExtraData"`
+	Status         ObjectStatus        `json:"status"`
+	BestAvailable  BestAvailableParams `json:"bestAvailable"`
+	HoldToken      string              `json:"holdToken,omitempty"`
+	OrderId        string              `json:"orderId,omitempty"`
+	KeepExtraData  bool                `json:"keepExtraData"`
+	IgnoreChannels bool                `json:"ignoreChannels"`
+	ChannelKeys    []string            `json:"channelKeys,omitempty"`
 }
 
 type BestAvailableParams struct {
@@ -121,7 +124,7 @@ func (events *Events) Create(params *CreateEventParams) (*Event, error) {
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) CreateMultiple(chartKey string, params []CreateMultipleEventsParams) (*CreateEventResult, error) {
+func (events *Events) CreateMultiple(chartKey string, params ...EventParams) (*CreateEventResult, error) {
 	var eventCreationResult CreateEventResult
 	result, err := events.Client.R().
 		SetBody(&CreateMultipleEventsRequest{
@@ -151,7 +154,7 @@ func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams)
 	return shared.AssertOk(result, err, &changeObjectStatusResult)
 }
 
-func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams []StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
+func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams ...StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
 	var changeObjectStatusInBatchResult ChangeObjectStatusInBatchResult
 	result, err := events.Client.R().
 		SetBody(&StatusChangeInBatchRequest{
@@ -173,7 +176,7 @@ func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvail
 	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
-func (events *Events) UpdateExtraDatas(eventKey string, extraData map[string]ExtraData) error {
+func (events *Events) UpdateExtraData(eventKey string, extraData map[string]ExtraData) error {
 	result, err := events.Client.R().
 		SetBody(&updateExtraDatasRequest{
 			ExtraData: extraData,
@@ -183,7 +186,7 @@ func (events *Events) UpdateExtraDatas(eventKey string, extraData map[string]Ext
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) RetrieveObjectInfos(eventKey string, objectLabels []string) (map[string]EventObjectInfo, error) {
+func (events *Events) RetrieveObjectInfo(eventKey string, objectLabels ...string) (map[string]EventObjectInfo, error) {
 	var eventObjectInfos map[string]EventObjectInfo
 	request := events.Client.R().
 		SetSuccessResult(&eventObjectInfos)
@@ -257,6 +260,107 @@ func (events *Events) ListAll(opts ...shared.PaginationParamsOption) ([]Event, e
 	return events.lister().All(opts...)
 }
 
+func (events *Events) Book(eventKey string, objectIds []string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), nil)
+}
+
+func (events *Events) BookWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken)
+}
+
+func (events *Events) BookWithObjectProperties(eventKey string, objectProperties []ObjectProperties) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(BOOKED, eventKey, objectProperties, nil)
+}
+
+func (events *Events) BookWithObjectPropertiesAndHoldToken(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(BOOKED, eventKey, objectProperties, holdToken)
+}
+
+func (events *Events) BookWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+	statusChangeParams.Status = BOOKED
+	return events.ChangeObjectStatus(statusChangeParams)
+}
+
+func (events *Events) BookBestAvailable(eventKey string, params BestAvailableParams) (*BestAvailableResult, error) {
+	return events.BookBestAvailableWithHoldToken(eventKey, params, nil)
+}
+
+func (events *Events) BookBestAvailableWithHoldToken(eventKey string, params BestAvailableParams, holdToken *string) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+		Status:        BOOKED,
+		BestAvailable: params,
+		HoldToken:     *holdToken,
+	})
+}
+
+func (events *Events) BookBestAvailableWithOptions(eventKey string, params BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(eventKey, &params)
+}
+
+func (events *Events) Hold(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(HELD, eventKey, events.toObjectProperties(objectIds), holdToken)
+}
+
+func (events *Events) HoldWithObjectProperties(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(HELD, eventKey, objectProperties, holdToken)
+}
+
+func (events *Events) HoldWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+	statusChangeParams.Status = HELD
+	return events.ChangeObjectStatus(statusChangeParams)
+}
+
+func (events *Events) Release(eventKey string, objectIds []string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(FREE, eventKey, events.toObjectProperties(objectIds), nil)
+}
+
+func (events *Events) ReleaseWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(FREE, eventKey, events.toObjectProperties(objectIds), holdToken)
+}
+
+func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+	statusChangeParams.Status = FREE
+	return events.ChangeObjectStatus(statusChangeParams)
+}
+
+func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	params := StatusChangeParams{
+		Events: []string{eventKey},
+		StatusChanges: StatusChanges{
+			Status:  status,
+			Objects: objectProperties,
+		},
+	}
+	if holdToken != nil {
+		params.HoldToken = *holdToken
+	}
+	return events.ChangeObjectStatus(&params)
+}
+
+func (events *Events) toObjectProperties(objects []string) []ObjectProperties {
+	objectProperties := make([]ObjectProperties, len(objects))
+	for i, object := range objects {
+		objectProperties[i] = ObjectProperties{ObjectId: object}
+	}
+	return objectProperties
+}
+
+func (events *Events) RemoveCategories(eventKey string) error {
+	return events.Update(eventKey, &UpdateEventParams{
+		EventParams: &EventParams{
+			Categories: &[]Category{},
+		},
+	})
+}
+
+func (events *Events) RemoveObjectCategories(eventKey string) error {
+	return events.Update(eventKey, &UpdateEventParams{
+		EventParams: &EventParams{
+			ObjectCategories: &map[string]CategoryKey{},
+		},
+	})
+}
+
 func (events *Events) lister() *shared.Lister[Event] {
 	pageFetcher := shared.PageFetcher[Event]{
 		Client:    events.Client,
@@ -276,4 +380,8 @@ func (events *Events) ListPageAfter(id int64, opts ...shared.PaginationParamsOpt
 
 func (events *Events) ListPageBefore(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
 	return events.lister().ListPageBefore(id, opts...)
+}
+
+func DateFormat(date *time.Time) string {
+	return date.Format(time.DateOnly)
 }

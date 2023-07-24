@@ -16,13 +16,13 @@ func TestUpdateExtraDatas(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraDatas(event.Key, map[string]events.ExtraData{
+	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{
 		"A-1": {"foo": "bar"},
 		"A-2": {"foo": "baz"},
 	})
 	require.NoError(t, err)
 
-	eventObjectInfos, err := client.Events.RetrieveObjectInfos(event.Key, []string{"A-1", "A-2"})
+	eventObjectInfos, err := client.Events.RetrieveObjectInfo(event.Key, "A-1", "A-2")
 	require.NoError(t, err)
 	require.Equal(t, events.ExtraData{"foo": "bar"}, eventObjectInfos["A-1"].ExtraData)
 	require.Equal(t, events.ExtraData{"foo": "baz"}, eventObjectInfos["A-2"].ExtraData)
