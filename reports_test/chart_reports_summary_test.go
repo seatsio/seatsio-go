@@ -14,7 +14,7 @@ func TestSummaryByObjectType(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, "false")
+	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey)
 
 	require.NoError(t, err)
 	seatReportItem := reports.ChartSummaryReportItem{
@@ -59,7 +59,7 @@ func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, "true")
+	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, reports.BookWholeTables.True())
 
 	require.NoError(t, err)
 	tableReportItem := reports.ChartSummaryReportItem{
@@ -90,7 +90,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(chartKey, "false")
+	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(chartKey)
 
 	require.NoError(t, err)
 	cat9Report := reports.ChartSummaryReportItem{
@@ -131,7 +131,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByCategoryLabel(chartKey, "false")
+	summaryChartReport, err := client.ChartReports.SummaryByCategoryLabel(chartKey)
 
 	require.NoError(t, err)
 	cat1Report := reports.ChartSummaryReportItem{
@@ -172,7 +172,7 @@ func TestSummaryBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey, "false")
+	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey)
 
 	require.NoError(t, err)
 	noSectionReport := reports.ChartSummaryReportItem{
