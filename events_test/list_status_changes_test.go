@@ -18,11 +18,11 @@ func TestListStatusChanges(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All()
@@ -42,11 +42,11 @@ func TestListStatusChangesWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(2))
@@ -66,7 +66,7 @@ func TestPropertiesOfStatusChange(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{Status: "s1", Events: []string{event.Key}, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}})
+	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{Events: []string{event.Key}, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}})
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(1))
@@ -97,10 +97,12 @@ func TestPropertiesOfStatusChangeHoldToken(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:    events.ObjectStatusHeld,
-		Events:    []string{event.Key},
-		Objects:   []events.ObjectProperties{{ObjectId: "A-1"}},
-		HoldToken: holdToken.HoldToken,
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:    events.HELD,
+			Objects:   []events.ObjectProperties{{ObjectId: "A-1"}},
+			HoldToken: holdToken.HoldToken,
+		},
 	})
 	require.NoError(t, err)
 
@@ -120,12 +122,12 @@ func TestListStatusChangesWithFilter(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "B-1"}}},
-		{Status: "s4", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "B-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s4", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All()
@@ -145,12 +147,12 @@ func TestListStatusChangesWithFilterAndLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "B-1"}}},
-		{Status: "s4", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "B-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s4", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All(shared.Pagination.PageSize(2))
@@ -170,11 +172,11 @@ func TestListStatusChangesSortAsc(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All()
@@ -194,11 +196,11 @@ func TestListStatusChangesSortAscWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All(shared.Pagination.PageSize(2))
@@ -218,11 +220,11 @@ func TestListStatusChangesSortAscPageBefore(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
@@ -245,11 +247,11 @@ func TestListStatusChangesSortAscPageBeforeWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
@@ -272,11 +274,11 @@ func TestListStatusChangesSortAscPageAfter(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
@@ -299,11 +301,11 @@ func TestListStatusChangesSortAscPageAfterWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
@@ -326,11 +328,11 @@ func TestListStatusChangesSortDesc(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All()
@@ -350,11 +352,11 @@ func TestListStatusChangesSortDescWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-2"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-3"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All(shared.Pagination.PageSize(2))

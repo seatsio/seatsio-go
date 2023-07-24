@@ -17,7 +17,7 @@ func TestRetrieveSeason(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
 	startTime := time.Now()
-	season, err := client.Seasons.CreateSeason(chartKey, seasons.SeasonSupport.WithEventKeys("event1", "event2"))
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)
 	partialSeason1, err := client.Seasons.CreatePartialSeason(season.Key)
 	require.NoError(t, err)

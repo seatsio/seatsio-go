@@ -18,11 +18,11 @@ func TestListStatusChangesForObject(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChangesForObject(event.Key, "A-1").All()
@@ -42,11 +42,11 @@ func TestListStatusChangesForObjectWithLimit(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusInBatch([]events.StatusChangeInBatchParams{
-		{Status: "s1", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s2", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-		{Status: "s3", Event: event.Key, Objects: []events.ObjectProperties{{ObjectId: "A-1"}}},
-	})
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+	)
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChangesForObject(event.Key, "A-1").All(shared.Pagination.PageSize(2))

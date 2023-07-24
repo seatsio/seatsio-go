@@ -40,7 +40,9 @@ func TestCreateEventWithEventKey(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventKey: "anEvent"})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		EventKey: "anEvent",
+	}})
 	require.NoError(t, err)
 
 	require.Equal(t, "anEvent", event.Key)
@@ -55,7 +57,9 @@ func TestCreateEventWithTableBookingConfigCustom(t *testing.T) {
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
 		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
 	}}
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		TableBookingConfig: &tableBookingConfig,
+	}})
 	require.NoError(t, err)
 
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
@@ -68,7 +72,9 @@ func TestCreateEventWithTableBookingConfigInherit(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 
 	tableBookingConfig := events.TableBookingSupport.Inherit()
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, TableBookingConfig: &tableBookingConfig})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		TableBookingConfig: &tableBookingConfig,
+	}})
 	require.NoError(t, err)
 
 	require.Equal(t, tableBookingConfig, event.TableBookingConfig)
@@ -83,7 +89,9 @@ func TestCreateEventWithObjectCategories(t *testing.T) {
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
 	}
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, ObjectCategories: &objectCategories})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		ObjectCategories: &objectCategories,
+	}})
 	require.NoError(t, err)
 
 	require.Equal(t, objectCategories, event.ObjectCategories)
@@ -99,8 +107,39 @@ func TestCreateEventWithCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, Categories: &categories})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Categories: &categories,
+	}})
 	require.NoError(t, err)
 
 	require.Contains(t, event.Categories, category)
+}
+
+func TestCreateEventWithName(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Name: "My event",
+	}})
+	require.NoError(t, err)
+
+	require.Equal(t, "My event", event.Name)
+}
+
+func TestCreateEventWithDate(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+
+	now, _ := time.Parse(time.DateOnly, "2023-07-18")
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Date: events.DateFormat(&now),
+	}})
+	require.NoError(t, err)
+
+	require.Equal(t, "2023-07-18", event.Date)
 }

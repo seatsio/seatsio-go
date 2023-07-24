@@ -13,16 +13,16 @@ type CreateChannelParams struct {
 	Key     string   `json:"key"`
 	Name    string   `json:"name"`
 	Color   string   `json:"color"`
-	Index   int32    `json:"index"`
-	Objects []string `json:"objects"`
+	Index   int32    `json:"index,omitempty"`
+	Objects []string `json:"objects,omitempty"`
 }
 
 type CreateChannelParamsOption func(Params *CreateChannelParams)
 
 type UpdateChannelParams struct {
-	Name    string   `json:"name"`
-	Color   string   `json:"color"`
-	Objects []string `json:"objects"`
+	Name    string   `json:"name,omitempty"`
+	Color   string   `json:"color,omitempty"`
+	Objects []string `json:"objects,omitempty"`
 }
 
 type changeChannelObjectsRequest struct {
@@ -33,10 +33,6 @@ type replaceChannelsRequest struct {
 	Channels []Channel `json:"channels"`
 }
 
-type channelSupportNS struct{}
-
-var ChannelSupport channelSupportNS
-
 func (channels *Channels) Create(eventKey string, params *CreateChannelParams) error {
 	result, err := channels.Client.R().
 		SetBody(params).
@@ -45,7 +41,7 @@ func (channels *Channels) Create(eventKey string, params *CreateChannelParams) e
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) CreateMultiple(eventKey string, params *[]CreateChannelParams) error {
+func (channels *Channels) CreateMultiple(eventKey string, params ...*CreateChannelParams) error {
 	result, err := channels.Client.R().
 		SetBody(params).
 		SetPathParam("key", eventKey).
@@ -88,34 +84,10 @@ func (channels *Channels) RemoveObjects(eventKey string, channelKey string, obje
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) Replace(eventKey string, newChannels []Channel) error {
+func (channels *Channels) Replace(eventKey string, newChannels ...Channel) error {
 	result, err := channels.Client.R().
 		SetBody(replaceChannelsRequest{newChannels}).
 		SetPathParam("eventKey", eventKey).
 		Post("/events/{eventKey}/channels/replace")
 	return shared.AssertOkNoBody(result, err)
-}
-
-func (channelSupportNS) WithIndex(index int32) CreateChannelParamsOption {
-	return func(params *CreateChannelParams) {
-		params.Index = index
-	}
-}
-
-func (channelSupportNS) WithObjects(objects []string) CreateChannelParamsOption {
-	return func(params *CreateChannelParams) {
-		params.Objects = objects
-	}
-}
-
-func NewCreateChannelParams(key string, name string, color string, opts ...CreateChannelParamsOption) *CreateChannelParams {
-	params := &CreateChannelParams{key, name, color, 0, []string{}}
-	for _, opt := range opts {
-		opt(params)
-	}
-	return params
-}
-
-func (channels *Channels) NewUpdateChannelParams(channel Channel) UpdateChannelParams {
-	return UpdateChannelParams{Name: channel.Name, Color: channel.Color, Objects: channel.Objects}
 }

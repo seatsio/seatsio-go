@@ -5,6 +5,8 @@ import "time"
 type Event struct {
 	Id                    int64                  `json:"id"`
 	Key                   string                 `json:"key"`
+	Name                  string                 `json:"name"`
+	Date                  string                 `json:"date"`
 	ChartKey              string                 `json:"chartKey"`
 	HoldToken             string                 `json:"holdToken"`
 	TableBookingConfig    TableBookingConfig     `json:"tableBookingConfig"`

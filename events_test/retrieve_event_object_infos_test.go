@@ -16,7 +16,7 @@ func TestRetrieveEventObjectInfos(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	eventObjectInfos, err := client.Events.RetrieveObjectInfos(event.Key, []string{"A-1", "A-2"})
+	eventObjectInfos, err := client.Events.RetrieveObjectInfo(event.Key, "A-1", "A-2")
 
 	require.NoError(t, err)
 	require.Equal(t, "A-1", eventObjectInfos["A-1"].Label)

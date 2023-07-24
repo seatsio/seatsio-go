@@ -14,10 +14,12 @@ func TestDeepSummaryByStatus(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByStatus(event.Key)
@@ -48,10 +50,12 @@ func TestDeepSummaryByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByCategoryKey(event.Key)
@@ -67,10 +71,12 @@ func TestDeepSummaryByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByCategoryLabel(event.Key)
@@ -86,10 +92,12 @@ func TestDeepSummaryBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryBySection(event.Key)
@@ -105,10 +113,12 @@ func TestDeepSummaryByAvailability(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByAvailability(event.Key)
@@ -124,10 +134,12 @@ func TestDeepSummaryByAvailabilityReason(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByAvailabilityReason(event.Key)
@@ -143,10 +155,12 @@ func TestDeepSummaryByChannel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Status:  events.ObjectStatusBooked,
-		Events:  []string{event.Key},
-		Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.BOOKED,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+		},
 	})
 
 	report, err := client.EventReports.DeepSummaryByChannel(event.Key)
