@@ -11,10 +11,10 @@ import (
 func TestRetrieveChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client.Charts.AddTag(chartKey, "tag1")
-	client.Charts.AddTag(chartKey, "tag2")
+	_ = client.Charts.AddTag(chartKey, "tag1")
+	_ = client.Charts.AddTag(chartKey, "tag2")
 
 	retrievedChart, err := client.Charts.Retrieve(chartKey)
 
@@ -34,10 +34,10 @@ func TestRetrieveChart(t *testing.T) {
 func TestRetrieveChartWithEvents(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 
 	retrievedChart, err := client.Charts.RetrieveWithEvents(chartKey)
 	require.NoError(t, err)

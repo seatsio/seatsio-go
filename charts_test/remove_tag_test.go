@@ -10,10 +10,10 @@ import (
 func TestRemoveTag(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client.Charts.AddTag(chartKey1, "tag1")
-	client.Charts.AddTag(chartKey1, "tag2")
+	_ = client.Charts.AddTag(chartKey1, "tag1")
+	_ = client.Charts.AddTag(chartKey1, "tag2")
 
 	err := client.Charts.RemoveTag(chartKey1, "tag2")
 

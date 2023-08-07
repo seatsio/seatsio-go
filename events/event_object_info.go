@@ -18,7 +18,7 @@ type EventObjectInfo struct {
 	ObjectType     string       `json:"objectType"`
 	LeftNeighbour  string       `json:"leftNeighbour"`
 	RightNeighbour string       `json:"rightNeighbour"`
-	HoldToken      string       `json:"holdToken"`
+	HoldToken      *string      `json:"holdToken"`
 }
 
 type IDs struct {

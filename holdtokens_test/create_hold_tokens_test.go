@@ -12,7 +12,7 @@ func TestCreateHoldToken(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	holdToken, err := client.HoldTokens.Create()
 	require.NoError(t, err)
@@ -28,7 +28,7 @@ func TestCreateHoldTokenWithExpiresInMinutes(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	holdToken, err := client.HoldTokens.CreateWithExpiration(5)
 	require.NoError(t, err)

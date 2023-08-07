@@ -14,7 +14,7 @@ func TestCreateMultipleEventsWithDefaultValues(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
 		events.EventParams{},
@@ -30,7 +30,7 @@ func TestCreateMultipleEventsWithEventKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
 		events.EventParams{EventKey: "event1"},
@@ -46,7 +46,7 @@ func TestCreateMultipleEventsWithTableBookingConfig(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
 		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
@@ -65,7 +65,7 @@ func TestCreateMultipleEventsWithObjectCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
@@ -84,7 +84,7 @@ func TestCreateMultipleEventsWithCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	category := events.Category{Key: events.CategoryKey{Key: "eventCategory"}, Label: "event-level category", Color: "#AAABBB"}
 	categories := []events.Category{
@@ -104,7 +104,7 @@ func TestCreateMultipleEventsWithName(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
 		events.EventParams{Name: "Event 1"},
@@ -120,7 +120,7 @@ func TestCreateMultipleEventsWithDate(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
 		events.EventParams{Date: "2023-07-18"},
@@ -136,7 +136,7 @@ func TestCreateMultipleEventsWithDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_, err := client.Events.CreateMultiple(chartKey,
 		events.EventParams{EventKey: "event1"},
@@ -151,7 +151,7 @@ func TestCreateSingleEventWithDefaultValues(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	start := time.Now()
 	result, err := client.Events.CreateMultiple(chartKey, events.EventParams{})

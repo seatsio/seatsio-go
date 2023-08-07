@@ -12,10 +12,10 @@ import (
 func TestPublishDraftVersion(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chart, err := client.Charts.Create(&charts.CreateChartParams{Name: "oldname"})
-	client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
-	client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "newname"})
+	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
+	_ = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "newname"})
 
 	err = client.Charts.PublishDraftVersion(chart.Key)
 

@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/test_util"
@@ -12,11 +13,11 @@ func TestBook(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.Book(event.Key, []string{"A-1", "A-2"})
+	objects, err := client.Events.Book(event.Key, "A-1", "A-2")
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, objects.Objects["A-1"].Status)
@@ -26,17 +27,20 @@ func TestBook(t *testing.T) {
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 	require.Equal(t, events.BOOKED, info["A-2"].Status)
 	require.Equal(t, events.FREE, info["A-3"].Status)
+	fmt.Println(info["A-1"].CategoryKey)
+	fmt.Println(info["A-1"].Label)
+	fmt.Println(info["A-1"].Status)
 }
 
 func TestBookSections(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithSections(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.Book(event.Key, []string{"Section A-A-1", "Section A-A-2"})
+	objects, err := client.Events.Book(event.Key, "Section A-A-1", "Section A-A-2")
 	require.NoError(t, err)
 	keys := make([]string, len(objects.Objects))
 	i := 0
@@ -64,7 +68,7 @@ func TestHoldTokens(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
@@ -79,16 +83,16 @@ func TestHoldTokens(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, objects["A-1"].Status)
-	require.Equal(t, "", objects["A-1"].HoldToken)
+	require.Nil(t, objects["A-1"].HoldToken)
 	require.Equal(t, events.BOOKED, objects["A-2"].Status)
-	require.Equal(t, "", objects["A-1"].HoldToken)
+	require.Nil(t, objects["A-1"].HoldToken)
 }
 
 func TestOrderId(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
@@ -113,7 +117,7 @@ func TestKeepExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
@@ -139,7 +143,7 @@ func TestChannelKeys(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
@@ -163,7 +167,7 @@ func TestIgnoreChannel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 

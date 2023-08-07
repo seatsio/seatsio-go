@@ -11,9 +11,9 @@ import (
 func TestRetrievePublishedVersion(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chart, err := client.Charts.Create(&charts.CreateChartParams{Name: "chartName"})
-	client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "chartName"})
+	_ = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "chartName"})
 
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
 

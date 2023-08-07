@@ -11,7 +11,7 @@ import (
 func CreateChannel(t *testing.T, params *events.CreateChannelParams) (*events.Event, *seatsio.SeatsioClient) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	c := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	c := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	event, _ := c.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 	}})

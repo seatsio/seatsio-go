@@ -10,7 +10,7 @@ import (
 func TestUpdateWorkspace(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	workspace, err := client.Workspaces.CreateProductionWorkspace("my workspace")
 	require.NoError(t, err)

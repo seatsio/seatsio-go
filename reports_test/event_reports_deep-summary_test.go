@@ -11,7 +11,7 @@ import (
 func TestDeepSummaryByStatus(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -33,7 +33,7 @@ func TestDeepSummaryByStatus(t *testing.T) {
 func TestDeepSummaryByObjectType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 
@@ -47,7 +47,7 @@ func TestDeepSummaryByObjectType(t *testing.T) {
 func TestDeepSummaryByCategoryKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -68,7 +68,7 @@ func TestDeepSummaryByCategoryKey(t *testing.T) {
 func TestDeepSummaryByCategoryLabel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -89,7 +89,7 @@ func TestDeepSummaryByCategoryLabel(t *testing.T) {
 func TestDeepSummaryBySection(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -110,7 +110,7 @@ func TestDeepSummaryBySection(t *testing.T) {
 func TestDeepSummaryByAvailability(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -131,7 +131,7 @@ func TestDeepSummaryByAvailability(t *testing.T) {
 func TestDeepSummaryByAvailabilityReason(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
@@ -152,7 +152,7 @@ func TestDeepSummaryByAvailabilityReason(t *testing.T) {
 func TestDeepSummaryByChannel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{

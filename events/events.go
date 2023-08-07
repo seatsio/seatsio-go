@@ -111,9 +111,15 @@ type ForSaleConfigParams struct {
 	Categories []string       `json:"categories,omitempty"`
 }
 
-type updateExtraDatasRequest struct {
+type updateExtraDataRequest struct {
 	ExtraData map[string]ExtraData `json:"extraData"`
 }
+
+type ListParamsOption func(Params *shared.PageFetcher[StatusChange])
+
+type eventSupportNS struct{}
+
+var EventSupport eventSupportNS
 
 func (events *Events) Create(params *CreateEventParams) (*Event, error) {
 	var event Event
@@ -178,7 +184,7 @@ func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvail
 
 func (events *Events) UpdateExtraData(eventKey string, extraData map[string]ExtraData) error {
 	result, err := events.Client.R().
-		SetBody(&updateExtraDatasRequest{
+		SetBody(&updateExtraDataRequest{
 			ExtraData: extraData,
 		}).
 		SetPathParam("event", eventKey).
@@ -237,12 +243,15 @@ func (events *Events) MarkEverythingAsForSale(eventKey string) error {
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) StatusChanges(eventKey string, filter string, sortField string, sortDirection string) *shared.Lister[StatusChange] {
+func (events *Events) StatusChanges(eventKey string, opts ...ListParamsOption) *shared.Lister[StatusChange] {
 	pageFetcher := shared.PageFetcher[StatusChange]{
 		Client:      events.Client,
 		Url:         "/events/{eventKey}/status-changes",
 		UrlParams:   map[string]string{"eventKey": eventKey},
-		QueryParams: map[string]string{"filter": filter, "sort": shared.ToSort(sortField, sortDirection)},
+		QueryParams: map[string]string{},
+	}
+	for _, opt := range opts {
+		opt(&pageFetcher)
 	}
 	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
 }
@@ -260,7 +269,7 @@ func (events *Events) ListAll(opts ...shared.PaginationParamsOption) ([]Event, e
 	return events.lister().All(opts...)
 }
 
-func (events *Events) Book(eventKey string, objectIds []string) (*ChangeObjectStatusResult, error) {
+func (events *Events) Book(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
 	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
@@ -268,7 +277,7 @@ func (events *Events) BookWithHoldToken(eventKey string, objectIds []string, hol
 	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
-func (events *Events) BookWithObjectProperties(eventKey string, objectProperties []ObjectProperties) (*ChangeObjectStatusResult, error) {
+func (events *Events) BookWithObjectProperties(eventKey string, objectProperties ...ObjectProperties) (*ChangeObjectStatusResult, error) {
 	return events.changeStatus(BOOKED, eventKey, objectProperties, nil)
 }
 
@@ -310,7 +319,7 @@ func (events *Events) HoldWithOptions(statusChangeParams *StatusChangeParams) (*
 	return events.ChangeObjectStatus(statusChangeParams)
 }
 
-func (events *Events) Release(eventKey string, objectIds []string) (*ChangeObjectStatusResult, error) {
+func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
 	return events.changeStatus(FREE, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
@@ -384,4 +393,22 @@ func (events *Events) ListPageBefore(id int64, opts ...shared.PaginationParamsOp
 
 func DateFormat(date *time.Time) string {
 	return date.Format(time.DateOnly)
+}
+
+func (eventSupportNS) WithFilter(filterValue string) ListParamsOption {
+	return func(pageFetcher *shared.PageFetcher[StatusChange]) {
+		pageFetcher.QueryParams["filter"] = filterValue
+	}
+}
+
+func (eventSupportNS) WithSortAsc(sortField string) ListParamsOption {
+	return func(pageFetcher *shared.PageFetcher[StatusChange]) {
+		pageFetcher.QueryParams["sort"] = shared.ToSort(sortField, "asc")
+	}
+}
+
+func (eventSupportNS) WithSortDesc(sortField string) ListParamsOption {
+	return func(pageFetcher *shared.PageFetcher[StatusChange]) {
+		pageFetcher.QueryParams["sort"] = shared.ToSort(sortField, "desc")
+	}
 }
