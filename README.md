@@ -2,8 +2,8 @@
 
 [![Build](https://github.com/seatsio/seatsio-go/workflows/Build/badge.svg)](https://github.com/seatsio/seatsio-go/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/seatsio/seatsio-go)](https://goreportcard.com/report/github.com/seatsio/seatsio-go)
-[![License](https://img.shields.io/github/license/seatsio/seatsio-go)](https://img.shields.io/github/license/seatsio/seatsio-go)
-[![Version](https://img.shields.io/github/v/release/seatsio/seatsio-go?display_name=tag&sort=semver)](https://img.shields.io/github/v/release/seatsio/seatsio-go?display_name=tag&sort=semver)
+![License](https://img.shields.io/github/license/seatsio/seatsio-go)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/seatsio/seatsio-go?sort=semver&display_name=tag)
 [![Go Reference](https://pkg.go.dev/badge/github.com/seatsio/seatsio-go.svg)](https://pkg.go.dev/github.com/seatsio/seatsio-go)
 
 This is the official Go client library for the [Seats.io V2 REST API](https://docs.seats.io/docs/api-overview).
