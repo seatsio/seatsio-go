@@ -12,7 +12,7 @@ import (
 func TestReportItemProperties(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey)
@@ -42,7 +42,7 @@ func TestReportItemProperties(t *testing.T) {
 func TestReportItemPropertiesForGA(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey)
@@ -57,7 +57,7 @@ func TestReportItemPropertiesForGA(t *testing.T) {
 func TestReportItemPropertiesForTable(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.True())
@@ -71,7 +71,7 @@ func TestReportItemPropertiesForTable(t *testing.T) {
 func TestByLabel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey)
@@ -83,7 +83,7 @@ func TestByLabel(t *testing.T) {
 func TestByLabel_BookWholeTablesTrue(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.True())
@@ -98,7 +98,7 @@ func TestByLabel_BookWholeTablesTrue(t *testing.T) {
 func TestByLabel_BookWholeTablesChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByLabel(chartKey, reports.BookWholeTables.Chart())
@@ -116,7 +116,7 @@ func TestByLabel_BookWholeTablesChart(t *testing.T) {
 func TestByObjectType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByObjectType(chartKey)
@@ -128,7 +128,7 @@ func TestByObjectType(t *testing.T) {
 func TestByCategoryKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByCategoryKey(chartKey)
@@ -140,7 +140,7 @@ func TestByCategoryKey(t *testing.T) {
 func TestByCategoryLabel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.ByCategoryLabel(chartKey)
@@ -152,7 +152,7 @@ func TestByCategoryLabel(t *testing.T) {
 func TestBySection(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithSections(t, company.Admin.SecretKey)
 
 	chartReport, err := client.ChartReports.BySection(chartKey)

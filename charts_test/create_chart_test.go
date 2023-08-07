@@ -1,6 +1,7 @@
 package charts
 
 import (
+	"fmt"
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/charts"
 	"github.com/seatsio/seatsio-go/events"
@@ -12,7 +13,7 @@ import (
 func TestCreateChartWithDefaultParameters(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chart, err := client.Charts.Create(&charts.CreateChartParams{})
 
@@ -34,7 +35,7 @@ func TestCreateChartWithDefaultParameters(t *testing.T) {
 func TestCreateChartWithName(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chart, err := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
 
@@ -48,7 +49,7 @@ func TestCreateChartWithName(t *testing.T) {
 func TestCreateChartWithVenueType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "BOOTHS"})
 
@@ -62,7 +63,7 @@ func TestCreateChartWithVenueType(t *testing.T) {
 func TestCreateChartWithCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
@@ -81,15 +82,15 @@ func TestCreateChartWithCategories(t *testing.T) {
 		map[string]interface{}{"key": "anotherCat", "label": "Category 2", "color": "#bbbbbb", "accessible": true})
 }
 
-func TestCreateChartInSpecificWorkspace(t *testing.T) {
+func TestCreateChartInSpecificWorkspaceAsCompanyAdmin(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	defaultClient := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	defaultClient := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	workspace, err := defaultClient.Workspaces.CreateTestWorkspace("anotherWorkspace")
 	require.NoError(t, err)
 
-	workspaceClient := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl, seatsio.ClientSupport.WorkspaceKey(workspace.Key))
+	workspaceClient := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey, seatsio.ClientSupport.WorkspaceKey(workspace.Key))
 	chart, err := workspaceClient.Charts.Create(&charts.CreateChartParams{})
 	require.NoError(t, err)
 
@@ -101,5 +102,34 @@ func TestCreateChartInSpecificWorkspace(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, workspaceCharts, 1)
 	require.Equal(t, chart.Key, workspaceCharts[0].Key)
+}
 
+func TestCreateChartInSpecificWorkspaceAsWorkspaceAdmin(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	defaultClient := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	workspace, err := defaultClient.Workspaces.CreateTestWorkspace("anotherWorkspace")
+	require.NoError(t, err)
+
+	workspaceClient := seatsio.NewSeatsioClient(test_util.BaseUrl, workspace.SecretKey)
+	chart, err := workspaceClient.Charts.Create(&charts.CreateChartParams{})
+	require.NoError(t, err)
+
+	retrievedDefaultWorkspaceCharts, err := defaultClient.Charts.ListAll()
+	require.NoError(t, err)
+	require.Len(t, retrievedDefaultWorkspaceCharts, 0)
+
+	workspaceCharts, err := workspaceClient.Charts.ListAll()
+	require.NoError(t, err)
+	require.Len(t, workspaceCharts, 1)
+	require.Equal(t, chart.Key, workspaceCharts[0].Key)
+}
+
+func TestCreateChartAndEvent(t *testing.T) {
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
+	fmt.Printf(`Created a chart with key %s and an event with key: %s`, chart.Key, event.Key)
 }

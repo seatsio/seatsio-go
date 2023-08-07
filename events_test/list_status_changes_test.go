@@ -13,7 +13,7 @@ func TestListStatusChanges(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -25,7 +25,7 @@ func TestListStatusChanges(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All()
+	statusChanges, err := client.Events.StatusChanges(event.Key).All()
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)
@@ -37,7 +37,7 @@ func TestListStatusChangesWithLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -49,7 +49,7 @@ func TestListStatusChangesWithLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(2))
+	statusChanges, err := client.Events.StatusChanges(event.Key).All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)
@@ -61,7 +61,7 @@ func TestPropertiesOfStatusChange(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -69,7 +69,7 @@ func TestPropertiesOfStatusChange(t *testing.T) {
 	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{Events: []string{event.Key}, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(1))
+	statusChanges, err := client.Events.StatusChanges(event.Key).All(shared.Pagination.PageSize(1))
 	require.NoError(t, err)
 
 	statusChange := statusChanges[0]
@@ -88,7 +88,7 @@ func TestPropertiesOfStatusChangeHoldToken(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -106,7 +106,7 @@ func TestPropertiesOfStatusChangeHoldToken(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "", "").All(shared.Pagination.PageSize(1))
+	statusChanges, err := client.Events.StatusChanges(event.Key).All(shared.Pagination.PageSize(1))
 	require.NoError(t, err)
 
 	statusChange := statusChanges[0]
@@ -117,7 +117,7 @@ func TestListStatusChangesWithFilter(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -130,7 +130,7 @@ func TestListStatusChangesWithFilter(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All()
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithFilter("A")).All()
 	require.NoError(t, err)
 
 	require.Equal(t, "s4", statusChanges[0].Status)
@@ -142,7 +142,7 @@ func TestListStatusChangesWithFilterAndLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -155,7 +155,7 @@ func TestListStatusChangesWithFilterAndLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "A", "", "").All(shared.Pagination.PageSize(2))
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithFilter("A")).All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s4", statusChanges[0].Status)
@@ -163,11 +163,36 @@ func TestListStatusChangesWithFilterAndLimit(t *testing.T) {
 	require.Equal(t, "s1", statusChanges[2].Status)
 }
 
+func TestListStatusChangesWithFilterAndSort(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	_, err = client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s2", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s3", Objects: []events.ObjectProperties{{ObjectId: "B-1"}}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "s4", Objects: []events.ObjectProperties{{ObjectId: "A-3"}}}},
+	)
+	require.NoError(t, err)
+
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithFilter("A"), events.EventSupport.WithSortAsc("objectLabel")).All()
+	require.NoError(t, err)
+
+	require.Equal(t, "s1", statusChanges[0].Status)
+	require.Equal(t, "s2", statusChanges[1].Status)
+	require.Equal(t, "s4", statusChanges[2].Status)
+}
+
 func TestListStatusChangesSortAsc(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -179,7 +204,7 @@ func TestListStatusChangesSortAsc(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All()
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel")).All()
 	require.NoError(t, err)
 
 	require.Equal(t, "s1", statusChanges[0].Status)
@@ -191,7 +216,7 @@ func TestListStatusChangesSortAscWithLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -203,7 +228,7 @@ func TestListStatusChangesSortAscWithLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc").All(shared.Pagination.PageSize(2))
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel")).All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s1", statusChanges[0].Status)
@@ -215,7 +240,7 @@ func TestListStatusChangesSortAscPageBefore(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -227,7 +252,7 @@ func TestListStatusChangesSortAscPageBefore(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChangeLister := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel"))
 	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
@@ -242,7 +267,7 @@ func TestListStatusChangesSortAscPageBeforeWithLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -254,7 +279,7 @@ func TestListStatusChangesSortAscPageBeforeWithLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChangeLister := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel"))
 	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
@@ -269,7 +294,7 @@ func TestListStatusChangesSortAscPageAfter(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -281,7 +306,7 @@ func TestListStatusChangesSortAscPageAfter(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChangeLister := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel"))
 	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
@@ -296,7 +321,7 @@ func TestListStatusChangesSortAscPageAfterWithLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -308,7 +333,7 @@ func TestListStatusChangesSortAscPageAfterWithLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChangeLister := client.Events.StatusChanges(event.Key, "", "objectLabel", "asc")
+	statusChangeLister := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortAsc("objectLabel"))
 	statusChanges, err := statusChangeLister.All()
 	require.NoError(t, err)
 
@@ -316,14 +341,13 @@ func TestListStatusChangesSortAscPageAfterWithLimit(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "s2", statusChangesPage.Items[0].Status)
-	//	require.Equal(t, "s3", statusChangesPage.Items[1].Status)
 }
 
 func TestListStatusChangesSortDesc(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -335,7 +359,7 @@ func TestListStatusChangesSortDesc(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All()
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortDesc("objectLabel")).All()
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)
@@ -347,7 +371,7 @@ func TestListStatusChangesSortDescWithLimit(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
@@ -359,7 +383,7 @@ func TestListStatusChangesSortDescWithLimit(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All(shared.Pagination.PageSize(2))
+	statusChanges, err := client.Events.StatusChanges(event.Key, events.EventSupport.WithSortDesc("objectLabel")).All(shared.Pagination.PageSize(2))
 	require.NoError(t, err)
 
 	require.Equal(t, "s3", statusChanges[0].Status)

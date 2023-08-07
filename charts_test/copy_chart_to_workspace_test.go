@@ -11,7 +11,7 @@ func TestCopyChartToWorkspace(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	workspace, err := client.Workspaces.CreateProductionWorkspace("my ws")
 	require.NoError(t, err)
 
@@ -19,7 +19,7 @@ func TestCopyChartToWorkspace(t *testing.T) {
 
 	require.Equal(t, "Sample chart", copiedChart.Name)
 
-	workspaceClient := seatsio.NewSeatsioClient(workspace.SecretKey, test_util.BaseUrl)
+	workspaceClient := seatsio.NewSeatsioClient(test_util.BaseUrl, workspace.SecretKey)
 	retrievedChart, err := workspaceClient.Charts.Retrieve(copiedChart.Key)
 	require.NoError(t, err)
 	require.Equal(t, "Sample chart", retrievedChart.Name)

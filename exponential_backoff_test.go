@@ -2,13 +2,14 @@ package seatsio
 
 import (
 	"github.com/seatsio/seatsio-go/shared"
+	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
 
 func TestMain(m *testing.M) {
-	shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").R().Get("/status/200")
+	_, _ = shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").R().Get("/status/200")
 	m.Run()
 }
 
@@ -48,4 +49,12 @@ func TestReturnsSuccessfullyWhenServerSends429FirstAndThenSuccess(t *testing.T) 
 
 		require.Equal(t, 204, response.StatusCode)
 	}
+}
+
+func TestMaxRecountMustNotBeNegative(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	err := client.SetMaxRetries(-1)
+	require.Equal(t, "retry count must not be negative", err.Error())
 }

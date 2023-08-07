@@ -13,9 +13,9 @@ func TestCopyDraftVersion(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
-	client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "newname"})
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	_ = client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "newname"})
 
 	copiedChart, err := client.Charts.CopyDraftVersion(chartKey)
 	require.NoError(t, err)

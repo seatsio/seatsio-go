@@ -10,7 +10,7 @@ import (
 func TestListChartsInArchive(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)

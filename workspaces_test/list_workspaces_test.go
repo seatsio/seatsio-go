@@ -11,7 +11,7 @@ import (
 func TestListAllWorkspaces(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	workspace1, err := client.Workspaces.CreateProductionWorkspace("workspace 1")
 	require.NoError(t, err)
@@ -36,7 +36,7 @@ func TestListAllWorkspaces(t *testing.T) {
 func TestListAllWorkspacesWithFilter(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_, err := client.Workspaces.CreateProductionWorkspace("workspace 1")
 	require.NoError(t, err)

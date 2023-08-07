@@ -14,7 +14,7 @@ var sup = charts.ChartSupport
 func TestListAll(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -31,7 +31,7 @@ func TestListAll(t *testing.T) {
 func TestFilter(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -52,7 +52,7 @@ func TestFilter(t *testing.T) {
 func TestTag(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -72,7 +72,7 @@ func TestTag(t *testing.T) {
 func TestTagAndFilter(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	_ = client.Charts.Update(chartKey1, &charts.UpdateChartParams{Name: "bar"})
@@ -99,7 +99,7 @@ func TestTagAndFilter(t *testing.T) {
 func TestExpand(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
@@ -115,7 +115,7 @@ func TestExpand(t *testing.T) {
 func TestPageSize(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
 	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
@@ -124,13 +124,12 @@ func TestPageSize(t *testing.T) {
 	chartsPage, err := client.Charts.ListFirstPage()
 	require.NoError(t, err)
 	require.Equal(t, 3, len(chartsPage.Items))
-
 }
 
 func TestListChartsWithValidation(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
@@ -145,10 +144,10 @@ func TestListChartsWithValidation(t *testing.T) {
 func TestListChartsWithoutValidation(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
-	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(true))
+	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(false))
 	require.NoError(t, err)
 	retrievedCharts := chartsPage.Items
 	require.Equal(t, 1, len(retrievedCharts))

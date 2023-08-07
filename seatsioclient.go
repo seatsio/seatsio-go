@@ -1,6 +1,8 @@
 package seatsio
 
 import (
+	"errors"
+	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/charts"
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/holdtokens"
@@ -10,9 +12,21 @@ import (
 	"github.com/seatsio/seatsio-go/workspaces"
 )
 
-type seatsioClientNS struct{}
+type seatsioClientNS struct {
+	apiClient *req.Client
+}
 
 var ClientSupport seatsioClientNS
+
+const baseUrlStart = "https://api-staging-"
+const baseUrlEnd = ".seatsio.net"
+
+const (
+	EU string = baseUrlStart + "eu" + baseUrlEnd
+	NA string = baseUrlStart + "na" + baseUrlEnd
+	SA string = baseUrlStart + "sa" + baseUrlEnd
+	OC string = baseUrlStart + "oc" + baseUrlEnd
+)
 
 type SeatsioClient struct {
 	baseUrl      string
@@ -29,7 +43,7 @@ type SeatsioClient struct {
 	Seasons      *seasons.Seasons
 }
 
-func NewSeatsioClient(secretKey string, baseUrl string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
+func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
 	apiClient := shared.ApiClient(secretKey, baseUrl, additionalHeaders...)
 	client := &SeatsioClient{
 		baseUrl:    baseUrl,
@@ -47,7 +61,16 @@ func NewSeatsioClient(secretKey string, baseUrl string, additionalHeaders ...sha
 		Channels:     &events.Channels{Client: apiClient},
 		Seasons:      &seasons.Seasons{Client: apiClient},
 	}
+	ClientSupport.apiClient = apiClient
 	return client
+}
+
+func (c *SeatsioClient) SetMaxRetries(count int) error {
+	if count < 0 {
+		return errors.New("retry count must not be negative")
+	}
+	ClientSupport.apiClient.SetCommonRetryCount(count)
+	return nil
 }
 
 func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalHeader {

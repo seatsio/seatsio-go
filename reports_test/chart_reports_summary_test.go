@@ -11,7 +11,7 @@ import (
 func TestSummaryByObjectType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey)
@@ -56,7 +56,7 @@ func TestSummaryByObjectType(t *testing.T) {
 func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, reports.BookWholeTables.True())
@@ -87,7 +87,7 @@ func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 func TestSummaryByCategoryKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(chartKey)
@@ -128,7 +128,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 func TestSummaryByCategoryLabel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryByCategoryLabel(chartKey)
@@ -169,7 +169,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 func TestSummaryBySection(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey)

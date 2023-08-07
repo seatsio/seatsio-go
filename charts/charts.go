@@ -173,17 +173,17 @@ func (charts *Charts) RemoveCategory(chartKey string, categoryKey events.Categor
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-type ListCategoriesResponse struct {
+type listCategoriesResponse struct {
 	Categories []events.Category `json:"categories"`
 }
 
-func (charts *Charts) ListCategories(chartKey string) (*ListCategoriesResponse, error) {
-	var response ListCategoriesResponse
+func (charts *Charts) ListCategories(chartKey string) ([]events.Category, error) {
+	var response listCategoriesResponse
 	result, err := charts.Client.R().
 		SetSuccessResult(&response).
 		SetPathParam("chartKey", chartKey).
 		Get("/charts/{chartKey}/categories")
-	return shared.AssertOk(result, err, &response)
+	return shared.AssertOkArray(result, err, &response.Categories)
 }
 
 func (charts *Charts) PublishDraftVersion(chartKey string) error {

@@ -10,7 +10,7 @@ import (
 func TestValidatePublishedChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
 	result, err := client.Charts.ValidatePublishedVersion(chartKey)
@@ -21,7 +21,7 @@ func TestValidatePublishedChart(t *testing.T) {
 func TestValidateDraftChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
 
 	_, err := client.Charts.ValidateDraftVersion(chartKey)

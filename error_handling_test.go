@@ -35,7 +35,7 @@ func Test301(t *testing.T) {
 func Test400(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_, err := client.Events.Create(&events.CreateEventParams{ChartKey: "foo"})
 
@@ -56,7 +56,7 @@ func Test500(t *testing.T) {
 
 func TestWeirdError(t *testing.T) {
 	t.Parallel()
-	client := NewSeatsioClient("someSecretKey", "unknownProtocol://")
+	client := NewSeatsioClient("unknownProtocol://", "someSecretKey")
 
 	_, err := client.Events.Create(&events.CreateEventParams{ChartKey: "foo"})
 

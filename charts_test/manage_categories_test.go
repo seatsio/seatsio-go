@@ -1,6 +1,7 @@
 package charts
 
 import (
+	"fmt"
 	"github.com/seatsio/seatsio-go"
 	"github.com/seatsio/seatsio-go/charts"
 	"github.com/seatsio/seatsio-go/events"
@@ -12,7 +13,7 @@ import (
 func TestAddCategory(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
@@ -30,7 +31,7 @@ func TestAddCategory(t *testing.T) {
 func TestRemoveCategory(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
@@ -50,7 +51,7 @@ func TestRemoveCategory(t *testing.T) {
 func TestListCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
@@ -58,15 +59,18 @@ func TestListCategories(t *testing.T) {
 
 	categories, err := client.Charts.ListCategories(chart.Key)
 	require.NoError(t, err)
-	require.Contains(t, categories.Categories, category1)
-	require.Contains(t, categories.Categories, category2)
-	require.Equal(t, 2, len(categories.Categories))
+	require.Contains(t, categories, category1)
+	require.Contains(t, categories, category2)
+	require.Equal(t, 2, len(categories))
+	for _, category := range categories {
+		fmt.Println(category.Label)
+	}
 }
 
 func TestListCategories_unknownChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_, err := client.Charts.ListCategories("someUnknownChart")
 	require.Error(t, err)
