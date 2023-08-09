@@ -31,3 +31,8 @@ require (
 	golang.org/x/tools v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+retract (
+	v0.0.1 // API changed in v0.0.3 in events.go
+	v0.0.2 // Contains retractions only
+)
