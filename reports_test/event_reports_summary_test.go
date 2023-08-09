@@ -15,13 +15,7 @@ func TestSummaryByStatus(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryByStatus(event.Key)
 	require.NoError(t, err)
@@ -117,13 +111,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryByCategoryKey(event.Key)
 	require.NoError(t, err)
@@ -172,13 +160,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryByCategoryLabel(event.Key)
 	require.NoError(t, err)
@@ -227,13 +209,7 @@ func TestSummaryBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryBySection(event.Key)
 	require.NoError(t, err)
@@ -262,13 +238,7 @@ func TestSummaryByAvailability(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryByAvailability(event.Key)
 	require.NoError(t, err)
@@ -308,13 +278,7 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
 
 	report, err := client.EventReports.SummaryByAvailabilityReason(event.Key)
 	require.NoError(t, err)

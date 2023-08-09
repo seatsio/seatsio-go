@@ -150,7 +150,21 @@ func (events *Events) Update(eventKey string, params *UpdateEventParams) error {
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) ChangeObjectStatus(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+func (events *Events) ChangeObjectStatus(eventKeys []string, objects []string, status ObjectStatus) (*ChangeObjectStatusResult, error) {
+	objectProperties := make([]ObjectProperties, len(objects))
+	for i, object := range objects {
+		objectProperties[i] = ObjectProperties{ObjectId: object}
+	}
+	return events.ChangeObjectStatusWithOptions(&StatusChangeParams{
+		Events: eventKeys,
+		StatusChanges: StatusChanges{
+			Status:  status,
+			Objects: objectProperties,
+		},
+	})
+}
+
+func (events *Events) ChangeObjectStatusWithOptions(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	var changeObjectStatusResult ChangeObjectStatusResult
 	result, err := events.Client.R().
 		SetBody(statusChangeparams).
@@ -287,7 +301,7 @@ func (events *Events) BookWithObjectPropertiesAndHoldToken(eventKey string, obje
 
 func (events *Events) BookWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = BOOKED
-	return events.ChangeObjectStatus(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(statusChangeParams)
 }
 
 func (events *Events) BookBestAvailable(eventKey string, params BestAvailableParams) (*BestAvailableResult, error) {
@@ -316,7 +330,7 @@ func (events *Events) HoldWithObjectProperties(eventKey string, objectProperties
 
 func (events *Events) HoldWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = HELD
-	return events.ChangeObjectStatus(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(statusChangeParams)
 }
 
 func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
@@ -329,7 +343,7 @@ func (events *Events) ReleaseWithHoldToken(eventKey string, objectIds []string, 
 
 func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = FREE
-	return events.ChangeObjectStatus(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(statusChangeParams)
 }
 
 func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
@@ -343,7 +357,7 @@ func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectP
 	if holdToken != nil {
 		params.HoldToken = *holdToken
 	}
-	return events.ChangeObjectStatus(&params)
+	return events.ChangeObjectStatusWithOptions(&params)
 }
 
 func (events *Events) toObjectProperties(objects []string) []ObjectProperties {

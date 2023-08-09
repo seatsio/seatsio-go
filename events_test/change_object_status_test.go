@@ -17,13 +17,7 @@ func TestChangeObjectStatus(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  events.BOOKED,
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
-		},
-	})
+	objects, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, events.BOOKED)
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, objects.Objects["A-1"].Status)
@@ -38,13 +32,7 @@ func TestChangeObjectStatusWithObjectDetails(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
-		Events: []string{event.Key},
-		StatusChanges: events.StatusChanges{
-			Status:  "foo",
-			Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
-		},
-	})
+	objects, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, "foo")
 	require.NoError(t, err)
 
 	var status events.ObjectStatus = "foo"
@@ -80,7 +68,7 @@ func TestChangeObjectStatusWithHoldToken(t *testing.T) {
 	holdToken, err := client.HoldTokens.Create()
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:    events.HELD,
@@ -102,7 +90,7 @@ func TestChangeObjectStatusWithExtraData(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -127,7 +115,7 @@ func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
 	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -153,7 +141,7 @@ func TestChangeObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -176,7 +164,7 @@ func TestChangeObjectStatusWithTicketType(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -198,7 +186,7 @@ func TestChangeObjectStatusWithQuantity(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -223,7 +211,7 @@ func TestChangeObjectStatusWithChannelsKeys(t *testing.T) {
 	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:      events.BOOKED,
@@ -248,7 +236,7 @@ func TestChangeObjectStatusWithIgnoreChannels(t *testing.T) {
 	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:         events.BOOKED,
@@ -270,7 +258,7 @@ func TestChangeObjectStatusWithAllowedPreviousStatus(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -292,7 +280,7 @@ func TestChangeObjectStatusWithRejectedPreviousStatus(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,

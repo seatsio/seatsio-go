@@ -66,7 +66,7 @@ func TestPropertiesOfStatusChange(t *testing.T) {
 	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{Events: []string{event.Key}, StatusChanges: events.StatusChanges{Status: "s1", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}})
+	_, err = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, "s1")
 	require.NoError(t, err)
 
 	statusChanges, err := client.Events.StatusChanges(event.Key).All(shared.Pagination.PageSize(1))
@@ -96,7 +96,7 @@ func TestPropertiesOfStatusChangeHoldToken(t *testing.T) {
 	holdToken, err := client.HoldTokens.Create()
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:    events.HELD,
