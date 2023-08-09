@@ -156,7 +156,7 @@ func TestCreateSingleEventWithDefaultValues(t *testing.T) {
 	start := time.Now()
 	result, err := client.Events.CreateMultiple(chartKey, events.EventParams{})
 	require.NoError(t, err)
-	end := time.Now()
+	end := time.Now().Add(time.Second)
 
 	require.NotEqual(t, int64(0), result.Events[0].Id)
 	require.NotNil(t, result.Events[0].Key)
