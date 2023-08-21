@@ -35,4 +35,6 @@ require (
 retract (
 	v0.0.1 // API changed in v0.0.3 in events.go
 	v0.0.2 // Contains retractions only
+	v0.0.3 // API changed in v0.0.4
+	v0.0.4 // Contains retractions only
 )
