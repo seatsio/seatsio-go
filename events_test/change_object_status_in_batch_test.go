@@ -20,8 +20,20 @@ func TestChangeObjectStatusInBatch(t *testing.T) {
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
-		events.StatusChangeInBatchParams{Event: event1.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}}},
-		events.StatusChangeInBatchParams{Event: event2.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-2"}}}},
+		events.StatusChangeInBatchParams{
+			Event: event1.Key,
+			StatusChanges: events.StatusChanges{
+				Status:  "lolzor",
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+			},
+		},
+		events.StatusChangeInBatchParams{
+			Event: event2.Key,
+			StatusChanges: events.StatusChanges{
+				Status:  "lolzor",
+				Objects: []events.ObjectProperties{{ObjectId: "A-2"}},
+			},
+		},
 	)
 	require.NoError(t, err)
 
@@ -64,7 +76,13 @@ func TestBatchAllowedPreviousStatuses(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatusInBatch(
-		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}, AllowedPreviousStatuses: []events.ObjectStatus{"MustBeThisStatus"}}},
+		events.StatusChangeInBatchParams{
+			Event: event.Key,
+			StatusChanges: events.StatusChanges{
+				Status:                  "lolzor",
+				Objects:                 []events.ObjectProperties{{ObjectId: "A-1"}},
+				AllowedPreviousStatuses: []events.ObjectStatus{"MustBeThisStatus"}},
+		},
 	)
 	seatsioError := err.(*shared.SeatsioError)
 	require.Equal(t, "ILLEGAL_STATUS_CHANGE", seatsioError.Code)

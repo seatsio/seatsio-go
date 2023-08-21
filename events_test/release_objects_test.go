@@ -183,3 +183,30 @@ func TestIgnoreChannelKeys(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, events.FREE, retrieveObjectInfo["A-1"].Status)
 }
+
+func TestBestAvailable(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	holdToken, err := client.HoldTokens.Create()
+	require.NoError(t, err)
+
+	_, err = client.Events.HoldBestAvailable(event.Key, events.BestAvailableParams{
+		Number: 2,
+		Categories: []events.CategoryKey{
+			{Key: "cat2"},
+		},
+	}, holdToken.HoldToken)
+	require.NoError(t, err)
+
+	_, err = client.Events.ReleaseWithHoldToken(event.Key, []string{"C-4", "C-5"}, &holdToken.HoldToken)
+	require.NoError(t, err)
+
+	retrieveObjectInfo, err := client.Events.RetrieveObjectInfo(event.Key, "C-4", "C-5")
+	require.NoError(t, err)
+	require.Equal(t, events.FREE, retrieveObjectInfo["C-4"].Status)
+	require.Nil(t, retrieveObjectInfo["C-5"].HoldToken)
+}

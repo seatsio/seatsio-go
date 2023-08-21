@@ -29,14 +29,14 @@ func (TableBookingModeSupportNS) Inherit() TableBookingConfig {
 	return TableBookingConfig{Mode: INHERIT, Tables: nil}
 }
 
-func (TableBookingModeSupportNS) AllBySeat() TableBookingConfig {
-	return TableBookingConfig{Mode: ALL_BY_SEAT, Tables: nil}
+func (TableBookingModeSupportNS) AllBySeat() *TableBookingConfig {
+	return &TableBookingConfig{Mode: ALL_BY_SEAT, Tables: nil}
 }
 
-func (TableBookingModeSupportNS) AllByTables() TableBookingConfig {
-	return TableBookingConfig{Mode: ALL_BY_TABLE, Tables: nil}
+func (TableBookingModeSupportNS) AllByTables() *TableBookingConfig {
+	return &TableBookingConfig{Mode: ALL_BY_TABLE, Tables: nil}
 }
 
-func (TableBookingModeSupportNS) Custom() TableBookingConfig {
-	return TableBookingConfig{Mode: CUSTOM, Tables: nil}
+func (TableBookingModeSupportNS) Custom() *TableBookingConfig {
+	return &TableBookingConfig{Mode: CUSTOM, Tables: nil}
 }

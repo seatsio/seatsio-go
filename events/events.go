@@ -17,6 +17,7 @@ type EventParams struct {
 	TableBookingConfig *TableBookingConfig     `json:"tableBookingConfig,omitempty"`
 	ObjectCategories   *map[string]CategoryKey `json:"objectCategories,omitempty"`
 	Categories         *[]Category             `json:"categories,omitempty"`
+	Channels           *[]CreateChannelParams  `json:"channels,omitempty"`
 }
 
 type CreateEventParams struct {
@@ -305,14 +306,17 @@ func (events *Events) BookWithOptions(statusChangeParams *StatusChangeParams) (*
 }
 
 func (events *Events) BookBestAvailable(eventKey string, params BestAvailableParams) (*BestAvailableResult, error) {
-	return events.BookBestAvailableWithHoldToken(eventKey, params, nil)
-}
-
-func (events *Events) BookBestAvailableWithHoldToken(eventKey string, params BestAvailableParams, holdToken *string) (*BestAvailableResult, error) {
 	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
 		Status:        BOOKED,
 		BestAvailable: params,
-		HoldToken:     *holdToken,
+	})
+}
+
+func (events *Events) BookBestAvailableWithHoldToken(eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+		Status:        BOOKED,
+		BestAvailable: params,
+		HoldToken:     holdToken,
 	})
 }
 
@@ -331,6 +335,14 @@ func (events *Events) HoldWithObjectProperties(eventKey string, objectProperties
 func (events *Events) HoldWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = HELD
 	return events.ChangeObjectStatusWithOptions(statusChangeParams)
+}
+
+func (events *Events) HoldBestAvailable(eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+		Status:        HELD,
+		BestAvailable: params,
+		HoldToken:     holdToken,
+	})
 }
 
 func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {

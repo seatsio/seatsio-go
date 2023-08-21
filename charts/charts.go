@@ -4,6 +4,7 @@ import (
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/shared"
+	"os"
 	"strconv"
 )
 
@@ -157,6 +158,14 @@ func (charts *Charts) ListFirstPage(opts ...shared.PaginationParamsOption) (*sha
 	return charts.List().ListFirstPage(opts...)
 }
 
+func (charts *Charts) ListPageAfter(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return charts.List().ListPageAfter(id, opts...)
+}
+
+func (charts *Charts) ListPageBefore(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return charts.List().ListPageBefore(id, opts...)
+}
+
 func (charts *Charts) AddCategory(chartKey string, category events.Category) error {
 	result, err := charts.Client.R().
 		SetPathParam("key", chartKey).
@@ -229,6 +238,24 @@ func (charts *Charts) ValidateDraftVersion(key string) (*ChartValidationResult, 
 	return shared.AssertOk(result, err, &response)
 }
 
+func (charts *Charts) RetrievePublishedVersionThumbnail(chartKey string) (*os.File, error) {
+	return charts.retrieveThumbnail("published", chartKey)
+}
+
+func (charts *Charts) RetrieveDraftVersionThumbnail(chartKey string) (*os.File, error) {
+	return charts.retrieveThumbnail("draft", chartKey)
+}
+
+func (charts *Charts) retrieveThumbnail(imageType string, chartKey string) (*os.File, error) {
+	tempFile, err := os.CreateTemp("", chartKey+".png.")
+	result, err := charts.Client.R().
+		SetOutputFile(tempFile.Name()).
+		SetPathParam("key", chartKey).
+		SetPathParam("imageType", imageType).
+		Get("/charts/{key}/version/{imageType}/thumbnail")
+	return shared.AssertOk(result, err, tempFile)
+}
+
 func (archive *Archive) lister() *shared.Lister[Chart] {
 	pageFetcher := shared.PageFetcher[Chart]{
 		Client:    archive.Client,
@@ -240,6 +267,18 @@ func (archive *Archive) lister() *shared.Lister[Chart] {
 
 func (archive *Archive) All(opts ...shared.PaginationParamsOption) ([]Chart, error) {
 	return archive.lister().All(opts...)
+}
+
+func (archive *Archive) ListFirstPage(opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return archive.lister().ListFirstPage(opts...)
+}
+
+func (archive *Archive) ListPageAfter(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return archive.lister().ListPageAfter(id, opts...)
+}
+
+func (archive *Archive) ListPageBefore(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
+	return archive.lister().ListPageBefore(id, opts...)
 }
 
 func (charts *Charts) ListAllTags() ([]string, error) {
