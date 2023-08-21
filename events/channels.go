@@ -33,15 +33,7 @@ type replaceChannelsRequest struct {
 	Channels []Channel `json:"channels"`
 }
 
-func (channels *Channels) Create(eventKey string, params *CreateChannelParams) error {
-	result, err := channels.Client.R().
-		SetBody(params).
-		SetPathParam("key", eventKey).
-		Post("/events/{key}/channels")
-	return shared.AssertOkNoBody(result, err)
-}
-
-func (channels *Channels) CreateMultiple(eventKey string, params ...*CreateChannelParams) error {
+func (channels *Channels) Create(eventKey string, params ...*CreateChannelParams) error {
 	result, err := channels.Client.R().
 		SetBody(params).
 		SetPathParam("key", eventKey).

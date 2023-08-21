@@ -35,7 +35,7 @@ func TestCreateChannels(t *testing.T) {
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.CreateMultiple(event.Key,
+	err := client.Channels.Create(event.Key,
 		&events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
 		&events.CreateChannelParams{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
 	)

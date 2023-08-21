@@ -10,7 +10,11 @@ This is the official Go client library for the [Seats.io V2 REST API](https://do
 
 ## Installing
 
-To do
+```
+require (
+    github.com/seatsio/seatsio-go <version>
+)
+```
 
 ## Usage
 

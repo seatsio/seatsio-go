@@ -186,3 +186,20 @@ func TestIgnoreChannel(t *testing.T) {
 	info, _ := client.Events.RetrieveObjectInfo(event.Key, "A-1")
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }
+
+func TestBookBestAvailable(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	bestAvailableResult, err := client.Events.BookBestAvailable(event.Key, events.BestAvailableParams{
+		Number:     3,
+		Categories: []events.CategoryKey{{Key: "cat2"}},
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, []string{"C-4", "C-5", "C-6"}, bestAvailableResult.Objects)
+}
