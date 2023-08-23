@@ -100,6 +100,9 @@ type EventObjectInfo struct {
 	Channel              string                      `json:"channel,omitempty"`
 	DistanceToFocalPoint float64                     `json:"distanceToFocalPoint"`
 	Holds                map[string]map[string]int32 `json:"holds,omitempty"`
+	VariableOccupancy    bool                        `json:"variableOccupancy"`
+	MinOccupancy         int32                       `json:"minOccupancy"`
+	MaxOccupancy         int32                       `json:"maxOccupancy"`
 }
 
 type DetailedEventReport struct {
