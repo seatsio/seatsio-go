@@ -77,6 +77,11 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.Equal(t, reports.Booked, reportItem.AvailabilityReason)
 	require.Equal(t, "channel1", reportItem.Channel)
 	require.NotNil(t, reportItem.DistanceToFocalPoint)
+
+	gaItem := report.Items["GA1"][0]
+	require.True(t, gaItem.VariableOccupancy)
+	require.Equal(t, int32(1), gaItem.MinOccupancy)
+	require.Equal(t, int32(100), gaItem.MaxOccupancy)
 }
 
 func TestHoldToken(t *testing.T) {
