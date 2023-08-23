@@ -2,16 +2,13 @@ name: "Release"
 
 on:
   workflow_dispatch:
-    branches:
-      - main
-      - release_automation_test
     inputs:
       tag-and-release-name:
         description: Used for the tag name and release name
 
 jobs:
   run-build:
-    uses: seatsio/seatsio-go/.github/workflows/build.yml
+    uses: seatsio/seatsio-go/.github/workflows/build.yml@main
 
   create-tag-and-release:
     name: Create tag and release
