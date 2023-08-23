@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag-and-release-name:
-        description: Used for the tag name and release name
+        description: Semver for the tag name and release name
+        required: true
+        type: string
 
 jobs:
   run-build:
