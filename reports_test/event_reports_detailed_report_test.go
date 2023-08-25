@@ -15,8 +15,14 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.BookWithOptions(&events.StatusChangeParams{
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1"}},
+		},
+	}})
+	require.NoError(t, err)
+
+	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{{
@@ -24,17 +30,11 @@ func TestDetailedReportItemProperties(t *testing.T) {
 				ExtraData:  events.ExtraData{"foo": "bar"},
 				TicketType: "ticketType1",
 			}},
-			OrderId: "order1",
+			OrderId:        "order1",
+			IgnoreChannels: true,
 		},
 	})
-	err = client.Channels.Replace(event.Key, events.Channel{
-		Key:     "channel1",
-		Name:    "channel 1",
-		Color:   "#FFFF99",
-		Index:   1,
-		Objects: []string{"A-1"},
-	})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	require.NoError(t, err)
 
 	report, err := client.EventReports.ByLabel(event.Key)
 	require.NoError(t, err)
@@ -500,14 +500,12 @@ func TestDetailedReportByChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	err := client.Channels.Replace(event.Key, events.Channel{
-		Key:     "channel1",
-		Name:    "channel 1",
-		Color:   "#FFFF99",
-		Index:   1,
-		Objects: []string{"A-1", "A-2"},
-	})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1"}},
+		},
+	}})
+	require.NoError(t, err)
 
 	report, err := client.EventReports.ByChannel(event.Key)
 	require.NoError(t, err)
@@ -521,14 +519,12 @@ func TestDetailedReportBySpecificChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	err := client.Channels.Replace(event.Key, events.Channel{
-		Key:     "channel1",
-		Name:    "channel 1",
-		Color:   "#FFFF99",
-		Index:   1,
-		Objects: []string{"A-1", "A-2"},
-	})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
+		},
+	}})
+	require.NoError(t, err)
 
 	items, err := client.EventReports.BySpecificChannel(event.Key, "channel1")
 	require.NoError(t, err)

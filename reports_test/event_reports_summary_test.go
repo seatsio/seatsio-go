@@ -328,8 +328,12 @@ func TestSummaryByChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	err := client.Channels.Replace(event.Key, events.Channel{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
+		},
+	}})
+	require.NoError(t, err)
 
 	report, err := client.EventReports.SummaryByChannel(event.Key)
 	require.NoError(t, err)

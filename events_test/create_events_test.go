@@ -132,6 +132,30 @@ func TestCreateMultipleEventsWithDate(t *testing.T) {
 	require.Equal(t, "2023-07-19", result.Events[1].Date)
 }
 
+func TestCreateMultipleEventsWithChannels(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	channels := []events.CreateChannelParams{
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+	}
+
+	result, err := client.Events.CreateMultiple(chartKey,
+		events.EventParams{Channels: &channels},
+		events.EventParams{Channels: &channels},
+	)
+	require.NoError(t, err)
+
+	expectedChannels := []events.Channel{
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+	}
+	require.Equal(t, expectedChannels, result.Events[0].Channels)
+	require.Equal(t, expectedChannels, result.Events[1].Channels)
+}
+
 func TestCreateMultipleEventsWithDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

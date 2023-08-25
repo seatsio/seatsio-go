@@ -144,10 +144,11 @@ func TestChannelKeys(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	require.NoError(t, err)
-
-	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
+		},
+	}})
 	require.NoError(t, err)
 
 	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
@@ -168,10 +169,11 @@ func TestIgnoreChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	require.NoError(t, err)
-
-	err = client.Channels.Replace(event.Key, events.Channel{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}})
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+		Channels: &[]events.CreateChannelParams{
+			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
+		},
+	}})
 	require.NoError(t, err)
 
 	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
