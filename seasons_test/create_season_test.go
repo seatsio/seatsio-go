@@ -65,5 +65,25 @@ func TestEventKeysCanBePassedIn(t *testing.T) {
 
 	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason", EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)
-	require.Subset(t, []string{season.Events[0].Key, season.Events[1].Key}, []string{"event1", "event2"})
+	require.Equal(t, []string{"event1", "event2"}, []string{season.Events[0].Key, season.Events[1].Key})
+}
+
+func TestChannelsCanBePassedIn(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	channels := []events.CreateChannelParams{
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+	}
+
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason", Channels: &channels})
+	require.NoError(t, err)
+
+	expectedChannels := []events.Channel{
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+	}
+	require.Equal(t, expectedChannels, season.Channels)
 }

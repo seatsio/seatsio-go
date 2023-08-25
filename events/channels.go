@@ -30,7 +30,7 @@ type changeChannelObjectsRequest struct {
 }
 
 type replaceChannelsRequest struct {
-	Channels []Channel `json:"channels"`
+	Channels []CreateChannelParams `json:"channels"`
 }
 
 func (channels *Channels) Create(eventKey string, params ...*CreateChannelParams) error {
@@ -76,7 +76,7 @@ func (channels *Channels) RemoveObjects(eventKey string, channelKey string, obje
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) Replace(eventKey string, newChannels ...Channel) error {
+func (channels *Channels) Replace(eventKey string, newChannels ...CreateChannelParams) error {
 	result, err := channels.Client.R().
 		SetBody(replaceChannelsRequest{newChannels}).
 		SetPathParam("eventKey", eventKey).

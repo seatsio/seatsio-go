@@ -13,30 +13,24 @@ func TestReplaceChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
+		Channels: &[]events.CreateChannelParams{
+			{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
+			{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
+		},
 	}})
-	require.Equal(t, 0, len(event.Channels))
-
-	err := client.Channels.Create(event.Key,
-		&events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
-		&events.CreateChannelParams{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
-	)
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
-	require.Equal(t, []events.Channel{
-		{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
-		{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
-	}, retrievedEvent.Channels)
-
 	replaceError := client.Channels.Replace(event.Key,
-		events.Channel{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
-		events.Channel{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
+		events.CreateChannelParams{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
+		events.CreateChannelParams{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
 	)
 	require.NoError(t, replaceError)
 
-	postReplacementEvent, _ := client.Events.Retrieve(event.Key)
+	postReplacementEvent, err := client.Events.Retrieve(event.Key)
+	require.NoError(t, err)
+
 	require.Equal(t, []events.Channel{
 		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
 		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
