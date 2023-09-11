@@ -2,6 +2,8 @@ package reports_test
 
 import (
 	"github.com/seatsio/seatsio-go"
+	"github.com/seatsio/seatsio-go/charts"
+	"github.com/seatsio/seatsio-go/events"
 	"github.com/seatsio/seatsio-go/reports"
 	"github.com/seatsio/seatsio-go/test_util"
 	"github.com/stretchr/testify/require"
@@ -59,7 +61,7 @@ func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, reports.BookWholeTables.True())
+	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, reports.ChartReportOptions.BookWholeTablesTrue())
 
 	require.NoError(t, err)
 	tableReportItem := reports.ChartSummaryReportItem{
@@ -173,6 +175,35 @@ func TestSummaryBySection(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey)
+
+	require.NoError(t, err)
+	noSectionReport := reports.ChartSummaryReportItem{
+		Count: 232,
+		ByCategoryKey: map[string]interface{}{
+			"9":  float64(116),
+			"10": float64(116),
+		},
+		ByCategoryLabel: map[string]interface{}{
+			"Cat1": float64(116),
+			"Cat2": float64(116),
+		},
+		ByObjectType: map[string]interface{}{
+			"seat":             float64(32),
+			"generalAdmission": float64(200),
+		},
+	}
+	require.Equal(t, noSectionReport, summaryChartReport.Items["NO_SECTION"])
+}
+
+func TestSummaryDraftVersion(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	_ = client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "Foo"})
+
+	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey, reports.ChartReportOptionsNS{}.UseDraftVersion())
 
 	require.NoError(t, err)
 	noSectionReport := reports.ChartSummaryReportItem{
