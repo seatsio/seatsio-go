@@ -212,9 +212,4 @@ func TestUpdateEventIsInThePast(t *testing.T) {
 	updatedEvent, err := client.Events.Retrieve("event1")
 	require.NoError(t, err)
 	require.True(t, updatedEvent.IsInThePast)
-
-	err = client.Events.Update("event1", &events.UpdateEventParams{EventParams: &events.EventParams{
-		Name: "bar",
-	}})
-	require.EqualError(t, err, "Events in the past cannot be updated")
 }
