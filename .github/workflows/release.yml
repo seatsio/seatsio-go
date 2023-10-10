@@ -3,30 +3,35 @@ name: "Release"
 on:
   workflow_dispatch:
     inputs:
-      tag-and-release-name:
-        description: Semver for the tag name and release name
+      versionToBump:
+        description: 'The version to bump. Major for incompatible API changes, minor for adding BC features'
         required: true
-        type: string
+        type: choice
+        options:
+          - minor
+          - major
 
 jobs:
   run-build:
     uses: seatsio/seatsio-go/.github/workflows/build.yml@main
 
-  create-tag-and-release:
-    name: Create tag and release
+  release:
     runs-on: ubuntu-latest
+    name: Create tag and release
     needs:
       -  run-build
     steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
         with:
-          tag_name: ${{ github.event.inputs.tag-and-release-name }}
-          release_name: ${{ github.event.inputs.tag-and-release-name }}
-          draft: false
-          prerelease: false
+          fetch-depth: 0
+      - uses: fregante/setup-git-user@v2
+      - id: install-zx
+        run: npm i -g zx
+      - id: install-semver-tool
+        run: |
+          wget -O /usr/local/bin/semver https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver
+          chmod +x /usr/local/bin/semver
+      - run: zx ./release.mjs -v $VERSION_TO_BUMP
+        env:
+          VERSION_TO_BUMP: ${{ inputs.versionToBump }}
+          GH_TOKEN: ${{ github.token }}
