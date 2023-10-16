@@ -14,10 +14,11 @@ func TestAddingEventToPartialSeason(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{
+	params := seasons.CreateSeasonParams{
 		Key:       "aSeason",
 		EventKeys: []string{"event1", "event2"},
-	})
+	}
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &params)
 	require.NoError(t, err)
 	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(season.Key, &seasons.CreatePartialSeasonParams{Key: "aPartialSeason"})
 	require.NoError(t, err)

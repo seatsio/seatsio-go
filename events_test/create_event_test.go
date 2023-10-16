@@ -165,3 +165,21 @@ func TestCreateEventWithChannels(t *testing.T) {
 	}
 	require.Equal(t, expectedChannels, event.Channels)
 }
+
+func TestCreateEventWithForSaleConfig(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	forSaleConfig := &events.ForSaleConfig{
+		ForSale:    false,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{"GA1": 5},
+		Categories: []string{"Cat1"},
+	}
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, ForSaleConfig: forSaleConfig})
+	require.NoError(t, err)
+
+	require.Equal(t, forSaleConfig, event.ForSaleConfig)
+}

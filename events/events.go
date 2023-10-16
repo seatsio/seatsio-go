@@ -21,7 +21,13 @@ type EventParams struct {
 }
 
 type CreateEventParams struct {
-	ChartKey string `json:"chartKey"`
+	ChartKey      string         `json:"chartKey"`
+	ForSaleConfig *ForSaleConfig `json:"forSaleConfig,omitempty"`
+	*EventParams
+}
+
+type CreateMultipleEventParams struct {
+	ForSaleConfig *ForSaleConfig `json:"forSaleConfig,omitempty"`
 	*EventParams
 }
 
@@ -32,8 +38,8 @@ type UpdateEventParams struct {
 }
 
 type CreateMultipleEventsRequest struct {
-	ChartKey string        `json:"chartKey"`
-	Events   []EventParams `json:"events"`
+	ChartKey string                      `json:"chartKey"`
+	Events   []CreateMultipleEventParams `json:"events"`
 }
 
 type CreateEventResult struct {
@@ -132,7 +138,7 @@ func (events *Events) Create(params *CreateEventParams) (*Event, error) {
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) CreateMultiple(chartKey string, params ...EventParams) (*CreateEventResult, error) {
+func (events *Events) CreateMultiple(chartKey string, params ...CreateMultipleEventParams) (*CreateEventResult, error) {
 	var eventCreationResult CreateEventResult
 	result, err := events.Client.R().
 		SetBody(&CreateMultipleEventsRequest{

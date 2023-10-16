@@ -17,6 +17,7 @@ type CreateSeasonParams struct {
 	EventKeys          []string                      `json:"eventKeys,omitempty"`
 	NumberOfEvents     int32                         `json:"numberOfEvents,omitempty"`
 	Channels           *[]events.CreateChannelParams `json:"channels,omitempty"`
+	ForSaleConfig      *events.ForSaleConfig         `json:"forSaleConfig,omitempty"`
 }
 
 type CreatePartialSeasonParams struct {

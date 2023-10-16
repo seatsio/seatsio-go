@@ -87,3 +87,21 @@ func TestChannelsCanBePassedIn(t *testing.T) {
 	}
 	require.Equal(t, expectedChannels, season.Channels)
 }
+
+func TestForSaleConfigCanBePassedIn(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	forSaleConfig := &events.ForSaleConfig{
+		ForSale:    false,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{"GA1": 5},
+		Categories: []string{"Cat1"},
+	}
+
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aSeason", ForSaleConfig: forSaleConfig})
+	require.NoError(t, err)
+
+	require.Equal(t, forSaleConfig, season.ForSaleConfig)
+}
