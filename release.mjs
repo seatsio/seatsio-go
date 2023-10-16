@@ -54,7 +54,7 @@ async function determineNextVersionNumber(previous) {
 }
 
 async function bumpVersionInFiles() {
-    await replaceInFile("package.json", `"version": "${latestVersion}",`, `"version": "${nextVersion}",`)
+    await replaceInFile("README.md", `github.com/seatsio/seatsio-go ${latestVersion}`, `"github.com/seatsio/seatsio-go ${nextVersion}`)
 }
 
 async function replaceInFile(filename, latestVersion, nextVersion) {
