@@ -17,8 +17,8 @@ func TestCreateMultipleEventsWithDefaultValues(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{},
-		events.EventParams{},
+		events.CreateMultipleEventParams{},
+		events.CreateMultipleEventParams{},
 	)
 	require.NoError(t, err)
 
@@ -33,8 +33,8 @@ func TestCreateMultipleEventsWithEventKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{EventKey: "event1"},
-		events.EventParams{EventKey: "event2"},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event2"}},
 	)
 	require.NoError(t, err)
 
@@ -52,8 +52,8 @@ func TestCreateMultipleEventsWithTableBookingConfig(t *testing.T) {
 		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
 	}}
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{TableBookingConfig: &tableBookingConfig},
-		events.EventParams{TableBookingConfig: &tableBookingConfig},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{TableBookingConfig: &tableBookingConfig}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{TableBookingConfig: &tableBookingConfig}},
 	)
 	require.NoError(t, err)
 
@@ -71,8 +71,8 @@ func TestCreateMultipleEventsWithObjectCategories(t *testing.T) {
 		"A-1": {10},
 	}
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{ObjectCategories: &objectCategories},
-		events.EventParams{ObjectCategories: &objectCategories},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{ObjectCategories: &objectCategories}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{ObjectCategories: &objectCategories}},
 	)
 	require.NoError(t, err)
 
@@ -91,8 +91,8 @@ func TestCreateMultipleEventsWithCategories(t *testing.T) {
 		category,
 	}
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{Categories: &categories},
-		events.EventParams{Categories: &categories},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Categories: &categories}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Categories: &categories}},
 	)
 	require.NoError(t, err)
 
@@ -107,8 +107,8 @@ func TestCreateMultipleEventsWithName(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{Name: "Event 1"},
-		events.EventParams{Name: "Event 2"},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Name: "Event 1"}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Name: "Event 2"}},
 	)
 	require.NoError(t, err)
 
@@ -123,8 +123,8 @@ func TestCreateMultipleEventsWithDate(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{Date: "2023-07-18"},
-		events.EventParams{Date: "2023-07-19"},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Date: "2023-07-18"}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Date: "2023-07-19"}},
 	)
 	require.NoError(t, err)
 
@@ -143,8 +143,8 @@ func TestCreateMultipleEventsWithChannels(t *testing.T) {
 	}
 
 	result, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{Channels: &channels},
-		events.EventParams{Channels: &channels},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Channels: &channels}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{Channels: &channels}},
 	)
 	require.NoError(t, err)
 
@@ -163,8 +163,8 @@ func TestCreateMultipleEventsWithDuplicateKeys(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	_, err := client.Events.CreateMultiple(chartKey,
-		events.EventParams{EventKey: "event1"},
-		events.EventParams{EventKey: "event1"},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
 	)
 	seatsioError := err.(*shared.SeatsioError)
 	require.Equal(t, "GENERAL_ERROR", seatsioError.Code)
@@ -178,7 +178,7 @@ func TestCreateSingleEventWithDefaultValues(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	start := time.Now()
-	result, err := client.Events.CreateMultiple(chartKey, events.EventParams{})
+	result, err := client.Events.CreateMultiple(chartKey, events.CreateMultipleEventParams{})
 	require.NoError(t, err)
 	end := time.Now().Add(time.Second)
 
@@ -192,4 +192,32 @@ func TestCreateSingleEventWithDefaultValues(t *testing.T) {
 	require.True(t, result.Events[0].CreatedOn.After(start))
 	require.True(t, result.Events[0].CreatedOn.Before(end))
 	require.Nil(t, result.Events[0].UpdatedOn)
+}
+
+func TestCreateMultipleEventsWithForSaleConfig(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	forSaleConfig1 := &events.ForSaleConfig{
+		ForSale:    false,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{"GA1": 3},
+		Categories: []string{"Cat1"},
+	}
+	forSaleConfig2 := &events.ForSaleConfig{
+		ForSale:    false,
+		Objects:    []string{"A-2"},
+		AreaPlaces: map[string]int{"GA1": 7},
+		Categories: []string{"Cat1"},
+	}
+
+	result, err := client.Events.CreateMultiple(chartKey,
+		events.CreateMultipleEventParams{ForSaleConfig: forSaleConfig1},
+		events.CreateMultipleEventParams{ForSaleConfig: forSaleConfig2},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, forSaleConfig1, result.Events[0].ForSaleConfig)
+	require.Equal(t, forSaleConfig2, result.Events[1].ForSaleConfig)
 }

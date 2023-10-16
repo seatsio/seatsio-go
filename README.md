@@ -72,9 +72,9 @@ import (
 func CreateMultipleEvents() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
     chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
-    result, _ := client.Events.CreateMultiple(chart.Key,
-		events.EventParams{EventKey: "event1", Date: "2023-10-18"},
-		events.EventParams{EventKey: "event2", Date: "2023-10-20"},
+	result, err := client.Events.CreateMultiple(chartKey,
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1", Date: "2023-10-18"}},
+		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event2", Date: "2023-10-20"}},
 	)
     for _, event := range result.Events {
         fmt.Printf(`Created an event with key: %s`, event.Key)
