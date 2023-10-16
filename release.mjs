@@ -76,7 +76,7 @@ async function gitAdd(filename) {
 
 async function commitAndPush() {
     await $`git commit -m "version bump"`
-    await $`git push origin master`
+    await $`git push origin main`
 }
 
 async function getCurrentCommitHash() {
@@ -88,10 +88,10 @@ async function getCommitHashOfTag(tag) {
 }
 
 async function assertChangesSinceRelease(releaseTag) {
-    let masterCommitHash = await getCurrentCommitHash()
+    let mainCommitHash = await getCurrentCommitHash()
     let releaseCommitHash = await getCommitHashOfTag(releaseTag)
-    if(masterCommitHash === releaseCommitHash) {
-        throw new Error("No changes on master since release tagged " + releaseTag)
+    if(mainCommitHash === releaseCommitHash) {
+        throw new Error("No changes on main since release tagged " + releaseTag)
     }
 }
 
