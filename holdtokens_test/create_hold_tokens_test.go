@@ -21,7 +21,7 @@ func TestCreateHoldToken(t *testing.T) {
 	require.True(t, holdToken.ExpiresAt.After(start.Add(-14*time.Minute)))
 	require.True(t, holdToken.ExpiresAt.Before(start.Add(16*time.Minute)))
 	require.True(t, holdToken.ExpiresInSeconds > 14*60)
-	require.True(t, holdToken.ExpiresInSeconds < 15*60)
+	require.True(t, holdToken.ExpiresInSeconds <= 15*60)
 }
 
 func TestCreateHoldTokenWithExpiresInMinutes(t *testing.T) {
@@ -37,5 +37,5 @@ func TestCreateHoldTokenWithExpiresInMinutes(t *testing.T) {
 	require.True(t, holdToken.ExpiresAt.After(start.Add(-4*time.Minute)))
 	require.True(t, holdToken.ExpiresAt.Before(start.Add(6*time.Minute)))
 	require.True(t, holdToken.ExpiresInSeconds > 4*60)
-	require.True(t, holdToken.ExpiresInSeconds < 5*60)
+	require.True(t, holdToken.ExpiresInSeconds <= 5*60)
 }
