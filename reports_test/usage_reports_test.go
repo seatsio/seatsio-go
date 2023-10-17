@@ -1,4 +1,4 @@
-package reports
+package reports_test
 
 import (
 	"github.com/seatsio/seatsio-go"
@@ -7,27 +7,42 @@ import (
 	"testing"
 )
 
-func TestSummaryForAllMonths(t *testing.T) {
+func TestUsageReportForAllMonths(t *testing.T) {
 	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
+	test_util.AssertDemoCompanySecretKeySet(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
 
-	summary, err := client.UsageReports.SummaryForAllMonths()
+	report, err := client.UsageReports.SummaryForAllMonths()
+
 	require.NoError(t, err)
-
-	require.NotEmpty(t, summary)
+	require.GreaterOrEqual(t, len(report.Usage), 0)
+	require.NotNil(t, report.UsageCutoffDate)
+	require.Equal(t, report.Usage[0].Month.Month, 2)
+	require.Equal(t, report.Usage[0].Month.Year, 2014)
 }
 
-/*
-// Further testing requires additional implementation of the event API (can't book right now!)
-func TestDetailsForMonth(t *testing.T) {
+func TestUsageReportForMonth(t *testing.T) {
 	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(company.Admin.SecretKey, test_util.BaseUrl)
-	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
+	test_util.AssertDemoCompanySecretKeySet(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
 
-	_, err := client.UsageReports.DetailsForMonth(2020, 8)
+	report, err := client.UsageReports.DetailsForMonth(2021, 11)
+
 	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(report), 0)
+	require.GreaterOrEqual(t, len(report[0].UsageByChart), 0)
+	require.Equal(t, report[0].UsageByChart[0].UsageByEvent[0].NumUsedObjects, 143)
 }
-*/
+
+func TestUsageReportForEventInMonth(t *testing.T) {
+	t.Parallel()
+	test_util.AssertDemoCompanySecretKeySet(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
+
+	report1, report2, err := client.UsageReports.DetailsForEventInMonth(580293, 2021, 11)
+
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(report1), 0)
+	require.Equal(t, report1[0].NumFirstSelections, 1)
+	require.Nil(t, report2)
+}

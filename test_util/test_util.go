@@ -74,3 +74,14 @@ func createTestChart(t *testing.T, secretKey string, fileName string) string {
 	}
 	return chartKey
 }
+
+func DemoCompanySecretKey() string {
+	return os.Getenv("DEMO_COMPANY_SECRET_KEY")
+}
+
+func AssertDemoCompanySecretKeySet(t *testing.T) {
+	_, exists := os.LookupEnv("DEMO_COMPANY_SECRET_KEY")
+	if !exists {
+		t.Skip("DEMO_COMPANY_SECRET_KEY environment variable not set, skipping test")
+	}
+}
