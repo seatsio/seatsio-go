@@ -18,7 +18,7 @@ type seatsioClientNS struct {
 
 var ClientSupport seatsioClientNS
 
-const baseUrlStart = "https://api-staging-"
+const baseUrlStart = "https://api-"
 const baseUrlEnd = ".seatsio.net"
 
 const (
