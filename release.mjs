@@ -105,7 +105,8 @@ async function release() {
 
 async function updateGoPackageRepo() {
     const newTag = 'v' + nextVersion
-    return await $`curl -X POST https://pkg.go.dev/fetch/github.com/seatsio/seatsio-go@${newTag}`.catch(error => {
-        console.error('pkg.go.dev could not be updated.  This is not a blocking error!')
+    return await $`curl -X POST https://pkg.go.dev/fetch/github.com/seatsio/seatsio-go/tree/@${newTag}`.catch(error => {
+        console.error('pkg.go.dev could not be updated')
+        throw error
     })
 }
