@@ -12,9 +12,6 @@ on:
           - major
 
 jobs:
-  run-build:
-    uses: seatsio/seatsio-go/.github/workflows/build.yml@main
-
   release:
     runs-on: ubuntu-latest
     name: Create tag and release
