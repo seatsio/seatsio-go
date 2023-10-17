@@ -80,8 +80,8 @@ func TestDetailedReportItemProperties(t *testing.T) {
 
 	gaItem := report.Items["GA1"][0]
 	require.True(t, gaItem.VariableOccupancy)
-	require.Equal(t, int32(1), gaItem.MinOccupancy)
-	require.Equal(t, int32(100), gaItem.MaxOccupancy)
+	require.Equal(t, 1, gaItem.MinOccupancy)
+	require.Equal(t, 100, gaItem.MaxOccupancy)
 }
 
 func TestHoldToken(t *testing.T) {
@@ -128,10 +128,10 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 	require.NoError(t, err)
 
 	reportItem := report.Items["GA1"][0]
-	require.Equal(t, int32(5), reportItem.NumBooked)
-	require.Equal(t, int32(92), reportItem.NumFree)
-	require.Equal(t, int32(3), reportItem.NumHeld)
-	require.Equal(t, int32(100), reportItem.Capacity)
+	require.Equal(t, 5, reportItem.NumBooked)
+	require.Equal(t, 92, reportItem.NumFree)
+	require.Equal(t, 3, reportItem.NumHeld)
+	require.Equal(t, 100, reportItem.Capacity)
 	require.Equal(t, "generalAdmission", reportItem.ObjectType)
 	require.False(t, reportItem.BookAsAWhole)
 	require.Empty(t, reportItem.HasRestrictedView)
@@ -157,7 +157,7 @@ func TestDetailedReportItemPropertiesForTable(t *testing.T) {
 
 	reportItem := report.Items["T1"][0]
 	require.False(t, reportItem.BookAsAWhole)
-	require.Equal(t, int32(6), reportItem.NumSeats)
+	require.Equal(t, 6, reportItem.NumSeats)
 }
 
 func TestByStatus(t *testing.T) {

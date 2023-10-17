@@ -69,7 +69,7 @@ func TestIndexIsOptional(t *testing.T) {
 	retrievedEvent, err := client.Events.Retrieve(event.Key)
 	require.Equal(t, 1, len(retrievedEvent.Channels))
 	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
-	require.Equal(t, int32(0), retrievedEvent.Channels[0].Index)
+	require.Equal(t, 0, retrievedEvent.Channels[0].Index)
 	require.Equal(t, "A-1", retrievedEvent.Channels[0].Objects[0])
 }
 
@@ -94,6 +94,6 @@ func TestObjectsIsOptional(t *testing.T) {
 	retrievedEvent, err := client.Events.Retrieve(event.Key)
 	require.Equal(t, 1, len(retrievedEvent.Channels))
 	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
-	require.Equal(t, int32(1), retrievedEvent.Channels[0].Index)
+	require.Equal(t, 1, retrievedEvent.Channels[0].Index)
 	require.Empty(t, retrievedEvent.Channels[0].Objects)
 }

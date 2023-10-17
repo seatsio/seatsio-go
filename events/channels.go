@@ -13,7 +13,7 @@ type CreateChannelParams struct {
 	Key     string   `json:"key"`
 	Name    string   `json:"name"`
 	Color   string   `json:"color"`
-	Index   int32    `json:"index,omitempty"`
+	Index   int      `json:"index,omitempty"`
 	Objects []string `json:"objects,omitempty"`
 }
 

@@ -15,7 +15,7 @@ type CreateSeasonParams struct {
 	Key                string                        `json:"key,omitempty"`
 	TableBookingConfig *events.TableBookingConfig    `json:"tableBookingConfig,omitempty"`
 	EventKeys          []string                      `json:"eventKeys,omitempty"`
-	NumberOfEvents     int32                         `json:"numberOfEvents,omitempty"`
+	NumberOfEvents     int                           `json:"numberOfEvents,omitempty"`
 	Channels           *[]events.CreateChannelParams `json:"channels,omitempty"`
 	ForSaleConfig      *events.ForSaleConfig         `json:"forSaleConfig,omitempty"`
 }
@@ -31,7 +31,7 @@ type eventsCreationResponse struct {
 
 type createEventsParams struct {
 	EventKeys      []string `json:"eventKeys,omitempty"`
-	NumberOfEvents int32    `json:"numberOfEvents,omitempty"`
+	NumberOfEvents int      `json:"numberOfEvents,omitempty"`
 }
 
 type addEventsToPartialSeasonParams struct {
@@ -56,7 +56,7 @@ func (seasons *Seasons) CreateEventsWithEventKeys(seasonKey string, eventKeys ..
 	return seasons.createEvents(seasonKey, createEventsParams{EventKeys: eventKeys})
 }
 
-func (seasons *Seasons) CreateNumberOfEvents(seasonKey string, numberOfEvents int32) ([]*events.Event, error) {
+func (seasons *Seasons) CreateNumberOfEvents(seasonKey string, numberOfEvents int) ([]*events.Event, error) {
 	return seasons.createEvents(seasonKey, createEventsParams{NumberOfEvents: numberOfEvents})
 }
 

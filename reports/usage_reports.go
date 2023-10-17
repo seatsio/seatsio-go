@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/shared"
+	"strconv"
 	"time"
 )
 
@@ -22,16 +23,16 @@ const (
 
 type UsageForObjectV1 struct {
 	Object                       string    `json:"object"`
-	NumFirstBookings             int32     `json:"numFirstBookings"`
+	NumFirstBookings             int       `json:"numFirstBookings"`
 	FirstBookingDate             time.Time `json:"firstBookingDate"`
-	NumFirstSelections           int32     `json:"numFirstSelections"`
-	NumFirstBookingsOrSelections int32     `json:"numFirstBookingsOrSelections"`
+	NumFirstSelections           int       `json:"numFirstSelections"`
+	NumFirstBookingsOrSelections int       `json:"numFirstBookingsOrSelections"`
 }
 
 type UsageForObjectV2 struct {
-	Object         string                `json:"object"`
-	NumUsedObjects int32                 `json:"numUsedObjects"`
-	UsageByReason  map[UsageReason]int32 `json:"usageByReason"`
+	Object         string              `json:"object"`
+	NumUsedObjects int                 `json:"numUsedObjects"`
+	UsageByReason  map[UsageReason]int `json:"usageByReason"`
 }
 
 type UsageChart struct {
@@ -46,7 +47,7 @@ type UsageEvent struct {
 
 type UsageByEvent struct {
 	Event          UsageEvent `json:"event"`
-	NumUsedObjects int32      `json:"numUsedObjects"`
+	NumUsedObjects int        `json:"numUsedObjects"`
 }
 
 type UsageByChart struct {
@@ -60,21 +61,26 @@ type UsageDetails struct {
 }
 
 type Month struct {
-	Month int32 `json:"month"`
-	Year  int32 `json:"year"`
+	Month int `json:"month"`
+	Year  int `json:"year"`
+}
+
+type UsageSummaryForAllMonths struct {
+	Usage           []UsageSummaryForMonth `json:usage`
+	UsageCutoffDate *time.Time             `json:usageCutoffDate`
 }
 
 type UsageSummaryForMonth struct {
 	Month          Month `json:"month"`
-	NumUsedObjects int32 `json:"numUsedObjects"`
+	NumUsedObjects int   `json:"numUsedObjects"`
 }
 
-func (usageReports *UsageReports) SummaryForAllMonths() ([]UsageSummaryForMonth, error) {
-	var summaries []UsageSummaryForMonth
+func (usageReports *UsageReports) SummaryForAllMonths() (*UsageSummaryForAllMonths, error) {
+	var report UsageSummaryForAllMonths
 	result, err := usageReports.Client.R().
-		SetSuccessResult(&summaries).
-		Get("/reports/usage")
-	return shared.AssertOkArray(result, err, &summaries)
+		SetSuccessResult(&report).
+		Get("/reports/usage?version=2")
+	return shared.AssertOk(result, err, &report)
 }
 
 func (usageReports *UsageReports) DetailsForMonth(year int, month int) ([]UsageDetails, error) {
@@ -86,10 +92,11 @@ func (usageReports *UsageReports) DetailsForMonth(year int, month int) ([]UsageD
 	return shared.AssertOkArray(result, err, &details)
 }
 
-func (usageReports *UsageReports) DetailsForEventInMonth(year int, month int) ([]UsageForObjectV1, []UsageForObjectV2, error) {
+func (usageReports *UsageReports) DetailsForEventInMonth(eventId int, year int, month int) ([]UsageForObjectV1, []UsageForObjectV2, error) {
 	result, err := usageReports.Client.R().
 		SetPathParam("month", formatMonth(year, month)).
-		Get("/reports/usage/month/{month}")
+		SetPathParam("eventId", strconv.Itoa(eventId)).
+		Get("/reports/usage/month/{month}/event/{eventId}")
 	err = shared.AssertOkWithoutResult(result, err)
 	if err != nil {
 		return nil, nil, err
@@ -113,7 +120,6 @@ func (usageReports *UsageReports) DetailsForEventInMonth(year int, month int) ([
 		err = json.Unmarshal(bodyAsBytes, &results)
 		return results, nil, nil
 	}
-
 }
 
 func formatMonth(year int, month int) string {
