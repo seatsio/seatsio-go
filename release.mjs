@@ -17,7 +17,7 @@
 * */
 
 // don't output the commands themselves
-$.verbose = false
+$.verbose = true
 
 const versionToBump = getVersionToBump()
 const latestReleaseTag = await fetchLatestReleasedVersionNumber()
