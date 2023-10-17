@@ -24,6 +24,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - run: go get .
+      - run: go build -v ./...
       - uses: fregante/setup-git-user@v2
       - id: install-zx
         run: npm i -g zx
