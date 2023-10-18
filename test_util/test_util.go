@@ -3,7 +3,7 @@ package test_util
 import (
 	"github.com/google/uuid"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/shared"
+	"github.com/seatsio/seatsio-go/v2/shared"
 	"log"
 	"os"
 	"testing"
