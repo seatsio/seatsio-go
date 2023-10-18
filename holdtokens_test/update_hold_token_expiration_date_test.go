@@ -1,8 +1,8 @@
 package holdtokens_test
 
 import (
-	"github.com/seatsio/seatsio-go"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v2"
+	"github.com/seatsio/seatsio-go/v2/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

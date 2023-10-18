@@ -1,4 +1,4 @@
-module github.com/seatsio/seatsio-go
+module github.com/seatsio/seatsio-go/v2
 
 go 1.20
 
@@ -30,11 +30,4 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-retract (
-	v0.0.1 // API changed in v0.0.3 in events.go
-	v0.0.2 // Contains retractions only
-	v0.0.3 // API changed in v0.0.4
-	v0.0.4 // Contains retractions only
 )
