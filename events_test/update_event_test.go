@@ -1,9 +1,11 @@
 package events_test
 
 import (
-	"github.com/seatsio/seatsio-go"
-	"github.com/seatsio/seatsio-go/events"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v2"
+	"github.com/seatsio/seatsio-go/v2/events"
+	"github.com/seatsio/seatsio-go/v2/seasons"
+	"github.com/seatsio/seatsio-go/v2/shared"
+	"github.com/seatsio/seatsio-go/v2/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -195,4 +197,19 @@ func TestUpdateEventRemoveCategories(t *testing.T) {
 	updatedEvent, err := client.Events.Retrieve(event.Key)
 	require.NoError(t, err)
 	require.NotContains(t, updatedEvent.Categories, category)
+}
+
+func TestUpdateEventIsInThePast(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	_, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	require.NoError(t, err)
+
+	err = client.Events.Update("event1", &events.UpdateEventParams{IsInThePast: shared.OptionalBool(true)})
+	require.NoError(t, err)
+	updatedEvent, err := client.Events.Retrieve("event1")
+	require.NoError(t, err)
+	require.True(t, updatedEvent.IsInThePast)
 }

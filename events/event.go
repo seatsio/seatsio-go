@@ -17,4 +17,5 @@ type Event struct {
 	Categories            []Category             `json:"categories,omitempty"`
 	ObjectCategories      map[string]CategoryKey `json:"objectCategories,omitempty"`
 	Channels              []Channel              `json:"channels,omitempty"`
+	IsInThePast           bool                   `json:"isInThePast"`
 }

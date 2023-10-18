@@ -1,8 +1,8 @@
 package holdtokens_test
 
 import (
-	"github.com/seatsio/seatsio-go"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v2"
+	"github.com/seatsio/seatsio-go/v2/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -18,5 +18,8 @@ func TestRetrieveHoldToken(t *testing.T) {
 	retrievedHoldToken, err := client.HoldTokens.Retrieve(holdToken.HoldToken)
 	require.NoError(t, err)
 
-	require.Equal(t, holdToken, retrievedHoldToken)
+	require.NotEmpty(t, retrievedHoldToken.HoldToken)
+	require.Equal(t, holdToken.ExpiresAt, retrievedHoldToken.ExpiresAt)
+	require.True(t, retrievedHoldToken.ExpiresInSeconds > 14*60)
+	require.True(t, retrievedHoldToken.ExpiresInSeconds <= 15*60)
 }

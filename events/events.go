@@ -2,7 +2,7 @@ package events
 
 import (
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/shared"
+	"github.com/seatsio/seatsio-go/v2/shared"
 	"time"
 )
 
@@ -26,7 +26,8 @@ type CreateEventParams struct {
 }
 
 type UpdateEventParams struct {
-	ChartKey *string `json:"chartKey,omitempty"`
+	ChartKey    *string `json:"chartKey,omitempty"`
+	IsInThePast *bool   `json:"isInThePast,omitempty"`
 	*EventParams
 }
 

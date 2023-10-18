@@ -2,7 +2,7 @@ package reports
 
 import (
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/shared"
+	"github.com/seatsio/seatsio-go/v2/shared"
 )
 
 type EventReports struct {
