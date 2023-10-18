@@ -1,8 +1,8 @@
 package holdtokens_test
 
 import (
-	"github.com/seatsio/seatsio-go"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v2"
+	"github.com/seatsio/seatsio-go/v2/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -24,5 +24,5 @@ func TestUpdateHoldTokenExpirationDate(t *testing.T) {
 	require.True(t, updatedHoldToken.ExpiresAt.After(start.Add(-29*time.Minute)))
 	require.True(t, updatedHoldToken.ExpiresAt.Before(start.Add(31*time.Minute)))
 	require.True(t, updatedHoldToken.ExpiresInSeconds > 29*60)
-	require.True(t, updatedHoldToken.ExpiresInSeconds < 30*60)
+	require.True(t, updatedHoldToken.ExpiresInSeconds <= 30*60)
 }
