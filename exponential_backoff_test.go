@@ -1,8 +1,8 @@
 package seatsio
 
 import (
-	"github.com/seatsio/seatsio-go/shared"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v6/shared"
+	"github.com/seatsio/seatsio-go/v6/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

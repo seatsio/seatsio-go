@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/shared"
+	"github.com/seatsio/seatsio-go/v6/shared"
 	"strconv"
 	"time"
 )
@@ -66,8 +66,8 @@ type Month struct {
 }
 
 type UsageSummaryForAllMonths struct {
-	Usage           []UsageSummaryForMonth `json:usage`
-	UsageCutoffDate *time.Time             `json:usageCutoffDate`
+	Usage           []UsageSummaryForMonth `json:"usage"`
+	UsageCutoffDate *time.Time             `json:"usageCutoffDate"`
 }
 
 type UsageSummaryForMonth struct {

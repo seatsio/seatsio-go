@@ -1,7 +1,7 @@
 package events
 
 import (
-	"github.com/seatsio/seatsio-go/events"
+	"github.com/seatsio/seatsio-go/v6/events"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
