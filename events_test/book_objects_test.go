@@ -2,9 +2,9 @@ package events
 
 import (
 	"fmt"
-	"github.com/seatsio/seatsio-go"
-	"github.com/seatsio/seatsio-go/events"
-	"github.com/seatsio/seatsio-go/test_util"
+	"github.com/seatsio/seatsio-go/v6"
+	"github.com/seatsio/seatsio-go/v6/events"
+	"github.com/seatsio/seatsio-go/v6/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
