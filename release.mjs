@@ -19,10 +19,14 @@
 // don't output the commands themselves
 $.verbose = true
 
+import { resolve } from 'path'
+import { readdir } from 'fs/promises'
+
 const versionToBump = getVersionToBump()
 const latestReleaseTag = await fetchLatestReleasedVersionNumber()
 const latestVersion = removeLeadingV(latestReleaseTag)
 const nextVersion = await determineNextVersionNumber(latestVersion)
+const nextMajorVersion = await getMajorVersion(nextVersion)
 
 await assertChangesSinceRelease(latestReleaseTag)
 await bumpVersionInFiles()
@@ -53,19 +57,48 @@ async function determineNextVersionNumber(previous) {
     return (await $`semver bump ${versionToBump} ${previous}`).stdout.trim()
 }
 
-async function bumpVersionInFiles() {
-    await replaceInFile("README.md", `github.com/seatsio/seatsio-go v${latestVersion}`, `"github.com/seatsio/seatsio-go v${nextVersion}`)
+async function getMajorVersion(fullVersion) {
+    return (await $`semver get major ${fullVersion}`).stdout.trim()
 }
 
-async function replaceInFile(filename, latestVersion, nextVersion) {
+async function bumpVersionInFiles() {
+    const currentMajorVersion = await getMajorVersion(latestVersion)
+
+    await replaceInFile("README.md", `github.com/seatsio/seatsio-go/v${currentMajorVersion} v${latestVersion}`, `github.com/seatsio/seatsio-go/v${nextMajorVersion} v${nextVersion}`)
+    if (nextMajorVersion > currentMajorVersion) {
+        await replaceInFile("go.mod", `module github.com/seatsio/seatsio-go/v${currentMajorVersion}`, `module github.com/seatsio/seatsio-go/v${nextMajorVersion}`)
+        await replaceInFile("README.md", `(https://pkg.go.dev/github.com/seatsio/seatsio-go/v${currentMajorVersion})`, `(https://pkg.go.dev/github.com/seatsio/seatsio-go/v${nextMajorVersion})`)
+        await replaceInFile("README.md", `"github.com/seatsio/seatsio-go/v${currentMajorVersion}`, `"github.com/seatsio/seatsio-go/v${nextMajorVersion}`)
+
+        for await (const filePath of getFiles('.')) {
+            if (filePath.endsWith(".go")) {
+                await replaceInFile(filePath, `"github.com/seatsio/seatsio-go/v${currentMajorVersion}`, `"github.com/seatsio/seatsio-go/v${nextMajorVersion}`, false)
+            }
+        }
+    }
+}
+
+async function* getFiles(dir) {
+    const dirents = await readdir(dir, { withFileTypes: true });
+    for (const dirent of dirents) {
+        const res = resolve(dir, dirent.name);
+        if (dirent.isDirectory()) {
+            yield* getFiles(res);
+        } else {
+            yield res;
+        }
+    }
+}
+
+async function replaceInFile(filename, latestVersion, nextVersion, validate = true) {
     return await fs.readFile(filename, 'utf8')
         .then(text => {
-            if (text.indexOf(latestVersion) < 0) {
+            if (validate && text.indexOf(latestVersion) < 0) {
                 throw new Error('Not the correct version. Could not find ' + latestVersion + ' in ' + filename)
             }
             return text
         })
-        .then(text => text.replace(latestVersion, nextVersion))
+        .then(text => text.replaceAll(latestVersion, nextVersion))
         .then(text => fs.writeFileSync(filename, text))
         .then(() => gitAdd(filename))
 }
@@ -105,7 +138,7 @@ async function release() {
 
 async function updateGoPackageRepo() {
     const newTag = 'v' + nextVersion
-    return await $`curl -X POST https://pkg.go.dev/fetch/github.com/seatsio/seatsio-go@${newTag}`.catch(error => {
+    return await $`curl -X POST https://pkg.go.dev/fetch/github.com/seatsio/seatsio-go/v${nextMajorVersion}@${newTag}`.catch(error => {
         console.error('pkg.go.dev could not be updated')
         throw error
     })
