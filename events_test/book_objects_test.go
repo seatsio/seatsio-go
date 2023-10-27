@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"github.com/seatsio/seatsio-go/v6"
 	"github.com/seatsio/seatsio-go/v6/events"
 	"github.com/seatsio/seatsio-go/v6/test_util"
@@ -27,9 +26,6 @@ func TestBook(t *testing.T) {
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 	require.Equal(t, events.BOOKED, info["A-2"].Status)
 	require.Equal(t, events.FREE, info["A-3"].Status)
-	fmt.Println(info["A-1"].CategoryKey)
-	fmt.Println(info["A-1"].Label)
-	fmt.Println(info["A-1"].Status)
 }
 
 func TestBookSections(t *testing.T) {

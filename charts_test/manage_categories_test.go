@@ -1,7 +1,6 @@
 package charts
 
 import (
-	"fmt"
 	"github.com/seatsio/seatsio-go/v6"
 	"github.com/seatsio/seatsio-go/v6/charts"
 	"github.com/seatsio/seatsio-go/v6/events"
@@ -62,9 +61,6 @@ func TestListCategories(t *testing.T) {
 	require.Contains(t, categories, category1)
 	require.Contains(t, categories, category2)
 	require.Equal(t, 2, len(categories))
-	for _, category := range categories {
-		fmt.Println(category.Label)
-	}
 }
 
 func TestListCategories_unknownChart(t *testing.T) {

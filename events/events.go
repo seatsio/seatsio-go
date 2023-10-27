@@ -119,6 +119,10 @@ type ForSaleConfigParams struct {
 	Categories []string       `json:"categories,omitempty"`
 }
 
+type overrideSeasonObjectStatusRequest struct {
+	Objects []string `json:"objects"`
+}
+
 type updateExtraDataRequest struct {
 	ExtraData map[string]ExtraData `json:"extraData"`
 }
@@ -202,6 +206,26 @@ func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvail
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/change-object-status")
 	return shared.AssertOk(result, err, &bestAvailableResult)
+}
+
+func (events *Events) OverrideSeasonObjectStatus(eventKey string, objects ...string) error {
+	result, err := events.Client.R().
+		SetBody(&overrideSeasonObjectStatusRequest{
+			Objects: objects,
+		}).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/override-season-status")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
+func (events *Events) UseSeasonObjectStatus(eventKey string, objects ...string) error {
+	result, err := events.Client.R().
+		SetBody(&overrideSeasonObjectStatusRequest{
+			Objects: objects,
+		}).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/use-season-status")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (events *Events) UpdateExtraData(eventKey string, extraData map[string]ExtraData) error {
