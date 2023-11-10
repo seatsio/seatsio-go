@@ -26,4 +26,5 @@ func TestAddingEventToPartialSeason(t *testing.T) {
 	updatedSeason, err := client.Seasons.AddEventsToPartialSeason(season.Key, partialSeason.Key, "event1", "event2")
 	require.NoError(t, err)
 	require.Subset(t, []string{updatedSeason.Events[0].Key, updatedSeason.Events[1].Key}, []string{"event1", "event2"})
+	require.Equal(t, []string{updatedSeason.Key}, updatedSeason.Events[0].PartialSeasonKeysForEvent)
 }
