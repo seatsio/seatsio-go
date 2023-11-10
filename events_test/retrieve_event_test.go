@@ -34,4 +34,5 @@ func TestRetrieveEvent(t *testing.T) {
 		{Key: events.CategoryKey{Key: 10}, Label: "Cat2", Color: "#5E42ED", Accessible: false},
 		{Key: events.CategoryKey{Key: "string11"}, Label: "Cat3", Color: "#5E42BB", Accessible: false},
 	}, retrievedEvent.Categories)
+	require.Nil(t, retrievedEvent.PartialSeasonKeysForEvent)
 }

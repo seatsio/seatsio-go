@@ -37,4 +37,5 @@ func TestEventKeysCanBePassedIn(t *testing.T) {
 	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(topLevelSeason.Key, &seasons.CreatePartialSeasonParams{EventKeys: []string{"event1", "event3"}})
 	require.NoError(t, err)
 	require.Subset(t, []string{partialSeason.Events[0].Key, partialSeason.Events[1].Key}, []string{"event1", "event3"})
+	require.Equal(t, []string{partialSeason.Key}, partialSeason.Events[0].PartialSeasonKeysForEvent)
 }
