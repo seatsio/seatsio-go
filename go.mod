@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.3.1
-	github.com/imroc/req/v3 v3.42.1
+	github.com/imroc/req/v3 v3.42.2
 	github.com/stretchr/testify v1.8.4
 )
 
@@ -13,7 +13,6 @@ require (
 	github.com/cloudflare/circl v1.3.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gaukas/godicttls v0.0.4 // indirect
-	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/google/pprof v0.0.0-20230926050212-f7f687d19a98 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
