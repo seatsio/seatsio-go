@@ -1,4 +1,4 @@
-# seatsio-go, the official Seats.io Go library
+# seatsio-go, the official Seats.io Go SDK
 
 [![Build](https://github.com/seatsio/seatsio-go/workflows/Build/badge.svg)](https://github.com/seatsio/seatsio-go/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/seatsio/seatsio-go)](https://goreportcard.com/report/github.com/seatsio/seatsio-go)
