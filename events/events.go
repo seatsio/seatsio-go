@@ -111,7 +111,7 @@ type BestAvailableParams struct {
 	TicketTypes []string      `json:"ticketTypes,omitempty"`
 }
 
-type ExtraData = map[string]string
+type ExtraData = map[string]any
 
 type ForSaleConfigParams struct {
 	Objects    []string       `json:"objects,omitempty"`
