@@ -95,13 +95,13 @@ func TestChangeObjectStatusWithExtraData(t *testing.T) {
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
 			Objects: []events.ObjectProperties{
-				{ObjectId: "A-1", ExtraData: map[string]string{"foo": "bar"}},
+				{ObjectId: "A-1", ExtraData: events.ExtraData{"foo": "bar"}},
 			},
 		},
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, map[string]string{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
+	require.Equal(t, events.ExtraData{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
 }
 
 func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
@@ -127,7 +127,7 @@ func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, map[string]string{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
+	require.Equal(t, events.ExtraData{"foo": "bar"}, objects.Objects["A-1"].ExtraData)
 }
 
 func TestChangeObjectStatusWithKeepExtraDataFalse(t *testing.T) {
