@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v6/charts"
+	"github.com/seatsio/seatsio-go/v6/eventlog"
 	"github.com/seatsio/seatsio-go/v6/events"
 	"github.com/seatsio/seatsio-go/v6/holdtokens"
 	"github.com/seatsio/seatsio-go/v6/reports"
@@ -41,6 +42,7 @@ type SeatsioClient struct {
 	UsageReports *reports.UsageReports
 	Channels     *events.Channels
 	Seasons      *seasons.Seasons
+	EventLog     *eventlog.EventLog
 }
 
 func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
@@ -60,6 +62,7 @@ func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...sha
 		UsageReports: &reports.UsageReports{Client: apiClient},
 		Channels:     &events.Channels{Client: apiClient},
 		Seasons:      &seasons.Seasons{Client: apiClient},
+		EventLog:     &eventlog.EventLog{Client: apiClient},
 	}
 	ClientSupport.apiClient = apiClient
 	return client

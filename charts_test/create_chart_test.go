@@ -1,7 +1,6 @@
 package charts
 
 import (
-	"fmt"
 	"github.com/seatsio/seatsio-go/v6"
 	"github.com/seatsio/seatsio-go/v6/charts"
 	"github.com/seatsio/seatsio-go/v6/events"
@@ -124,12 +123,4 @@ func TestCreateChartInSpecificWorkspaceAsWorkspaceAdmin(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, workspaceCharts, 1)
 	require.Equal(t, chart.Key, workspaceCharts[0].Key)
-}
-
-func TestCreateChartAndEvent(t *testing.T) {
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
-	fmt.Printf(`Created a chart with key %s and an event with key: %s`, chart.Key, event.Key)
 }
