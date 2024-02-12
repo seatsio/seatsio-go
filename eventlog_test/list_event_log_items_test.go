@@ -46,6 +46,6 @@ func TestEventLogItemProperties(t *testing.T) {
 	eventLogItem := retrievedEventLogItems.Items[0]
 	require.Greater(t, eventLogItem.Id, int64(0))
 	require.Equal(t, "chart.created", eventLogItem.Type)
-	require.Equal(t, company.Workspace.Key, eventLogItem.WorkspaceKey)
-	require.Equal(t, map[string]any{"key": chart.Key}, eventLogItem.Data)
+	require.NotNil(t, eventLogItem.Timestamp)
+	require.Equal(t, map[string]any{"key": chart.Key, "workspaceKey": company.Workspace.Key}, eventLogItem.Data)
 }
