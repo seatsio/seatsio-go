@@ -1,10 +1,10 @@
 package seasons_test
 
 import (
-	"github.com/seatsio/seatsio-go/v6"
-	"github.com/seatsio/seatsio-go/v6/events"
-	"github.com/seatsio/seatsio-go/v6/seasons"
-	"github.com/seatsio/seatsio-go/v6/test_util"
+	"github.com/seatsio/seatsio-go/v7"
+	"github.com/seatsio/seatsio-go/v7/events"
+	"github.com/seatsio/seatsio-go/v7/seasons"
+	"github.com/seatsio/seatsio-go/v7/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

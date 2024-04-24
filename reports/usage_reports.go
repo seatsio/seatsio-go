@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v6/shared"
+	"github.com/seatsio/seatsio-go/v7/shared"
 	"strconv"
 	"time"
 )
