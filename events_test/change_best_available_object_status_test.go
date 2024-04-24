@@ -165,8 +165,8 @@ func TestChangeBestAvailableObjectStatusWithHoldToken(t *testing.T) {
 
 	require.True(t, bestAvailableResult.NextToEachOther)
 	require.Equal(t, []string{"A-4", "A-5"}, bestAvailableResult.Objects)
-	require.Equal(t, holdToken.HoldToken, *bestAvailableResult.ObjectDetails["A-4"].HoldToken)
-	require.Equal(t, holdToken.HoldToken, *bestAvailableResult.ObjectDetails["A-5"].HoldToken)
+	require.Equal(t, holdToken.HoldToken, bestAvailableResult.ObjectDetails["A-4"].HoldToken)
+	require.Equal(t, holdToken.HoldToken, bestAvailableResult.ObjectDetails["A-5"].HoldToken)
 }
 
 func TestChangeBestAvailableObjectStatusWithChannelsKeys(t *testing.T) {

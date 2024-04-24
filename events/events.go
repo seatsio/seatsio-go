@@ -63,9 +63,9 @@ type BestAvailableResult struct {
 type ObjectStatus string
 
 const (
-	FREE   ObjectStatus = "free"
-	BOOKED ObjectStatus = "booked"
-	HELD   ObjectStatus = "reservedByToken"
+	FREE   = "free"
+	BOOKED = "booked"
+	HELD   = "reservedByToken"
 )
 
 type StatusChanges struct {
@@ -76,8 +76,8 @@ type StatusChanges struct {
 	KeepExtraData            bool               `json:"keepExtraData"`
 	IgnoreChannels           bool               `json:"ignoreChannels"`
 	ChannelKeys              []string           `json:"channelKeys,omitempty"`
-	AllowedPreviousStatuses  []ObjectStatus     `json:"allowedPreviousStatuses,omitempty"`
-	RejectedPreviousStatuses []ObjectStatus     `json:"rejectedPreviousStatuses,omitempty"`
+	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
+	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
 }
 
 type StatusChangeParams struct {

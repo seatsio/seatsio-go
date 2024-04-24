@@ -5,6 +5,7 @@ import (
 	"github.com/seatsio/seatsio-go/v6/charts"
 	"github.com/seatsio/seatsio-go/v6/events"
 	"github.com/seatsio/seatsio-go/v6/reports"
+	"github.com/seatsio/seatsio-go/v6/seasons"
 	"github.com/seatsio/seatsio-go/v6/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -40,24 +41,24 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.NoError(t, err)
 
 	reportItem := report.Items["A-1"][0]
-	require.Equal(t, reports.Booked, reportItem.Status)
+	require.Equal(t, events.BOOKED, reportItem.Status)
 	require.Equal(t, "A-1", reportItem.Label)
-	require.Equal(t, reports.Labels{
-		Own: reports.LabelAndType{
-			Label:     "1",
-			LabelType: "seat",
+	require.Equal(t, events.Labels{
+		Own: events.LabelAndType{
+			Label: "1",
+			Type:  "seat",
 		},
-		Parent: reports.LabelAndType{
-			Label:     "A",
-			LabelType: "row",
+		Parent: events.LabelAndType{
+			Label: "A",
+			Type:  "row",
 		},
 	}, reportItem.Labels)
-	require.Equal(t, reports.IDs{
+	require.Equal(t, events.IDs{
 		Own:    "1",
 		Parent: "A",
 	}, reportItem.IDs)
 	require.Equal(t, "Cat1", reportItem.CategoryLabel)
-	require.Equal(t, "9", reportItem.CategoryKey)
+	require.Equal(t, events.CategoryKey{"9"}, reportItem.CategoryKey)
 	require.Equal(t, "ticketType1", reportItem.TicketType)
 	require.Equal(t, "order1", reportItem.OrderId)
 	require.True(t, reportItem.ForSale)
@@ -74,9 +75,10 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.Empty(t, reportItem.LeftNeighbour)
 	require.Equal(t, "A-2", reportItem.RightNeighbour)
 	require.False(t, reportItem.IsAvailable)
-	require.Equal(t, reports.Booked, reportItem.AvailabilityReason)
+	require.Equal(t, events.BOOKED, reportItem.AvailabilityReason)
 	require.Equal(t, "channel1", reportItem.Channel)
 	require.NotNil(t, reportItem.DistanceToFocalPoint)
+	require.Equal(t, 0, reportItem.SeasonStatusOverriddenQuantity)
 
 	gaItem := report.Items["GA1"][0]
 	require.True(t, gaItem.VariableOccupancy)
@@ -96,6 +98,25 @@ func TestHoldToken(t *testing.T) {
 	report, err := client.EventReports.ByLabel(event.Key)
 	require.NoError(t, err)
 	require.Equal(t, holdToken.HoldToken, report.Items["A-1"][0].HoldToken)
+}
+
+func TestSeasonStatusOverriddenQuantity(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
+	require.NoError(t, err)
+
+	event := season.Events[0]
+	err = client.Events.OverrideSeasonObjectStatus(event.Key, "A-1")
+	require.NoError(t, err)
+
+	report, err := client.EventReports.ByLabel(event.Key)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, report.Items["A-1"][0].SeasonStatusOverriddenQuantity)
 }
 
 func TestDetailedReportItemPropertiesForGA(t *testing.T) {
@@ -182,8 +203,8 @@ func TestByStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(report.Items["lolzor"]))
-	require.Equal(t, 1, len(report.Items[reports.Booked]))
-	require.Equal(t, 31, len(report.Items[reports.Free]))
+	require.Equal(t, 1, len(report.Items[events.BOOKED]))
+	require.Equal(t, 31, len(report.Items[events.FREE]))
 }
 
 func TestByStatusWithEmptyChart(t *testing.T) {

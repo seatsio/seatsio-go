@@ -2,6 +2,7 @@ package reports
 
 import (
 	"github.com/imroc/req/v3"
+	"github.com/seatsio/seatsio-go/v6/events"
 	"github.com/seatsio/seatsio-go/v6/shared"
 )
 
@@ -46,71 +47,14 @@ const (
 	NoCategory   string = "NO_CATEGORY"
 	NotAvailable string = "not_available"
 	NotForSale   string = "not_for_sale"
-	Free         string = "free"
-	Booked       string = "booked"
-	Held         string = "reservedByToken"
 )
 
-type LabelAndType struct {
-	Label     string `json:"label,omitempty"`
-	LabelType string `json:"type,omitempty"`
-}
-
-type Labels struct {
-	Own     LabelAndType `json:"own,omitempty"`
-	Parent  LabelAndType `json:"parent,omitempty"`
-	Section string       `json:"section,omitempty"`
-}
-
-type IDs struct {
-	Own     string `json:"own,omitempty"`
-	Parent  string `json:"parent,omitempty"`
-	Section string `json:"section,omitempty"`
-}
-
-type EventObjectInfo struct {
-	Status               string                    `json:"status,omitempty"`
-	Label                string                    `json:"label,omitempty"`
-	Labels               Labels                    `json:"labels,omitempty"`
-	IDs                  IDs                       `json:"ids,omitempty"`
-	CategoryLabel        string                    `json:"categoryLabel,omitempty"`
-	CategoryKey          string                    `json:"categoryKey,omitempty"`
-	TicketType           string                    `json:"ticketType,omitempty"`
-	HoldToken            string                    `json:"holdToken,omitempty"`
-	ObjectType           string                    `json:"objectType,omitempty"`
-	BookAsAWhole         bool                      `json:"bookAsAWhole"`
-	OrderId              string                    `json:"orderId,omitempty"`
-	ForSale              bool                      `json:"forSale"`
-	Section              string                    `json:"section,omitempty"`
-	Entrance             string                    `json:"entrance,omitempty"`
-	Capacity             int                       `json:"capacity"`
-	NumBooked            int                       `json:"numBooked"`
-	NumFree              int                       `json:"numFree"`
-	NumHeld              int                       `json:"numHeld"`
-	NumSeats             int                       `json:"numSeats"`
-	ExtraData            map[string]interface{}    `json:"extraData,omitempty"`
-	IsAccessible         bool                      `json:"isAccessible"`
-	IsCompanionSeat      bool                      `json:"isCompanionSeat"`
-	HasRestrictedView    bool                      `json:"hasRestrictedView"`
-	DisplayedObjectType  string                    `json:"displayedObjectType,omitempty"`
-	LeftNeighbour        string                    `json:"leftNeighbour,omitempty"`
-	RightNeighbour       string                    `json:"rightNeighbour,omitempty"`
-	IsAvailable          bool                      `json:"isAvailable"`
-	AvailabilityReason   string                    `json:"availabilityReason,omitempty"`
-	Channel              string                    `json:"channel,omitempty"`
-	DistanceToFocalPoint float64                   `json:"distanceToFocalPoint"`
-	Holds                map[string]map[string]int `json:"holds,omitempty"`
-	VariableOccupancy    bool                      `json:"variableOccupancy"`
-	MinOccupancy         int                       `json:"minOccupancy"`
-	MaxOccupancy         int                       `json:"maxOccupancy"`
-}
-
 type DetailedEventReport struct {
-	Items map[string][]EventObjectInfo
+	Items map[string][]events.EventObjectInfo
 }
 
 func (reports *EventReports) fetchReport(eventKey string, reportType string) (*DetailedEventReport, error) {
-	var report map[string][]EventObjectInfo
+	var report map[string][]events.EventObjectInfo
 	result, err := reports.Client.R().
 		SetSuccessResult(&report).
 		SetPathParam("eventKey", eventKey).
@@ -119,8 +63,8 @@ func (reports *EventReports) fetchReport(eventKey string, reportType string) (*D
 	return shared.AssertOk(result, err, &DetailedEventReport{Items: report})
 }
 
-func (reports *EventReports) fetchReportWithFilter(eventKey string, reportType string, filter string) ([]EventObjectInfo, error) {
-	var report map[string][]EventObjectInfo
+func (reports *EventReports) fetchReportWithFilter(eventKey string, reportType string, filter string) ([]events.EventObjectInfo, error) {
+	var report map[string][]events.EventObjectInfo
 	result, err := reports.Client.R().
 		SetSuccessResult(&report).
 		SetPathParam("eventKey", eventKey).
@@ -143,7 +87,7 @@ func (reports *EventReports) ByAvailabilityReason(eventKey string) (*DetailedEve
 	return reports.fetchReport(eventKey, "byAvailabilityReason")
 }
 
-func (reports *EventReports) BySpecificAvailabilityReason(eventKey string, reason string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificAvailabilityReason(eventKey string, reason string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byAvailabilityReason", reason)
 }
 
@@ -151,7 +95,7 @@ func (reports *EventReports) ByAvailability(eventKey string) (*DetailedEventRepo
 	return reports.fetchReport(eventKey, "byAvailability")
 }
 
-func (reports *EventReports) BySpecificAvailability(eventKey string, availability string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificAvailability(eventKey string, availability string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byAvailability", availability)
 }
 
@@ -159,7 +103,7 @@ func (reports *EventReports) ByStatus(eventKey string) (*DetailedEventReport, er
 	return reports.fetchReport(eventKey, "byStatus")
 }
 
-func (reports *EventReports) BySpecificStatus(eventKey string, status string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificStatus(eventKey string, status string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byStatus", status)
 }
 
@@ -167,7 +111,7 @@ func (reports *EventReports) ByCategoryLabel(eventKey string) (*DetailedEventRep
 	return reports.fetchReport(eventKey, "byCategoryLabel")
 }
 
-func (reports *EventReports) BySpecificCategoryLabel(eventKey string, label string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificCategoryLabel(eventKey string, label string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byCategoryLabel", label)
 }
 
@@ -175,7 +119,7 @@ func (reports *EventReports) ByCategoryKey(eventKey string) (*DetailedEventRepor
 	return reports.fetchReport(eventKey, "byCategoryKey")
 }
 
-func (reports *EventReports) BySpecificCategoryKey(eventKey string, key string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificCategoryKey(eventKey string, key string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byCategoryKey", key)
 }
 
@@ -183,7 +127,7 @@ func (reports *EventReports) ByLabel(eventKey string) (*DetailedEventReport, err
 	return reports.fetchReport(eventKey, "byLabel")
 }
 
-func (reports *EventReports) BySpecificLabel(eventKey string, label string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificLabel(eventKey string, label string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byLabel", label)
 }
 
@@ -191,7 +135,7 @@ func (reports *EventReports) ByOrderId(eventKey string) (*DetailedEventReport, e
 	return reports.fetchReport(eventKey, "byOrderId")
 }
 
-func (reports *EventReports) BySpecificOrderId(eventKey string, orderId string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificOrderId(eventKey string, orderId string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byOrderId", orderId)
 }
 
@@ -199,7 +143,7 @@ func (reports *EventReports) BySection(eventKey string) (*DetailedEventReport, e
 	return reports.fetchReport(eventKey, "bySection")
 }
 
-func (reports *EventReports) BySpecificSection(eventKey string, section string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificSection(eventKey string, section string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "bySection", section)
 }
 
@@ -207,7 +151,7 @@ func (reports *EventReports) ByChannel(eventKey string) (*DetailedEventReport, e
 	return reports.fetchReport(eventKey, "byChannel")
 }
 
-func (reports *EventReports) BySpecificChannel(eventKey string, channel string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificChannel(eventKey string, channel string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byChannel", channel)
 }
 
@@ -215,7 +159,7 @@ func (reports *EventReports) ByObjectType(eventKey string) (*DetailedEventReport
 	return reports.fetchReport(eventKey, "byObjectType")
 }
 
-func (reports *EventReports) BySpecificObjectType(eventKey string, objectType string) ([]EventObjectInfo, error) {
+func (reports *EventReports) BySpecificObjectType(eventKey string, objectType string) ([]events.EventObjectInfo, error) {
 	return reports.fetchReportWithFilter(eventKey, "byObjectType", objectType)
 }
 
