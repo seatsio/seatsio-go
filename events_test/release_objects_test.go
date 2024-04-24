@@ -47,7 +47,7 @@ func TestWithHoldToken(t *testing.T) {
 	retrieveObjectInfo, err := client.Events.RetrieveObjectInfo(event.Key, "A-1", "A-2")
 	require.NoError(t, err)
 	require.Equal(t, events.FREE, retrieveObjectInfo["A-1"].Status)
-	require.Nil(t, retrieveObjectInfo["A-2"].HoldToken)
+	require.Empty(t, retrieveObjectInfo["A-2"].HoldToken)
 }
 
 func TestWithOrderId(t *testing.T) {
@@ -198,5 +198,5 @@ func TestBestAvailable(t *testing.T) {
 	retrieveObjectInfo, err := client.Events.RetrieveObjectInfo(event.Key, "C-4", "C-5")
 	require.NoError(t, err)
 	require.Equal(t, events.FREE, retrieveObjectInfo["C-4"].Status)
-	require.Nil(t, retrieveObjectInfo["C-5"].HoldToken)
+	require.Empty(t, retrieveObjectInfo["C-5"].HoldToken)
 }

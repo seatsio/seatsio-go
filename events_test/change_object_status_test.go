@@ -35,7 +35,7 @@ func TestChangeObjectStatusWithObjectDetails(t *testing.T) {
 	objects, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, "foo")
 	require.NoError(t, err)
 
-	var status events.ObjectStatus = "foo"
+	var status = "foo"
 	require.Len(t, objects.Objects, 1)
 	eventObjectInfo := objects.Objects["A-1"]
 	require.Equal(t, status, eventObjectInfo.Status)
@@ -55,6 +55,8 @@ func TestChangeObjectStatusWithObjectDetails(t *testing.T) {
 	require.Nil(t, eventObjectInfo.ExtraData)
 	require.Empty(t, eventObjectInfo.LeftNeighbour)
 	require.Equal(t, "A-2", eventObjectInfo.RightNeighbour)
+	require.Empty(t, eventObjectInfo.HoldToken)
+	require.Equal(t, 0, eventObjectInfo.SeasonStatusOverriddenQuantity)
 }
 
 func TestChangeObjectStatusWithHoldToken(t *testing.T) {
@@ -79,7 +81,7 @@ func TestChangeObjectStatusWithHoldToken(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, events.HELD, objects.Objects["A-1"].Status)
-	require.Equal(t, holdToken.HoldToken, *objects.Objects["A-1"].HoldToken)
+	require.Equal(t, holdToken.HoldToken, objects.Objects["A-1"].HoldToken)
 }
 
 func TestChangeObjectStatusWithExtraData(t *testing.T) {
@@ -267,7 +269,7 @@ func TestChangeObjectStatusWithAllowedPreviousStatus(t *testing.T) {
 			Objects: []events.ObjectProperties{
 				{ObjectId: "A-1"},
 			},
-			AllowedPreviousStatuses: []events.ObjectStatus{"onlyAllowedPreviousStatus"},
+			AllowedPreviousStatuses: []string{"onlyAllowedPreviousStatus"},
 		},
 	})
 
@@ -289,7 +291,7 @@ func TestChangeObjectStatusWithRejectedPreviousStatus(t *testing.T) {
 			Objects: []events.ObjectProperties{
 				{ObjectId: "A-1"},
 			},
-			RejectedPreviousStatuses: []events.ObjectStatus{"free"},
+			RejectedPreviousStatuses: []string{"free"},
 		},
 	})
 

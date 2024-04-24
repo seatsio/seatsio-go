@@ -82,7 +82,7 @@ func TestBatchAllowedPreviousStatuses(t *testing.T) {
 			StatusChanges: events.StatusChanges{
 				Status:                  "lolzor",
 				Objects:                 []events.ObjectProperties{{ObjectId: "A-1"}},
-				AllowedPreviousStatuses: []events.ObjectStatus{"MustBeThisStatus"}},
+				AllowedPreviousStatuses: []string{"MustBeThisStatus"}},
 		},
 	)
 	seatsioError := err.(*shared.SeatsioError)
@@ -99,7 +99,7 @@ func TestBatchRejectedPreviousStatuses(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatusInBatch(
-		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}, RejectedPreviousStatuses: []events.ObjectStatus{events.FREE}}},
+		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}, RejectedPreviousStatuses: []string{events.FREE}}},
 	)
 	seatsioError := err.(*shared.SeatsioError)
 	require.Equal(t, "ILLEGAL_STATUS_CHANGE", seatsioError.Code)

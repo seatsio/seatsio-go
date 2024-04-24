@@ -79,9 +79,9 @@ func TestHoldTokens(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, objects["A-1"].Status)
-	require.Nil(t, objects["A-1"].HoldToken)
+	require.Empty(t, objects["A-1"].HoldToken)
 	require.Equal(t, events.BOOKED, objects["A-2"].Status)
-	require.Nil(t, objects["A-1"].HoldToken)
+	require.Empty(t, objects["A-1"].HoldToken)
 }
 
 func TestOrderId(t *testing.T) {

@@ -179,7 +179,7 @@ func TestAllowedPreviousStatuses(t *testing.T) {
 		StatusChanges: events.StatusChanges{
 			Status:                  events.BOOKED,
 			Objects:                 []events.ObjectProperties{{ObjectId: "A-1"}},
-			AllowedPreviousStatuses: []events.ObjectStatus{"MustBeThisStatus"},
+			AllowedPreviousStatuses: []string{"MustBeThisStatus"},
 		},
 	})
 	seatsioErr := err.(*shared.SeatsioError)
@@ -201,7 +201,7 @@ func TestRejectedPreviousStatuses(t *testing.T) {
 		StatusChanges: events.StatusChanges{
 			Status:                   events.BOOKED,
 			Objects:                  []events.ObjectProperties{{ObjectId: "A-1"}},
-			RejectedPreviousStatuses: []events.ObjectStatus{events.FREE},
+			RejectedPreviousStatuses: []string{events.FREE},
 		},
 	})
 	seatsioErr := err.(*shared.SeatsioError)
