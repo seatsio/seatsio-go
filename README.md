@@ -428,6 +428,26 @@ func RetrieveAndListCategories() {
 }
 ```
 
+### Updating a category
+
+```go
+import (
+    "fmt"
+    "github.com/seatsio/seatsio-go/v7"
+    "github.com/seatsio/seatsio-go/v7/charts"
+    "github.com/seatsio/seatsio-go/v7/events"
+)
+
+func UpdateCategory() {
+    client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>))
+    err = client.Charts.UpdateCategory(<CHART KEY>, <CATEGORY KEY>, charts.UpdateCategoryParams{
+        Label:      "New label",
+        Color:      "#bbbbbb",
+        Accessible: false,
+    })
+}
+```
+
 ## Error Handling
 When an API call results in an error, the `error` returned by the function is not nil and contains the following format of information:
 
