@@ -71,3 +71,50 @@ func TestListCategories_unknownChart(t *testing.T) {
 	_, err := client.Charts.ListCategories("someUnknownChart")
 	require.Error(t, err)
 }
+
+func TestUpdateCategory(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+
+	err := client.Charts.UpdateCategory(chartKey, events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
+		Label:      "New label",
+		Color:      "#bbbbbb",
+		Accessible: false,
+	})
+	require.NoError(t, err)
+
+	categories, err := client.Charts.ListCategories(chartKey)
+	require.NoError(t, err)
+	require.Contains(t, categories, events.Category{Key: events.CategoryKey{Key: "string11"}, Label: "New label", Color: "#bbbbbb", Accessible: false})
+}
+
+func TestUpdateCategory_unknownChart(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	err := client.Charts.UpdateCategory("someUnknownChart", events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
+		Label:      "New label",
+		Color:      "#bbbbbb",
+		Accessible: false,
+	})
+	require.Error(t, err)
+}
+
+func TestUpdateCategory_unknownCategory(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+
+	err := client.Charts.UpdateCategory(chartKey, events.CategoryKey{Key: "unknownCategory"}, charts.UpdateCategoryParams{
+		Label:      "New label",
+		Color:      "#bbbbbb",
+		Accessible: false,
+	})
+	require.Error(t, err)
+}
