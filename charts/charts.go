@@ -28,6 +28,12 @@ type UpdateChartParams struct {
 	Categories []events.Category `json:"categories,omitempty"`
 }
 
+type UpdateCategoryParams struct {
+	Label      string `json:"label,omitempty"`
+	Color      string `json:"color,omitempty"`
+	Accessible bool   `json:"accessible,omitempty"`
+}
+
 type chartSupportNS struct{}
 
 var ChartSupport chartSupportNS
@@ -204,6 +210,15 @@ func (charts *Charts) ListCategories(chartKey string) ([]events.Category, error)
 		SetPathParam("chartKey", chartKey).
 		Get("/charts/{chartKey}/categories")
 	return shared.AssertOkArray(result, err, &response.Categories)
+}
+
+func (charts *Charts) UpdateCategory(chartKey string, categoryKey events.CategoryKey, params UpdateCategoryParams) error {
+	result, err := charts.Client.R().
+		SetPathParam("chartKey", chartKey).
+		SetPathParam("categoryKey", categoryKey.KeyAsString()).
+		SetBody(params).
+		Post("/charts/{chartKey}/categories/{categoryKey}")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (charts *Charts) PublishDraftVersion(chartKey string) error {
