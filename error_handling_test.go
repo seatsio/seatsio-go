@@ -39,7 +39,7 @@ func Test400(t *testing.T) {
 
 	_, err := client.Events.Create(&events.CreateEventParams{ChartKey: "foo"})
 
-	require.EqualError(t, err, "Chart not found: foo")
+	require.ErrorContains(t, err, "Chart not found: foo was not found in workspace")
 }
 
 func Test500(t *testing.T) {
