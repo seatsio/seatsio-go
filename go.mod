@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/imroc/req/v3 v3.43.6
+	github.com/imroc/req/v3 v3.43.7
 	github.com/stretchr/testify v1.9.0
 )
 
