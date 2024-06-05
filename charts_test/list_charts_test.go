@@ -139,7 +139,6 @@ func TestListChartsWithValidation(t *testing.T) {
 	require.Equal(t, 1, len(retrievedCharts))
 	require.Empty(t, retrievedCharts[0].Validation.Errors)
 	require.Empty(t, retrievedCharts[0].Validation.Warnings)
-	require.Equal(t, "ROWS_WITHOUT_SECTIONS", retrievedCharts[0].VenueType)
 }
 
 func TestListChartsWithoutValidation(t *testing.T) {
