@@ -109,3 +109,23 @@ func TestMarkAsNotForSaleCategories(t *testing.T) {
 		Categories: []string{"cat1", "cat2"},
 	}, retrievedEvent.ForSaleConfig)
 }
+
+func TestNumNotForSaleIsCorrectlyExposed(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	err = client.Events.MarkAsNotForSale(event.Key, &events.ForSaleConfigParams{
+		AreaPlaces: map[string]int{"GA1": 3},
+	})
+	require.NoError(t, err)
+
+	ga1Info, err := client.Events.RetrieveObjectInfo(event.Key, "GA1")
+	require.NoError(t, err)
+
+	require.Equal(t, 3, ga1Info["GA1"].NumNotForSale)
+}
