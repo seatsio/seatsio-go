@@ -44,6 +44,7 @@ type ChartReportItem struct {
 	IsAccessible         bool          `json:"isAccessible,omitempty"`
 	IsCompanionSeat      bool          `json:"isCompanionSeat,omitempty"`
 	HasRestrictedView    bool          `json:"hasRestrictedView,omitempty"`
+	Zone                 string        `json:"zone,omitempty"`
 }
 
 type chartReportOptions struct {

@@ -171,6 +171,7 @@ func TestByZone(t *testing.T) {
 	chartReport, err := client.ChartReports.ByZone(chartKey)
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["midtrack"], 6032)
+	require.Equal(t, "midtrack", chartReport.Items["midtrack"][0].Zone)
 	require.Len(t, chartReport.Items["finishline"], 2865)
 	require.Len(t, chartReport.Items["NO_ZONE"], 0)
 }

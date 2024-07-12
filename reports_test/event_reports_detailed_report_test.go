@@ -469,6 +469,7 @@ func TestDetailedReportByZone(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, 6032, len(report.Items["midtrack"]))
+	require.Equal(t, "midtrack", report.Items["midtrack"][0].Zone)
 }
 
 func TestDetailedReportBySpecificZone(t *testing.T) {

@@ -37,6 +37,7 @@ type EventObjectInfo struct {
 	MaxOccupancy                   int                       `json:"maxOccupancy"`
 	SeasonStatusOverriddenQuantity int                       `json:"seasonStatusOverriddenQuantity"`
 	NumNotForSale                  int                       `json:"numNotForSale"`
+	Zone                           string                    `json:"zone"`
 }
 
 type IDs struct {
