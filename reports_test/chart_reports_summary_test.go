@@ -195,6 +195,34 @@ func TestSummaryBySection(t *testing.T) {
 	require.Equal(t, noSectionReport, summaryChartReport.Items["NO_SECTION"])
 }
 
+func TestSummaryByZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+
+	summaryChartReport, err := client.ChartReports.SummaryByZone(chartKey)
+
+	require.NoError(t, err)
+	midtrackReport := reports.ChartSummaryReportItem{
+		Count: 6032,
+		ByCategoryKey: map[string]interface{}{
+			"2": float64(6032),
+		},
+		ByCategoryLabel: map[string]interface{}{
+			"Mid Track Stand": float64(6032),
+		},
+		ByObjectType: map[string]interface{}{
+			"seat": float64(6032),
+		},
+		BySection: map[string]interface{}{
+			"MT1": float64(2418),
+			"MT3": float64(3614),
+		},
+	}
+	require.Equal(t, midtrackReport, summaryChartReport.Items["midtrack"])
+}
+
 func TestSummaryDraftVersion(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

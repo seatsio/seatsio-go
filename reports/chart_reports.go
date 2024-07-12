@@ -72,6 +72,10 @@ func (reports *ChartReports) SummaryBySection(chartKey string, chartReportOption
 	return reports.fetchSummaryChartReport("bySection", chartKey, chartReportOptions...)
 }
 
+func (reports *ChartReports) SummaryByZone(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport("byZone", chartKey, chartReportOptions...)
+}
+
 func (reports *ChartReports) ByLabel(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
 	return reports.fetchChartReport("byLabel", chartKey, chartReportOptions...)
 }
@@ -90,6 +94,10 @@ func (reports *ChartReports) ByCategoryLabel(chartKey string, chartReportOptions
 
 func (reports *ChartReports) BySection(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
 	return reports.fetchChartReport("bySection", chartKey, chartReportOptions...)
+}
+
+func (reports *ChartReports) ByZone(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport("byZone", chartKey, chartReportOptions...)
 }
 
 func (reports *ChartReports) fetchChartReport(reportType string, chartKey string, reportOptions ...chartReportOptionsOption) (*ChartReport, error) {
