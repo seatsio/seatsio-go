@@ -162,6 +162,19 @@ func TestBySection(t *testing.T) {
 	require.Len(t, chartReport.Items["Section B"], 35)
 }
 
+func TestByZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.ByZone(chartKey)
+	require.NoError(t, err)
+	require.Len(t, chartReport.Items["midtrack"], 6032)
+	require.Len(t, chartReport.Items["finishline"], 2865)
+	require.Len(t, chartReport.Items["NO_ZONE"], 0)
+}
+
 func TestDraftVersion(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
