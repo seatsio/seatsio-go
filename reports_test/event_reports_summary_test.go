@@ -27,6 +27,7 @@ func TestSummaryByStatus(t *testing.T) {
 		ByAvailability:       map[string]int{"not_available": 1},
 		ByAvailabilityReason: map[string]int{"booked": 1},
 		ByChannel:            map[string]int{"NO_CHANNEL": 1},
+		ByZone:               map[string]int{"NO_ZONE": 1},
 	}
 	freeReportItem := reports.EventSummaryReportItem{
 		Count:     231,
@@ -42,6 +43,7 @@ func TestSummaryByStatus(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 231},
 		ByAvailabilityReason: map[string]int{"available": 231},
 		ByChannel:            map[string]int{"NO_CHANNEL": 231},
+		ByZone:               map[string]int{"NO_ZONE": 231},
 	}
 	require.Equal(t, bookedReportItem, report.Items["booked"])
 	require.Equal(t, freeReportItem, report.Items["free"])
@@ -72,6 +74,7 @@ func TestSummaryByObjectType(t *testing.T) {
 		ByAvailabilityReason: map[string]int{"available": 32},
 		ByChannel:            map[string]int{"NO_CHANNEL": 32},
 		ByStatus:             map[string]int{"free": 32},
+		ByZone:               map[string]int{"NO_ZONE": 32},
 	}
 	gaReport := reports.EventSummaryReportItem{
 		Count:     200,
@@ -88,6 +91,7 @@ func TestSummaryByObjectType(t *testing.T) {
 		ByAvailabilityReason: map[string]int{"available": 200},
 		ByChannel:            map[string]int{"NO_CHANNEL": 200},
 		ByStatus:             map[string]int{"free": 200},
+		ByZone:               map[string]int{"NO_ZONE": 200},
 	}
 	emptyReport := reports.EventSummaryReportItem{
 		Count:                0,
@@ -98,6 +102,7 @@ func TestSummaryByObjectType(t *testing.T) {
 		ByAvailabilityReason: map[string]int{},
 		ByChannel:            map[string]int{},
 		ByStatus:             map[string]int{},
+		ByZone:               map[string]int{},
 	}
 	require.Equal(t, seatReport, report.Items["seat"])
 	require.Equal(t, gaReport, report.Items["generalAdmission"])
@@ -123,6 +128,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 115, "not_available": 1},
 		ByAvailabilityReason: map[string]int{"available": 115, "booked": 1},
 		ByChannel:            map[string]int{"NO_CHANNEL": 116},
+		ByZone:               map[string]int{"NO_ZONE": 116},
 	}
 	cat10Report := reports.EventSummaryReportItem{
 		Count:                116,
@@ -131,6 +137,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 116},
 		ByAvailabilityReason: map[string]int{"available": 116},
 		ByChannel:            map[string]int{"NO_CHANNEL": 116},
+		ByZone:               map[string]int{"NO_ZONE": 116},
 	}
 	cat11Report := reports.EventSummaryReportItem{
 		Count:                0,
@@ -139,6 +146,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 		ByAvailability:       map[string]int{},
 		ByAvailabilityReason: map[string]int{},
 		ByChannel:            map[string]int{},
+		ByZone:               map[string]int{},
 	}
 	noCategoryReport := reports.EventSummaryReportItem{
 		Count:                0,
@@ -147,6 +155,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 		ByAvailability:       map[string]int{},
 		ByAvailabilityReason: map[string]int{},
 		ByChannel:            map[string]int{},
+		ByZone:               map[string]int{},
 	}
 	require.Equal(t, cat9Report, report.Items["9"])
 	require.Equal(t, cat10Report, report.Items["10"])
@@ -172,6 +181,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 115, "not_available": 1},
 		ByAvailabilityReason: map[string]int{"available": 115, "booked": 1},
 		ByChannel:            map[string]int{"NO_CHANNEL": 116},
+		ByZone:               map[string]int{"NO_ZONE": 116},
 	}
 	cat2Report := reports.EventSummaryReportItem{
 		Count:                116,
@@ -180,6 +190,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 116},
 		ByAvailabilityReason: map[string]int{"available": 116},
 		ByChannel:            map[string]int{"NO_CHANNEL": 116},
+		ByZone:               map[string]int{"NO_ZONE": 116},
 	}
 	cat3Report := reports.EventSummaryReportItem{
 		Count:                0,
@@ -188,6 +199,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 		ByAvailability:       map[string]int{},
 		ByAvailabilityReason: map[string]int{},
 		ByChannel:            map[string]int{},
+		ByZone:               map[string]int{},
 	}
 	noCategoryReport := reports.EventSummaryReportItem{
 		Count:                0,
@@ -196,6 +208,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 		ByAvailability:       map[string]int{},
 		ByAvailabilityReason: map[string]int{},
 		ByChannel:            map[string]int{},
+		ByZone:               map[string]int{},
 	}
 	require.Equal(t, cat1Report, report.Items["Cat1"])
 	require.Equal(t, cat2Report, report.Items["Cat2"])
@@ -228,8 +241,36 @@ func TestSummaryBySection(t *testing.T) {
 		ByAvailability:       map[string]int{"available": 231, "not_available": 1},
 		ByAvailabilityReason: map[string]int{"available": 231, "booked": 1},
 		ByChannel:            map[string]int{"NO_CHANNEL": 232},
+		ByZone:               map[string]int{"NO_ZONE": 232},
 	}
 	require.Equal(t, noSectionReport, report.Items["NO_SECTION"])
+}
+
+func TestSummaryByZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+
+	report, err := client.EventReports.SummaryByZone(event.Key)
+	require.NoError(t, err)
+
+	midtrackReport := reports.EventSummaryReportItem{
+		Count:    6032,
+		ByStatus: map[string]int{"free": 6032},
+		ByCategoryKey: map[string]int{
+			"2": 6032,
+		},
+		ByCategoryLabel: map[string]int{
+			"Mid Track Stand": 6032,
+		},
+		ByAvailability:       map[string]int{"available": 6032},
+		ByAvailabilityReason: map[string]int{"available": 6032},
+		ByChannel:            map[string]int{"NO_CHANNEL": 6032},
+		BySection:            map[string]int{"MT1": 2418, "MT3": 3614},
+	}
+	require.Equal(t, midtrackReport, report.Items["midtrack"])
 }
 
 func TestSummaryByAvailability(t *testing.T) {
@@ -257,6 +298,7 @@ func TestSummaryByAvailability(t *testing.T) {
 		},
 		ByChannel:            map[string]int{"NO_CHANNEL": 231},
 		ByAvailabilityReason: map[string]int{"available": 231},
+		ByZone:               map[string]int{"NO_ZONE": 231},
 	}
 
 	notavailableReport := reports.EventSummaryReportItem{
@@ -267,6 +309,7 @@ func TestSummaryByAvailability(t *testing.T) {
 		ByCategoryLabel:      map[string]int{"Cat1": 1},
 		ByChannel:            map[string]int{"NO_CHANNEL": 1},
 		ByAvailabilityReason: map[string]int{"booked": 1},
+		ByZone:               map[string]int{"NO_ZONE": 1},
 	}
 	require.Equal(t, availableReport, report.Items["available"])
 	require.Equal(t, notavailableReport, report.Items["not_available"])
@@ -297,6 +340,7 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 		},
 		ByChannel:      map[string]int{"NO_CHANNEL": 231},
 		ByAvailability: map[string]int{"available": 231},
+		ByZone:         map[string]int{"NO_ZONE": 231},
 	}
 
 	bookedReport := reports.EventSummaryReportItem{
@@ -307,6 +351,7 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 		ByCategoryLabel: map[string]int{"Cat1": 1},
 		ByChannel:       map[string]int{"NO_CHANNEL": 1},
 		ByAvailability:  map[string]int{"not_available": 1},
+		ByZone:          map[string]int{"NO_ZONE": 1},
 	}
 	emptyReport := reports.EventSummaryReportItem{
 		BySection:       map[string]int{},
@@ -315,6 +360,7 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 		ByCategoryLabel: map[string]int{},
 		ByChannel:       map[string]int{},
 		ByAvailability:  map[string]int{},
+		ByZone:          map[string]int{},
 	}
 	require.Equal(t, availableReport, report.Items["available"])
 	require.Equal(t, bookedReport, report.Items["booked"])
@@ -346,6 +392,7 @@ func TestSummaryByChannel(t *testing.T) {
 		ByCategoryLabel:      map[string]int{"Cat1": 2},
 		ByAvailability:       map[string]int{"available": 2},
 		ByAvailabilityReason: map[string]int{"available": 2},
+		ByZone:               map[string]int{"NO_ZONE": 2},
 	}
 	noChannelReport := reports.EventSummaryReportItem{
 		Count:     230,
@@ -361,6 +408,7 @@ func TestSummaryByChannel(t *testing.T) {
 		},
 		ByAvailability:       map[string]int{"available": 230},
 		ByAvailabilityReason: map[string]int{"available": 230},
+		ByZone:               map[string]int{"NO_ZONE": 230},
 	}
 
 	require.Equal(t, map[string]reports.EventSummaryReportItem{
