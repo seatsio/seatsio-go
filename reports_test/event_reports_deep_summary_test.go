@@ -83,6 +83,19 @@ func TestDeepSummaryBySection(t *testing.T) {
 	require.Equal(t, 1, report.Items["NO_SECTION"].ByCategoryLabel["Cat1"].ByAvailability["not_available"])
 }
 
+func TestDeepSummaryByZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+
+	report, err := client.EventReports.DeepSummaryByZone(event.Key)
+	require.NoError(t, err)
+	require.Equal(t, 6032, report.Items["midtrack"].Count)
+	require.Equal(t, 6032, report.Items["midtrack"].ByCategoryLabel["Mid Track Stand"].Count)
+}
+
 func TestDeepSummaryByAvailability(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

@@ -458,6 +458,32 @@ func TestDetailedReportBySpecificSection(t *testing.T) {
 	require.Equal(t, 34, len(items))
 }
 
+func TestDetailedReportByZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+
+	report, err := client.EventReports.ByZone(event.Key)
+	require.NoError(t, err)
+
+	require.Equal(t, 6032, len(report.Items["midtrack"]))
+}
+
+func TestDetailedReportBySpecificZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+
+	items, err := client.EventReports.BySpecificZone(event.Key, "midtrack")
+	require.NoError(t, err)
+
+	require.Equal(t, 6032, len(items))
+}
+
 func TestDetailedReportByAvailability(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

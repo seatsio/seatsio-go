@@ -24,6 +24,7 @@ type EventDeepSummaryReportItem struct {
 	ByCategoryKey   map[string]EventSummaryReportItem `json:"byCategoryKey,omitempty"`
 	ByCategoryLabel map[string]EventSummaryReportItem `json:"byCategoryLabel,omitempty"`
 	BySection       map[string]EventSummaryReportItem `json:"bySection,omitempty"`
+	ByZone          map[string]EventSummaryReportItem `json:"byZone,omitempty"`
 	ByAvailability  map[string]EventSummaryReportItem `json:"byAvailability,omitempty"`
 	ByChannel       map[string]EventSummaryReportItem `json:"byChannel,omitempty"`
 }
@@ -34,6 +35,7 @@ type EventSummaryReportItem struct {
 	ByCategoryKey        map[string]int `json:"byCategoryKey,omitempty"`
 	ByCategoryLabel      map[string]int `json:"byCategoryLabel,omitempty"`
 	BySection            map[string]int `json:"bySection,omitempty"`
+	ByZone               map[string]int `json:"byZone,omitempty"`
 	ByAvailability       map[string]int `json:"byAvailability,omitempty"`
 	ByAvailabilityReason map[string]int `json:"byAvailabilityReason,omitempty"`
 	ByChannel            map[string]int `json:"byChannel,omitempty"`
@@ -147,6 +149,14 @@ func (reports *EventReports) BySpecificSection(eventKey string, section string) 
 	return reports.fetchReportWithFilter(eventKey, "bySection", section)
 }
 
+func (reports *EventReports) ByZone(eventKey string) (*DetailedEventReport, error) {
+	return reports.fetchReport(eventKey, "byZone")
+}
+
+func (reports *EventReports) BySpecificZone(eventKey string, zone string) ([]events.EventObjectInfo, error) {
+	return reports.fetchReportWithFilter(eventKey, "byZone", zone)
+}
+
 func (reports *EventReports) ByChannel(eventKey string) (*DetailedEventReport, error) {
 	return reports.fetchReport(eventKey, "byChannel")
 }
@@ -183,6 +193,10 @@ func (reports *EventReports) SummaryBySection(eventKey string) (*EventSummaryRep
 	return reports.fetchEventSummaryReport("bySection", eventKey)
 }
 
+func (reports *EventReports) SummaryByZone(eventKey string) (*EventSummaryReport, error) {
+	return reports.fetchEventSummaryReport("byZone", eventKey)
+}
+
 func (reports *EventReports) SummaryByAvailability(eventKey string) (*EventSummaryReport, error) {
 	return reports.fetchEventSummaryReport("byAvailability", eventKey)
 }
@@ -213,6 +227,10 @@ func (reports *EventReports) DeepSummaryByCategoryLabel(eventKey string) (*Event
 
 func (reports *EventReports) DeepSummaryBySection(eventKey string) (*EventDeepSummaryReport, error) {
 	return reports.fetchEventDeepSummaryReport("bySection", eventKey)
+}
+
+func (reports *EventReports) DeepSummaryByZone(eventKey string) (*EventDeepSummaryReport, error) {
+	return reports.fetchEventDeepSummaryReport("byZone", eventKey)
 }
 
 func (reports *EventReports) DeepSummaryByAvailability(eventKey string) (*EventDeepSummaryReport, error) {
