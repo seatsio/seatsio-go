@@ -27,7 +27,7 @@ func TestCreateChartWithDefaultParameters(t *testing.T) {
 	require.Empty(t, chart.Tags)
 	require.False(t, chart.Archived)
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
-	require.Equal(t, "MIXED", drawing["venueType"])
+	require.Equal(t, "SIMPLE", drawing["venueType"])
 	require.Empty(t, getCategories(drawing))
 }
 
@@ -41,7 +41,7 @@ func TestCreateChartWithName(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "aChart", chart.Name)
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
-	require.Equal(t, "MIXED", drawing["venueType"])
+	require.Equal(t, "SIMPLE", drawing["venueType"])
 	require.Empty(t, getCategories(drawing))
 }
 
@@ -50,12 +50,12 @@ func TestCreateChartWithVenueType(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "BOOTHS"})
+	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "SIMPLE"})
 
 	require.NoError(t, err)
 	require.Equal(t, "Untitled chart", chart.Name)
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
-	require.Equal(t, "BOOTHS", drawing["venueType"])
+	require.Equal(t, "SIMPLE", drawing["venueType"])
 	require.Empty(t, getCategories(drawing))
 }
 
@@ -72,7 +72,7 @@ func TestCreateChartWithCategories(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "Untitled chart", chart.Name)
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
-	require.Equal(t, "MIXED", drawing["venueType"])
+	require.Equal(t, "SIMPLE", drawing["venueType"])
 	require.Contains(t,
 		getCategories(drawing),
 		map[string]interface{}{"key": float64(1), "label": "Category 1", "color": "#aaaaaa", "accessible": false})

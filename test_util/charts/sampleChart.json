@@ -29,7 +29,7 @@
   "rowChairSpacing": 5,
   "colorScheme": "light",
   "version": 19,
-  "venueType": "ROWS_WITHOUT_SECTIONS",
+  "venueType": "SIMPLE",
   "sectionScaleFactor": 100,
   "referenceChartVisible": true,
   "subChart": {

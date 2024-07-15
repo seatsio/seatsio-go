@@ -14,6 +14,7 @@ type Chart struct {
 	Archived                     bool                   `json:"archived"`
 	Validation                   *ChartValidationResult `json:"validation"`
 	VenueType                    string                 `json:"venueType"`
+	Zones                        []Zone                 `json:"zones"`
 }
 
 type Tags struct {

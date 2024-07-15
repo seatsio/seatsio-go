@@ -15,7 +15,7 @@ func TestRetrievePublishedVersionThumbnail(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "BOOTHS"})
+	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "SIMPLE"})
 	require.NoError(t, err)
 
 	file, err := client.Charts.RetrievePublishedVersionThumbnail(chart.Key)

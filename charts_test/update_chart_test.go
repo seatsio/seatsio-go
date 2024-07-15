@@ -16,14 +16,14 @@ func TestUpdateName(t *testing.T) {
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	categories := []events.Category{category1}
-	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "BOOTHS", Categories: categories})
+	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "SIMPLE", Categories: categories})
 
 	err = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "aChart"})
 	require.NoError(t, err)
 
 	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
 	require.Equal(t, "aChart", drawing["name"])
-	require.Equal(t, "BOOTHS", drawing["venueType"])
+	require.Equal(t, "SIMPLE", drawing["venueType"])
 }
 
 func TestUpdateCategories(t *testing.T) {
