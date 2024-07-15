@@ -42,6 +42,12 @@ func (pageFetcher *PageFetcher[T]) fetchPage(opts ...PaginationParamsOption) (*P
 		}
 	}
 
+	if paginationParams.QueryParamsArrays != nil {
+		for key, value := range paginationParams.QueryParamsArrays {
+			request.AddQueryParams(key, value...)
+		}
+	}
+
 	if pageFetcher.QueryParams != nil {
 		for key, value := range pageFetcher.QueryParams {
 			request.AddQueryParam(key, value)

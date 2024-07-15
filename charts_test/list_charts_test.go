@@ -96,7 +96,7 @@ func TestTagAndFilter(t *testing.T) {
 	require.Equal(t, 2, len(retrievedCharts))
 }
 
-func TestExpand(t *testing.T) {
+func TestExpandAll(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
@@ -105,11 +105,29 @@ func TestExpand(t *testing.T) {
 	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 
-	retrievedCharts, err := client.Charts.List().All(sup.WithExpand())
+	retrievedCharts, err := client.Charts.List().All(sup.WithExpandEvents(), sup.WithExpandValidation(), sup.WithExpandVenueType())
 	require.NoError(t, err)
 	require.Equal(t, 1, len(retrievedCharts))
 	require.Equal(t, event1.Key, retrievedCharts[0].Events[1].Key)
 	require.Equal(t, event2.Key, retrievedCharts[0].Events[0].Key)
+	require.Empty(t, retrievedCharts[0].Validation.Errors)
+	require.Empty(t, retrievedCharts[0].Validation.Warnings)
+	require.Equal(t, "ROWS_WITHOUT_SECTIONS", retrievedCharts[0].VenueType)
+}
+
+func TestExpandNone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	test_util.CreateTestChart(t, company.Admin.SecretKey)
+
+	retrievedCharts, err := client.Charts.List().All()
+	require.NoError(t, err)
+	require.Equal(t, 1, len(retrievedCharts))
+	require.Nil(t, retrievedCharts[0].Events)
+	require.Nil(t, retrievedCharts[0].Validation)
+	require.Empty(t, retrievedCharts[0].VenueType)
 }
 
 func TestPageSize(t *testing.T) {
@@ -124,32 +142,4 @@ func TestPageSize(t *testing.T) {
 	chartsPage, err := client.Charts.ListFirstPage()
 	require.NoError(t, err)
 	require.Equal(t, 3, len(chartsPage.Items))
-}
-
-func TestListChartsWithValidation(t *testing.T) {
-	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-
-	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
-
-	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(true))
-	require.NoError(t, err)
-	retrievedCharts := chartsPage.Items
-	require.Equal(t, 1, len(retrievedCharts))
-	require.Empty(t, retrievedCharts[0].Validation.Errors)
-	require.Empty(t, retrievedCharts[0].Validation.Warnings)
-}
-
-func TestListChartsWithoutValidation(t *testing.T) {
-	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	test_util.CreateTestChartWithErrors(t, company.Admin.SecretKey)
-
-	chartsPage, err := client.Charts.ListFirstPage(sup.WithValidation(false))
-	require.NoError(t, err)
-	retrievedCharts := chartsPage.Items
-	require.Equal(t, 1, len(retrievedCharts))
-	require.Nil(t, retrievedCharts[0].Validation)
 }
