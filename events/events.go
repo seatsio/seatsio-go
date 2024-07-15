@@ -241,10 +241,8 @@ func (events *Events) UpdateExtraData(eventKey string, extraData map[string]Extr
 func (events *Events) RetrieveObjectInfo(eventKey string, objectLabels ...string) (map[string]EventObjectInfo, error) {
 	var eventObjectInfos map[string]EventObjectInfo
 	request := events.Client.R().
-		SetSuccessResult(&eventObjectInfos)
-	for _, objectLabel := range objectLabels {
-		request.AddQueryParam("label", objectLabel)
-	}
+		SetSuccessResult(&eventObjectInfos).
+		AddQueryParams("label", objectLabels...)
 	result, err := request.Get("/events/" + eventKey + "/objects")
 	return shared.AssertOkMap(result, err, eventObjectInfos)
 }

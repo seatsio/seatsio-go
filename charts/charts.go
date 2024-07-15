@@ -332,15 +332,35 @@ func (chartSupportNS) WithTag(tag string) shared.PaginationParamsOption {
 	}
 }
 
+// WithValidation Deprecated
 func (chartSupportNS) WithValidation(validate bool) shared.PaginationParamsOption {
 	return func(Params *shared.PaginationParams) {
 		Params.QueryParams["validation"] = strconv.FormatBool(validate)
 	}
 }
 
+// WithExpand Deprecated
 func (chartSupportNS) WithExpand() shared.PaginationParamsOption {
 	return func(Params *shared.PaginationParams) {
 		Params.QueryParams["expand"] = "events"
+	}
+}
+
+func (chartSupportNS) WithExpandEvents() shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.AddToArrayQueryParam("expand", "events")
+	}
+}
+
+func (chartSupportNS) WithExpandValidation() shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.AddToArrayQueryParam("expand", "validation")
+	}
+}
+
+func (chartSupportNS) WithExpandVenueType() shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.AddToArrayQueryParam("expand", "venueType")
 	}
 }
 
