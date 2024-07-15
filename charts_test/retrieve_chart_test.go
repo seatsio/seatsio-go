@@ -2,6 +2,7 @@ package charts
 
 import (
 	"github.com/seatsio/seatsio-go/v7"
+	"github.com/seatsio/seatsio-go/v7/charts"
 	"github.com/seatsio/seatsio-go/v7/events"
 	"github.com/seatsio/seatsio-go/v7/test_util"
 	"github.com/stretchr/testify/require"
@@ -29,6 +30,19 @@ func TestRetrieveChart(t *testing.T) {
 	require.Contains(t, retrievedChart.Tags, "tag1")
 	require.Contains(t, retrievedChart.Tags, "tag2")
 	require.False(t, retrievedChart.Archived)
+	require.Nil(t, retrievedChart.Zones)
+}
+
+func TestRetrieveChartZones(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+
+	retrievedChart, err := client.Charts.Retrieve(chartKey)
+
+	require.NoError(t, err)
+	require.Equal(t, []charts.Zone{{"finishline", "Finish Line"}, {"midtrack", "Mid Track"}}, retrievedChart.Zones)
 }
 
 func TestRetrieveChartWithEvents(t *testing.T) {

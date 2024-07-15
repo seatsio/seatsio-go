@@ -364,6 +364,12 @@ func (chartSupportNS) WithExpandVenueType() shared.PaginationParamsOption {
 	}
 }
 
+func (chartSupportNS) WithExpandZones() shared.PaginationParamsOption {
+	return func(Params *shared.PaginationParams) {
+		Params.AddToArrayQueryParam("expand", "zones")
+	}
+}
+
 func (chartSupportNS) WithEventsLimit(limit int) shared.PaginationParamsOption {
 	return func(Params *shared.PaginationParams) {
 		Params.QueryParams["eventsLimit"] = strconv.Itoa(limit)

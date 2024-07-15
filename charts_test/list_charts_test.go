@@ -101,18 +101,19 @@ func TestExpandAll(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
 	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
 
-	retrievedCharts, err := client.Charts.List().All(sup.WithExpandEvents(), sup.WithExpandValidation(), sup.WithExpandVenueType())
+	retrievedCharts, err := client.Charts.List().All(sup.WithExpandEvents(), sup.WithExpandValidation(), sup.WithExpandVenueType(), sup.WithExpandZones())
 	require.NoError(t, err)
 	require.Equal(t, 1, len(retrievedCharts))
 	require.Equal(t, event1.Key, retrievedCharts[0].Events[1].Key)
 	require.Equal(t, event2.Key, retrievedCharts[0].Events[0].Key)
 	require.Empty(t, retrievedCharts[0].Validation.Errors)
 	require.Empty(t, retrievedCharts[0].Validation.Warnings)
-	require.Equal(t, "ROWS_WITHOUT_SECTIONS", retrievedCharts[0].VenueType)
+	require.Equal(t, "WITH_ZONES", retrievedCharts[0].VenueType)
+	require.Equal(t, []charts.Zone{{"finishline", "Finish Line"}, {"midtrack", "Mid Track"}}, retrievedCharts[0].Zones)
 }
 
 func TestExpandNone(t *testing.T) {
@@ -120,7 +121,7 @@ func TestExpandNone(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	test_util.CreateTestChart(t, company.Admin.SecretKey)
+	test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
 
 	retrievedCharts, err := client.Charts.List().All()
 	require.NoError(t, err)
@@ -128,6 +129,7 @@ func TestExpandNone(t *testing.T) {
 	require.Nil(t, retrievedCharts[0].Events)
 	require.Nil(t, retrievedCharts[0].Validation)
 	require.Empty(t, retrievedCharts[0].VenueType)
+	require.Nil(t, retrievedCharts[0].Zones)
 }
 
 func TestPageSize(t *testing.T) {

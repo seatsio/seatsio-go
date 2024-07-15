@@ -20,7 +20,7 @@
     "maxCategoryKey": 10
   },
   "version": 17,
-  "venueType": "ROWS_WITHOUT_SECTIONS",
+  "venueType": "SIMPLE",
   "showAllButtons": false,
   "sectionScaleFactor": 100,
   "subChart": {
