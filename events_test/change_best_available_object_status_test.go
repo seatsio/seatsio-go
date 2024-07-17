@@ -46,6 +46,29 @@ func TestChangeBestAvailableObjectStatusWithCategories(t *testing.T) {
 	require.Equal(t, []string{"C-4", "C-5", "C-6"}, bestAvailableResult.Objects)
 }
 
+func TestChangeBestAvailableObjectStatusWithZone(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	bestAvailableResultMidtrack, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+		Status:        events.BOOKED,
+		BestAvailable: events.BestAvailableParams{Number: 1, Zone: "midtrack"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"MT3-A-139"}, bestAvailableResultMidtrack.Objects)
+
+	bestAvailableResultFinishline, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+		Status:        events.BOOKED,
+		BestAvailable: events.BestAvailableParams{Number: 1, Zone: "finishline"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"Goal Stand 4-A-1"}, bestAvailableResultFinishline.Objects)
+}
+
 func TestChangeBestAvailableObjectStatusWithExtraData(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
