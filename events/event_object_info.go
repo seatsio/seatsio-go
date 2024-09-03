@@ -38,6 +38,7 @@ type EventObjectInfo struct {
 	SeasonStatusOverriddenQuantity int                       `json:"seasonStatusOverriddenQuantity"`
 	NumNotForSale                  int                       `json:"numNotForSale"`
 	Zone                           string                    `json:"zone"`
+	Floor                          Floor                     `json:"floor"`
 }
 
 type IDs struct {
@@ -55,4 +56,9 @@ type Labels struct {
 type LabelAndType struct {
 	Label string `json:"label"`
 	Type  string `json:"type"`
+}
+
+type Floor struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
 }

@@ -53,6 +53,10 @@ func CreateTestChartWithSections(t *testing.T, secretKey string) string {
 	return createTestChart(t, secretKey, "sampleChartWithSections.json")
 }
 
+func CreateTestChartWithFloors(t *testing.T, secretKey string) string {
+	return createTestChart(t, secretKey, "sampleChartWithFloors.json")
+}
+
 func CreateTestChartWithZones(t *testing.T, secretKey string) string {
 	return createTestChart(t, secretKey, "sampleChartWithZones.json")
 }
