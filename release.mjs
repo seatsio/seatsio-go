@@ -22,11 +22,21 @@ import { resolve } from 'path'
 import { readdir } from 'fs/promises'
 
 const semver = require('semver')
+
 const versionToBump = getVersionToBump()
+console.log(`Bumping ${versionToBump} version`)
+
 const latestReleaseTag = await fetchLatestReleasedVersionNumber()
+console.log(`Latest release tag: ${latestReleaseTag}`)
+
 const latestVersion = removeLeadingV(latestReleaseTag)
+console.log(`Latest version: ${latestVersion}`)
+
 const nextVersion = await determineNextVersionNumber(latestVersion)
+console.log(`Next version: ${nextVersion}`)
+
 const nextMajorVersion = await getMajorVersion(nextVersion)
+console.log(`Next major version: ${nextMajorVersion}`)
 
 await assertChangesSinceRelease(latestReleaseTag)
 await bumpVersionInFiles()
