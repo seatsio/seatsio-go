@@ -59,7 +59,7 @@ async function determineNextVersionNumber(previous) {
 }
 
 async function getMajorVersion(fullVersion) {
-    return (await $`semver get major ${fullVersion}`).stdout.trim()
+    return semver.major(fullVersion)
 }
 
 async function bumpVersionInFiles() {
