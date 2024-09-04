@@ -234,3 +234,21 @@ func TestChangeBestAvailableObjectStatusWithIgnoreChannels(t *testing.T) {
 
 	require.Equal(t, []string{"A-5"}, bestAvailableResult.Objects)
 }
+
+func TestChangeBestAvailableObjectStatusWithAccessibleSeats(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+		Status:        events.BOOKED,
+		BestAvailable: events.BestAvailableParams{Number: 3, AccessibleSeats: 1},
+	})
+	require.NoError(t, err)
+
+	require.True(t, bestAvailableResult.NextToEachOther)
+	require.Equal(t, []string{"A-6", "A-7", "A-8"}, bestAvailableResult.Objects)
+}
