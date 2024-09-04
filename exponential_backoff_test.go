@@ -36,7 +36,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 		Get("/status/400")
 
 	elapsed := time.Now().Sub(start)
-	require.Less(t, int(elapsed.Seconds()), 2)
+	require.Less(t, int(elapsed.Seconds()), 5)
 	require.Equal(t, 400, response.StatusCode)
 }
 

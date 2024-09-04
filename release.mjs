@@ -22,6 +22,7 @@ import { resolve } from 'path'
 import { readdir } from 'fs/promises'
 
 const semver = require('semver')
+
 const versionToBump = getVersionToBump()
 const latestReleaseTag = await fetchLatestReleasedVersionNumber()
 const latestVersion = removeLeadingV(latestReleaseTag)
@@ -54,11 +55,11 @@ async function fetchLatestReleasedVersionNumber() {
 }
 
 async function determineNextVersionNumber(previous) {
-    semver.inc(previous, versionToBump)
+    return semver.inc(previous, versionToBump)
 }
 
 async function getMajorVersion(fullVersion) {
-    return (await $`semver get major ${fullVersion}`).stdout.trim()
+    return semver.major(fullVersion)
 }
 
 async function bumpVersionInFiles() {

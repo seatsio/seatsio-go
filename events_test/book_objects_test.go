@@ -28,6 +28,21 @@ func TestBook(t *testing.T) {
 	require.Equal(t, events.FREE, info["A-3"].Status)
 }
 
+func TestBookFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	objects, err := client.Events.Book(event.Key, "S1-A-1")
+	require.NoError(t, err)
+
+	require.Equal(t, "1", objects.Objects["S1-A-1"].Floor.Name)
+	require.Equal(t, "Floor 1", objects.Objects["S1-A-1"].Floor.DisplayName)
+}
+
 func TestBookSections(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -47,6 +62,7 @@ func TestBookSections(t *testing.T) {
 	require.Subset(t, keys, []string{"Section A-A-1", "Section A-A-2"})
 	require.Equal(t, "Entrance 1", objects.Objects["Section A-A-1"].Entrance)
 	require.Equal(t, "Section A", objects.Objects["Section A-A-1"].Section)
+	require.Empty(t, objects.Objects["Section A-A-1"].Floor)
 	require.Equal(t, events.Labels{
 		Own:     events.LabelAndType{Label: "1", Type: "seat"},
 		Parent:  events.LabelAndType{Label: "A", Type: "row"},
