@@ -378,11 +378,11 @@ func (events *Events) HoldBestAvailable(eventKey string, params BestAvailablePar
 }
 
 func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.releaseStatus(eventKey, events.toObjectProperties(objectIds), nil)
+	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), nil)
 }
 
 func (events *Events) ReleaseWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.releaseStatus(eventKey, events.toObjectProperties(objectIds), holdToken)
+	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
 func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
@@ -390,7 +390,7 @@ func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams)
 	return events.ChangeObjectStatusWithOptions(statusChangeParams)
 }
 
-func (events *Events) releaseStatus(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+func (events *Events) releaseObjects(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
 	params := StatusChangeParams{
 		Events: []string{eventKey},
 		StatusChanges: StatusChanges{
