@@ -38,6 +38,7 @@ func TestReportItemProperties(t *testing.T) {
 	require.NotNil(t, item.IsAccessible)
 	require.NotNil(t, item.IsCompanionSeat)
 	require.NotNil(t, item.HasRestrictedView)
+	require.NotNil(t, item.Floor)
 }
 
 func TestReportItemPropertiesForGA(t *testing.T) {
@@ -114,6 +115,24 @@ func TestByLabel_BookWholeTablesChart(t *testing.T) {
 	require.NotNil(t, chartReport.Items["T2"])
 }
 
+func TestByLabel_WithFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.ByLabel(chartKey)
+	require.NoError(t, err)
+	require.Equal(t, "1", chartReport.Items["S1-A-1"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["S1-A-1"][0].Floor.DisplayName)
+	require.Equal(t, "1", chartReport.Items["S1-A-2"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["S1-A-2"][0].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["S2-B-1"][0].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["S2-B-1"][0].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["S2-B-2"][0].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["S2-B-2"][0].Floor.DisplayName)
+}
+
 func TestByObjectType(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -124,6 +143,24 @@ func TestByObjectType(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["seat"], 32)
 	require.Len(t, chartReport.Items["generalAdmission"], 2)
+}
+
+func TestByObjectType_WithFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.ByObjectType(chartKey)
+	require.NoError(t, err)
+	require.Equal(t, "1", chartReport.Items["seat"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["seat"][0].Floor.DisplayName)
+	require.Equal(t, "1", chartReport.Items["seat"][1].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["seat"][1].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["seat"][2].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["seat"][2].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["seat"][3].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["seat"][3].Floor.DisplayName)
 }
 
 func TestByCategoryKey(t *testing.T) {
@@ -138,6 +175,24 @@ func TestByCategoryKey(t *testing.T) {
 	require.Len(t, chartReport.Items["10"], 17)
 }
 
+func TestByCategoryKey_WithFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.ByCategoryKey(chartKey)
+	require.NoError(t, err)
+	require.Equal(t, "1", chartReport.Items["1"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["1"][0].Floor.DisplayName)
+	require.Equal(t, "1", chartReport.Items["1"][1].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["1"][1].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["2"][0].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["2"][0].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["2"][1].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["2"][1].Floor.DisplayName)
+}
+
 func TestByCategoryLabel(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -150,6 +205,24 @@ func TestByCategoryLabel(t *testing.T) {
 	require.Len(t, chartReport.Items["Cat2"], 17)
 }
 
+func TestByCategoryLabel_WithFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.ByCategoryLabel(chartKey)
+	require.NoError(t, err)
+	require.Equal(t, "1", chartReport.Items["CatA"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["CatA"][0].Floor.DisplayName)
+	require.Equal(t, "1", chartReport.Items["CatA"][1].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["CatA"][1].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["CatB"][0].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["CatB"][0].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["CatB"][1].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["CatB"][1].Floor.DisplayName)
+}
+
 func TestBySection(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -160,6 +233,24 @@ func TestBySection(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, chartReport.Items["Section A"], 36)
 	require.Len(t, chartReport.Items["Section B"], 35)
+}
+
+func TestBySection_WithFloors(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChartWithFloors(t, company.Admin.SecretKey)
+
+	chartReport, err := client.ChartReports.BySection(chartKey)
+	require.NoError(t, err)
+	require.Equal(t, "1", chartReport.Items["S1"][0].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["S1"][0].Floor.DisplayName)
+	require.Equal(t, "1", chartReport.Items["S1"][1].Floor.Name)
+	require.Equal(t, "Floor 1", chartReport.Items["S1"][1].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["S2"][0].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["S2"][0].Floor.DisplayName)
+	require.Equal(t, "2", chartReport.Items["S2"][1].Floor.Name)
+	require.Equal(t, "Floor 2", chartReport.Items["S2"][1].Floor.DisplayName)
 }
 
 func TestByZone(t *testing.T) {
