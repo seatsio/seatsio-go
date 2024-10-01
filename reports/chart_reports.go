@@ -26,6 +26,11 @@ type ChartReport struct {
 	Items map[string][]ChartReportItem
 }
 
+type Floor struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+}
+
 type ChartReportItem struct {
 	Label                string        `json:"label,omitempty"`
 	Labels               events.Labels `json:"labels,omitempty"`
@@ -45,6 +50,7 @@ type ChartReportItem struct {
 	IsCompanionSeat      bool          `json:"isCompanionSeat,omitempty"`
 	HasRestrictedView    bool          `json:"hasRestrictedView,omitempty"`
 	Zone                 string        `json:"zone,omitempty"`
+	Floor                Floor         `json:"floor,omitempty"`
 }
 
 type chartReportOptions struct {
