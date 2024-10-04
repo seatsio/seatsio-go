@@ -1,10 +1,10 @@
 package charts
 
 import (
-	"github.com/seatsio/seatsio-go/v7"
-	"github.com/seatsio/seatsio-go/v7/charts"
-	"github.com/seatsio/seatsio-go/v7/events"
-	"github.com/seatsio/seatsio-go/v7/test_util"
+	"github.com/seatsio/seatsio-go/v8"
+	"github.com/seatsio/seatsio-go/v8/charts"
+	"github.com/seatsio/seatsio-go/v8/events"
+	"github.com/seatsio/seatsio-go/v8/test_util"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
