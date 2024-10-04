@@ -1,7 +1,8 @@
-module github.com/seatsio/seatsio-go/v7
+module github.com/seatsio/seatsio-go/v8
 
-go 1.22
-toolchain go1.22.5
+go 1.22.0
+
+toolchain go1.22.7
 
 require (
 	github.com/google/uuid v1.6.0

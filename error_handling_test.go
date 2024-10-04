@@ -1,9 +1,9 @@
 package seatsio
 
 import (
-	"github.com/seatsio/seatsio-go/v7/events"
-	"github.com/seatsio/seatsio-go/v7/shared"
-	"github.com/seatsio/seatsio-go/v7/test_util"
+	"github.com/seatsio/seatsio-go/v8/events"
+	"github.com/seatsio/seatsio-go/v8/shared"
+	"github.com/seatsio/seatsio-go/v8/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
