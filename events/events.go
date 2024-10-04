@@ -70,7 +70,8 @@ const (
 )
 
 type StatusChanges struct {
-	Status                   ObjectStatus       `json:"status"`
+	Type                     string             `json:"type,omitempty"`
+	Status                   ObjectStatus       `json:"status,omitempty"`
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
 	OrderId                  string             `json:"orderId,omitempty"`
@@ -382,16 +383,30 @@ func (events *Events) PutUpForResale(eventKey string, objectIds ...string) (*Cha
 }
 
 func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(FREE, eventKey, events.toObjectProperties(objectIds), nil)
+	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), nil)
 }
 
 func (events *Events) ReleaseWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(FREE, eventKey, events.toObjectProperties(objectIds), holdToken)
+	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
 func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
-	statusChangeParams.Status = FREE
+	statusChangeParams.Type = "RELEASE"
 	return events.ChangeObjectStatusWithOptions(statusChangeParams)
+}
+
+func (events *Events) releaseObjects(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	params := StatusChangeParams{
+		Events: []string{eventKey},
+		StatusChanges: StatusChanges{
+			Type:    "RELEASE",
+			Objects: objectProperties,
+		},
+	}
+	if holdToken != nil {
+		params.HoldToken = *holdToken
+	}
+	return events.ChangeObjectStatusWithOptions(&params)
 }
 
 func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
