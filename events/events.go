@@ -66,6 +66,7 @@ const (
 	FREE   = "free"
 	BOOKED = "booked"
 	HELD   = "reservedByToken"
+	RESALE = "resale"
 )
 
 type StatusChanges struct {
@@ -374,6 +375,10 @@ func (events *Events) HoldBestAvailable(eventKey string, params BestAvailablePar
 		BestAvailable: params,
 		HoldToken:     holdToken,
 	})
+}
+
+func (events *Events) PutUpForResale(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(RESALE, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
 func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {

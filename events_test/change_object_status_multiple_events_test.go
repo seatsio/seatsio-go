@@ -111,6 +111,38 @@ func TestHold(t *testing.T) {
 	require.Equal(t, events.HELD, event2ObjectInfos["A-2"].Status)
 }
 
+func TestPutUpForResale(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+		Events: []string{event1.Key, event2.Key},
+		StatusChanges: events.StatusChanges{
+			Status:  events.RESALE,
+			Objects: []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+		},
+	})
+	require.NoError(t, err)
+
+	event1ObjectInfos, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	event2ObjectInfos, err := client.Events.RetrieveObjectInfo(event2.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, events.RESALE, objects.Objects["A-1"].Status)
+	require.Equal(t, events.RESALE, objects.Objects["A-2"].Status)
+	require.Equal(t, events.RESALE, event1ObjectInfos["A-1"].Status)
+	require.Equal(t, events.RESALE, event1ObjectInfos["A-2"].Status)
+	require.Equal(t, events.RESALE, event2ObjectInfos["A-1"].Status)
+	require.Equal(t, events.RESALE, event2ObjectInfos["A-2"].Status)
+}
+
 func TestRelease(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
