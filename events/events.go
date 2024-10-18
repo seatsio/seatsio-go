@@ -69,8 +69,15 @@ const (
 	RESALE = "resale"
 )
 
+type StatusChangeType string
+
+const (
+	CHANGE_STATUS_TO StatusChangeType = "CHANGE_STATUS_TO"
+	RELEASE          StatusChangeType = "RELEASE"
+)
+
 type StatusChanges struct {
-	Type                     string             `json:"type,omitempty"`
+	Type                     StatusChangeType   `json:"type,omitempty"`
 	Status                   ObjectStatus       `json:"status,omitempty"`
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
