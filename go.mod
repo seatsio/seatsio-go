@@ -6,7 +6,7 @@ toolchain go1.22.7
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/imroc/req/v3 v3.46.1
+	github.com/imroc/req/v3 v3.48.0
 	github.com/stretchr/testify v1.9.0
 )
 
