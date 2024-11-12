@@ -11,25 +11,6 @@ import (
 	"time"
 )
 
-func TestUpdateEventChartKey(t *testing.T) {
-	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	require.NoError(t, err)
-
-	err = client.Events.Update(event.Key, &events.UpdateEventParams{
-		ChartKey: &chartKey2,
-	})
-	require.NoError(t, err)
-
-	updatedEvent, err := client.Events.Retrieve(event.Key)
-	require.NoError(t, err)
-	require.Equal(t, chartKey2, updatedEvent.ChartKey)
-}
-
 func TestUpdateEventEventKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

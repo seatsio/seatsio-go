@@ -32,8 +32,7 @@ type CreateMultipleEventParams struct {
 }
 
 type UpdateEventParams struct {
-	ChartKey    *string `json:"chartKey,omitempty"`
-	IsInThePast *bool   `json:"isInThePast,omitempty"`
+	IsInThePast *bool `json:"isInThePast,omitempty"`
 	*EventParams
 }
 
