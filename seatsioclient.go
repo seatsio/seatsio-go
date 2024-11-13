@@ -3,14 +3,14 @@ package seatsio
 import (
 	"errors"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v8/charts"
-	"github.com/seatsio/seatsio-go/v8/eventlog"
-	"github.com/seatsio/seatsio-go/v8/events"
-	"github.com/seatsio/seatsio-go/v8/holdtokens"
-	"github.com/seatsio/seatsio-go/v8/reports"
-	"github.com/seatsio/seatsio-go/v8/seasons"
-	"github.com/seatsio/seatsio-go/v8/shared"
-	"github.com/seatsio/seatsio-go/v8/workspaces"
+	"github.com/seatsio/seatsio-go/v9/charts"
+	"github.com/seatsio/seatsio-go/v9/eventlog"
+	"github.com/seatsio/seatsio-go/v9/events"
+	"github.com/seatsio/seatsio-go/v9/holdtokens"
+	"github.com/seatsio/seatsio-go/v9/reports"
+	"github.com/seatsio/seatsio-go/v9/seasons"
+	"github.com/seatsio/seatsio-go/v9/shared"
+	"github.com/seatsio/seatsio-go/v9/workspaces"
 )
 
 type seatsioClientNS struct {

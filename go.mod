@@ -1,4 +1,4 @@
-module github.com/seatsio/seatsio-go/v8
+module github.com/seatsio/seatsio-go/v9
 
 go 1.22.0
 

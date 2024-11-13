@@ -1,9 +1,9 @@
 package workspaces
 
 import (
-	"github.com/seatsio/seatsio-go/v8"
-	"github.com/seatsio/seatsio-go/v8/test_util"
-	"github.com/seatsio/seatsio-go/v8/workspaces"
+	"github.com/seatsio/seatsio-go/v9"
+	"github.com/seatsio/seatsio-go/v9/test_util"
+	"github.com/seatsio/seatsio-go/v9/workspaces"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/seatsio/seatsio-go/v8"
-	"github.com/seatsio/seatsio-go/v8/charts"
-	"github.com/seatsio/seatsio-go/v8/test_util"
+	"github.com/seatsio/seatsio-go/v9"
+	"github.com/seatsio/seatsio-go/v9/charts"
+	"github.com/seatsio/seatsio-go/v9/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

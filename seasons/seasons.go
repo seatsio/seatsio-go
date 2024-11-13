@@ -2,8 +2,8 @@ package seasons
 
 import (
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v8/events"
-	"github.com/seatsio/seatsio-go/v8/shared"
+	"github.com/seatsio/seatsio-go/v9/events"
+	"github.com/seatsio/seatsio-go/v9/shared"
 )
 
 type Seasons struct {
