@@ -12,7 +12,7 @@ This is the official Go client library for the [Seats.io V2 REST API](https://do
 
 ```
 require (
-    github.com/seatsio/seatsio-go/v9 v9.0.0
+    github.com/seatsio/seatsio-go/v9 v9.1.0
 )
 ```
 
