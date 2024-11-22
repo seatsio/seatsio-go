@@ -3,6 +3,7 @@ package events_test
 import (
 	"github.com/seatsio/seatsio-go/v9"
 	"github.com/seatsio/seatsio-go/v9/events"
+	"github.com/seatsio/seatsio-go/v9/seasons"
 	"github.com/seatsio/seatsio-go/v9/shared"
 	"github.com/seatsio/seatsio-go/v9/test_util"
 	"github.com/stretchr/testify/require"
@@ -133,4 +134,58 @@ func TestReleaseInBatch(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, events.FREE, result.Results[0].Objects["A-1"].Status)
 	require.Equal(t, events.FREE, eventInfo["A-1"].Status)
+}
+
+func TestOverrideSeasonStatusInBatch(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	require.NoError(t, err)
+	_, err = client.Events.Book(season.Key, "A-1")
+	require.NoError(t, err)
+
+	result, err := client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{
+			Event: "event1",
+			StatusChanges: events.StatusChanges{
+				Type:    events.OVERRIDE_SEASON_STATUS,
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, events.FREE, result.Results[0].Objects["A-1"].Status)
+	info, _ := client.Events.RetrieveObjectInfo("event1", "A-1")
+	require.Equal(t, events.FREE, info["A-1"].Status)
+}
+
+func TestUseSeasonStatusInBatch(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	require.NoError(t, err)
+	_, err = client.Events.Book(season.Key, "A-1")
+	require.NoError(t, err)
+	err = client.Events.OverrideSeasonObjectStatus("event1", "A-1")
+	require.NoError(t, err)
+
+	result, err := client.Events.ChangeObjectStatusInBatch(
+		events.StatusChangeInBatchParams{
+			Event: "event1",
+			StatusChanges: events.StatusChanges{
+				Type:    events.USE_SEASON_STATUS,
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, events.BOOKED, result.Results[0].Objects["A-1"].Status)
+	info, _ := client.Events.RetrieveObjectInfo("event1", "A-1")
+	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }

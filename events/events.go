@@ -71,8 +71,10 @@ const (
 type StatusChangeType string
 
 const (
-	CHANGE_STATUS_TO StatusChangeType = "CHANGE_STATUS_TO"
-	RELEASE          StatusChangeType = "RELEASE"
+	CHANGE_STATUS_TO       StatusChangeType = "CHANGE_STATUS_TO"
+	RELEASE                StatusChangeType = "RELEASE"
+	OVERRIDE_SEASON_STATUS StatusChangeType = "OVERRIDE_SEASON_STATUS"
+	USE_SEASON_STATUS      StatusChangeType = "USE_SEASON_STATUS"
 )
 
 type StatusChanges struct {
@@ -81,8 +83,8 @@ type StatusChanges struct {
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
 	OrderId                  string             `json:"orderId,omitempty"`
-	KeepExtraData            bool               `json:"keepExtraData"`
-	IgnoreChannels           bool               `json:"ignoreChannels"`
+	KeepExtraData            bool               `json:"keepExtraData,omitempty"`
+	IgnoreChannels           bool               `json:"ignoreChannels,omitempty"`
 	ChannelKeys              []string           `json:"channelKeys,omitempty"`
 	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
 	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
