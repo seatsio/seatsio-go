@@ -46,6 +46,17 @@ func TestKeyCanBePassedIn(t *testing.T) {
 	require.Equal(t, "aSeason", season.Key)
 }
 
+func TestNameCanBePassedIn(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Name: "aSeason"})
+	require.NoError(t, err)
+	require.Equal(t, "aSeason", season.Name)
+}
+
 func TestNumberOfEventsCanBePassedIn(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

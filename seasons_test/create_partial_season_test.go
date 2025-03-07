@@ -25,6 +25,21 @@ func TestKeyCanBePassedIn(t *testing.T) {
 	require.Equal(t, topLevelSeason.Key, *partialSeason.TopLevelSeasonKey)
 }
 
+func TestNameCanBePassedIn(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason"})
+	require.NoError(t, err)
+
+	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(topLevelSeason.Key, &seasons.CreatePartialSeasonParams{Name: "aPartialSeason"})
+	require.NoError(t, err)
+
+	require.Equal(t, "aPartialSeason", partialSeason.Name)
+}
+
 func TestEventKeysCanBePassedIn(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)

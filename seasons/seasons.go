@@ -13,6 +13,7 @@ type Seasons struct {
 type CreateSeasonParams struct {
 	ChartKey           string                        `json:"chartKey"`
 	Key                string                        `json:"key,omitempty"`
+	Name               string                        `json:"name,omitempty"`
 	TableBookingConfig *events.TableBookingConfig    `json:"tableBookingConfig,omitempty"`
 	EventKeys          []string                      `json:"eventKeys,omitempty"`
 	NumberOfEvents     int                           `json:"numberOfEvents,omitempty"`
@@ -22,6 +23,7 @@ type CreateSeasonParams struct {
 
 type CreatePartialSeasonParams struct {
 	Key       string   `json:"key,omitempty"`
+	Name      string   `json:"name,omitempty"`
 	EventKeys []string `json:"eventKeys,omitempty"`
 }
 
