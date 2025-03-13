@@ -117,6 +117,7 @@ type BestAvailableStatusChangeParams struct {
 type BestAvailableParams struct {
 	Number          int           `json:"number"`
 	Zone            string        `json:"zone,omitempty"`
+	Sections        []string      `json:"sections,omitempty"`
 	Categories      []CategoryKey `json:"categories,omitempty"`
 	ExtraData       []ExtraData   `json:"extraData,omitempty"`
 	TicketTypes     []string      `json:"ticketTypes,omitempty"`
