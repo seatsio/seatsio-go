@@ -2,11 +2,11 @@ module github.com/seatsio/seatsio-go/v9
 
 go 1.22.0
 
-toolchain go1.22.7
+toolchain go1.24.1
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/imroc/req/v3 v3.49.1
+	github.com/imroc/req/v3 v3.50.0
 	github.com/stretchr/testify v1.10.0
 )
 
