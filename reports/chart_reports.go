@@ -3,8 +3,8 @@ package reports
 import (
 	"context"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v9/events"
-	"github.com/seatsio/seatsio-go/v9/shared"
+	"github.com/seatsio/seatsio-go/v10/events"
+	"github.com/seatsio/seatsio-go/v10/shared"
 )
 
 type ChartReports struct {

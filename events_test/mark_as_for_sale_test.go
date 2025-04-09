@@ -1,9 +1,9 @@
 package events_test
 
 import (
-	"github.com/seatsio/seatsio-go/v9"
-	"github.com/seatsio/seatsio-go/v9/events"
-	"github.com/seatsio/seatsio-go/v9/test_util"
+	"github.com/seatsio/seatsio-go/v10"
+	"github.com/seatsio/seatsio-go/v10/events"
+	"github.com/seatsio/seatsio-go/v10/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
