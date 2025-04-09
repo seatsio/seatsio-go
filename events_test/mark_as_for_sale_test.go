@@ -14,17 +14,17 @@ func TestMarkAsForSale(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.MarkAsForSale(event.Key, &events.ForSaleConfigParams{
+	err = client.Events.MarkAsForSale(test_util.RequestContext(), event.Key, &events.ForSaleConfigParams{
 		Objects:    []string{"o1", "o2"},
 		AreaPlaces: map[string]int{"GA1": 3},
 		Categories: []string{"cat1", "cat2"},
 	})
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, &events.ForSaleConfig{

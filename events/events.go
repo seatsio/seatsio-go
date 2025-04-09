@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v9/shared"
 	"time"
@@ -146,18 +147,20 @@ type eventSupportNS struct{}
 
 var EventSupport eventSupportNS
 
-func (events *Events) Create(params *CreateEventParams) (*Event, error) {
+func (events *Events) Create(context context.Context, params *CreateEventParams) (*Event, error) {
 	var event Event
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(params).
 		SetSuccessResult(&event).
 		Post("/events")
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) CreateMultiple(chartKey string, params ...CreateMultipleEventParams) (*CreateEventResult, error) {
+func (events *Events) CreateMultiple(context context.Context, chartKey string, params ...CreateMultipleEventParams) (*CreateEventResult, error) {
 	var eventCreationResult CreateEventResult
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(&CreateMultipleEventsRequest{
 			ChartKey: chartKey,
 			Events:   params,
@@ -167,20 +170,21 @@ func (events *Events) CreateMultiple(chartKey string, params ...CreateMultipleEv
 	return shared.AssertOk(result, err, &eventCreationResult)
 }
 
-func (events *Events) Update(eventKey string, params *UpdateEventParams) error {
+func (events *Events) Update(context context.Context, eventKey string, params *UpdateEventParams) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(params).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) ChangeObjectStatus(eventKeys []string, objects []string, status ObjectStatus) (*ChangeObjectStatusResult, error) {
+func (events *Events) ChangeObjectStatus(context context.Context, eventKeys []string, objects []string, status ObjectStatus) (*ChangeObjectStatusResult, error) {
 	objectProperties := make([]ObjectProperties, len(objects))
 	for i, object := range objects {
 		objectProperties[i] = ObjectProperties{ObjectId: object}
 	}
-	return events.ChangeObjectStatusWithOptions(&StatusChangeParams{
+	return events.ChangeObjectStatusWithOptions(context, &StatusChangeParams{
 		Events: eventKeys,
 		StatusChanges: StatusChanges{
 			Status:  status,
@@ -189,9 +193,10 @@ func (events *Events) ChangeObjectStatus(eventKeys []string, objects []string, s
 	})
 }
 
-func (events *Events) ChangeObjectStatusWithOptions(statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+func (events *Events) ChangeObjectStatusWithOptions(context context.Context, statusChangeparams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	var changeObjectStatusResult ChangeObjectStatusResult
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(statusChangeparams).
 		SetQueryParam("expand", "objects").
 		SetSuccessResult(&changeObjectStatusResult).
@@ -199,9 +204,10 @@ func (events *Events) ChangeObjectStatusWithOptions(statusChangeparams *StatusCh
 	return shared.AssertOk(result, err, &changeObjectStatusResult)
 }
 
-func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams ...StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
+func (events *Events) ChangeObjectStatusInBatch(context context.Context, statusChangeInBatchParams ...StatusChangeInBatchParams) (*ChangeObjectStatusInBatchResult, error) {
 	var changeObjectStatusInBatchResult ChangeObjectStatusInBatchResult
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(&StatusChangeInBatchRequest{
 			StatusChanges: statusChangeInBatchParams,
 		}).
@@ -211,9 +217,10 @@ func (events *Events) ChangeObjectStatusInBatch(statusChangeInBatchParams ...Sta
 	return shared.AssertOk(result, err, &changeObjectStatusInBatchResult)
 }
 
-func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
+func (events *Events) ChangeBestAvailableObjectStatus(context context.Context, eventKey string, bestAvailableStatusChangeParams *BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
 	var bestAvailableResult BestAvailableResult
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(bestAvailableStatusChangeParams).
 		SetSuccessResult(&bestAvailableResult).
 		SetPathParam("event", eventKey).
@@ -221,8 +228,9 @@ func (events *Events) ChangeBestAvailableObjectStatus(eventKey string, bestAvail
 	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
-func (events *Events) OverrideSeasonObjectStatus(eventKey string, objects ...string) error {
+func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(&overrideSeasonObjectStatusRequest{
 			Objects: objects,
 		}).
@@ -231,8 +239,9 @@ func (events *Events) OverrideSeasonObjectStatus(eventKey string, objects ...str
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) UseSeasonObjectStatus(eventKey string, objects ...string) error {
+func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(&overrideSeasonObjectStatusRequest{
 			Objects: objects,
 		}).
@@ -241,8 +250,9 @@ func (events *Events) UseSeasonObjectStatus(eventKey string, objects ...string) 
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) UpdateExtraData(eventKey string, extraData map[string]ExtraData) error {
+func (events *Events) UpdateExtraData(context context.Context, eventKey string, extraData map[string]ExtraData) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(&updateExtraDataRequest{
 			ExtraData: extraData,
 		}).
@@ -251,61 +261,68 @@ func (events *Events) UpdateExtraData(eventKey string, extraData map[string]Extr
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) RetrieveObjectInfo(eventKey string, objectLabels ...string) (map[string]EventObjectInfo, error) {
+func (events *Events) RetrieveObjectInfo(context context.Context, eventKey string, objectLabels ...string) (map[string]EventObjectInfo, error) {
 	var eventObjectInfos map[string]EventObjectInfo
 	request := events.Client.R().
+		SetContext(context).
 		SetSuccessResult(&eventObjectInfos).
 		AddQueryParams("label", objectLabels...)
 	result, err := request.Get("/events/" + eventKey + "/objects")
 	return shared.AssertOkMap(result, err, eventObjectInfos)
 }
 
-func (events *Events) Delete(eventKey string) error {
+func (events *Events) Delete(context context.Context, eventKey string) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetQueryParam("expand", "objects").
 		SetPathParam("event", eventKey).
 		Delete("/events/{event}")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (events *Events) Retrieve(eventKey string) (*Event, error) {
+func (events *Events) Retrieve(context context.Context, eventKey string) (*Event, error) {
 	var event Event
 	result, err := events.Client.R().
+		SetContext(context).
 		SetSuccessResult(&event).
 		SetPathParam("event", eventKey).
 		Get("/events/{event}")
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) MarkAsNotForSale(eventKey string, forSaleConfig *ForSaleConfigParams) error {
+func (events *Events) MarkAsNotForSale(context context.Context, eventKey string, forSaleConfig *ForSaleConfigParams) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(forSaleConfig).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/mark-as-not-for-sale")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) MarkAsForSale(eventKey string, forSaleConfig *ForSaleConfigParams) error {
+func (events *Events) MarkAsForSale(context context.Context, eventKey string, forSaleConfig *ForSaleConfigParams) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetBody(forSaleConfig).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/mark-as-for-sale")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) MarkEverythingAsForSale(eventKey string) error {
+func (events *Events) MarkEverythingAsForSale(context context.Context, eventKey string) error {
 	result, err := events.Client.R().
+		SetContext(context).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/mark-everything-as-for-sale")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) StatusChanges(eventKey string, opts ...ListParamsOption) *shared.Lister[StatusChange] {
+func (events *Events) StatusChanges(context context.Context, eventKey string, opts ...ListParamsOption) *shared.Lister[StatusChange] {
 	pageFetcher := shared.PageFetcher[StatusChange]{
 		Client:      events.Client,
 		Url:         "/events/{eventKey}/status-changes",
 		UrlParams:   map[string]string{"eventKey": eventKey},
 		QueryParams: map[string]string{},
+		Context:     &context,
 	}
 	for _, opt := range opts {
 		opt(&pageFetcher)
@@ -313,98 +330,99 @@ func (events *Events) StatusChanges(eventKey string, opts ...ListParamsOption) *
 	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) StatusChangesForObject(eventKey string, objectLabel string) *shared.Lister[StatusChange] {
+func (events *Events) StatusChangesForObject(context context.Context, eventKey string, objectLabel string) *shared.Lister[StatusChange] {
 	pageFetcher := shared.PageFetcher[StatusChange]{
 		Client:    events.Client,
 		Url:       "/events/{eventKey}/objects/{objectLabel}/status-changes",
 		UrlParams: map[string]string{"eventKey": eventKey, "objectLabel": objectLabel},
+		Context:   &context,
 	}
 	return &shared.Lister[StatusChange]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) ListAll(opts ...shared.PaginationParamsOption) ([]Event, error) {
-	return events.lister().All(opts...)
+func (events *Events) ListAll(context context.Context, opts ...shared.PaginationParamsOption) ([]Event, error) {
+	return events.lister(context).All(opts...)
 }
 
-func (events *Events) Book(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), nil)
+func (events *Events) Book(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
-func (events *Events) BookWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken)
+func (events *Events) BookWithHoldToken(context context.Context, eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
-func (events *Events) BookWithObjectProperties(eventKey string, objectProperties ...ObjectProperties) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(BOOKED, eventKey, objectProperties, nil)
+func (events *Events) BookWithObjectProperties(context context.Context, eventKey string, objectProperties ...ObjectProperties) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, BOOKED, eventKey, objectProperties, nil)
 }
 
-func (events *Events) BookWithObjectPropertiesAndHoldToken(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(BOOKED, eventKey, objectProperties, holdToken)
+func (events *Events) BookWithObjectPropertiesAndHoldToken(context context.Context, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, BOOKED, eventKey, objectProperties, holdToken)
 }
 
-func (events *Events) BookWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+func (events *Events) BookWithOptions(context context.Context, statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = BOOKED
-	return events.ChangeObjectStatusWithOptions(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(context, statusChangeParams)
 }
 
-func (events *Events) BookBestAvailable(eventKey string, params BestAvailableParams) (*BestAvailableResult, error) {
-	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+func (events *Events) BookBestAvailable(context context.Context, eventKey string, params BestAvailableParams) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(context, eventKey, &BestAvailableStatusChangeParams{
 		Status:        BOOKED,
 		BestAvailable: params,
 	})
 }
 
-func (events *Events) BookBestAvailableWithHoldToken(eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
-	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+func (events *Events) BookBestAvailableWithHoldToken(context context.Context, eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(context, eventKey, &BestAvailableStatusChangeParams{
 		Status:        BOOKED,
 		BestAvailable: params,
 		HoldToken:     holdToken,
 	})
 }
 
-func (events *Events) BookBestAvailableWithOptions(eventKey string, params BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
-	return events.ChangeBestAvailableObjectStatus(eventKey, &params)
+func (events *Events) BookBestAvailableWithOptions(context context.Context, eventKey string, params BestAvailableStatusChangeParams) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(context, eventKey, &params)
 }
 
-func (events *Events) Hold(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(HELD, eventKey, events.toObjectProperties(objectIds), holdToken)
+func (events *Events) Hold(context context.Context, eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, HELD, eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
-func (events *Events) HoldWithObjectProperties(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(HELD, eventKey, objectProperties, holdToken)
+func (events *Events) HoldWithObjectProperties(context context.Context, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, HELD, eventKey, objectProperties, holdToken)
 }
 
-func (events *Events) HoldWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+func (events *Events) HoldWithOptions(context context.Context, statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Status = HELD
-	return events.ChangeObjectStatusWithOptions(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(context, statusChangeParams)
 }
 
-func (events *Events) HoldBestAvailable(eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
-	return events.ChangeBestAvailableObjectStatus(eventKey, &BestAvailableStatusChangeParams{
+func (events *Events) HoldBestAvailable(context context.Context, eventKey string, params BestAvailableParams, holdToken string) (*BestAvailableResult, error) {
+	return events.ChangeBestAvailableObjectStatus(context, eventKey, &BestAvailableStatusChangeParams{
 		Status:        HELD,
 		BestAvailable: params,
 		HoldToken:     holdToken,
 	})
 }
 
-func (events *Events) PutUpForResale(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(RESALE, eventKey, events.toObjectProperties(objectIds), nil)
+func (events *Events) PutUpForResale(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, RESALE, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
-func (events *Events) Release(eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), nil)
+func (events *Events) Release(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
+	return events.releaseObjects(context, eventKey, events.toObjectProperties(objectIds), nil)
 }
 
-func (events *Events) ReleaseWithHoldToken(eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.releaseObjects(eventKey, events.toObjectProperties(objectIds), holdToken)
+func (events *Events) ReleaseWithHoldToken(context context.Context, eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
+	return events.releaseObjects(context, eventKey, events.toObjectProperties(objectIds), holdToken)
 }
 
-func (events *Events) ReleaseWithOptions(statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
+func (events *Events) ReleaseWithOptions(context context.Context, statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
 	statusChangeParams.Type = "RELEASE"
-	return events.ChangeObjectStatusWithOptions(statusChangeParams)
+	return events.ChangeObjectStatusWithOptions(context, statusChangeParams)
 }
 
-func (events *Events) releaseObjects(eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+func (events *Events) releaseObjects(context context.Context, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
 	params := StatusChangeParams{
 		Events: []string{eventKey},
 		StatusChanges: StatusChanges{
@@ -415,10 +433,10 @@ func (events *Events) releaseObjects(eventKey string, objectProperties []ObjectP
 	if holdToken != nil {
 		params.HoldToken = *holdToken
 	}
-	return events.ChangeObjectStatusWithOptions(&params)
+	return events.ChangeObjectStatusWithOptions(context, &params)
 }
 
-func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+func (events *Events) changeStatus(context context.Context, status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
 	params := StatusChangeParams{
 		Events: []string{eventKey},
 		StatusChanges: StatusChanges{
@@ -429,7 +447,7 @@ func (events *Events) changeStatus(status ObjectStatus, eventKey string, objectP
 	if holdToken != nil {
 		params.HoldToken = *holdToken
 	}
-	return events.ChangeObjectStatusWithOptions(&params)
+	return events.ChangeObjectStatusWithOptions(context, &params)
 }
 
 func (events *Events) toObjectProperties(objects []string) []ObjectProperties {
@@ -440,41 +458,42 @@ func (events *Events) toObjectProperties(objects []string) []ObjectProperties {
 	return objectProperties
 }
 
-func (events *Events) RemoveCategories(eventKey string) error {
-	return events.Update(eventKey, &UpdateEventParams{
+func (events *Events) RemoveCategories(context context.Context, eventKey string) error {
+	return events.Update(context, eventKey, &UpdateEventParams{
 		EventParams: &EventParams{
 			Categories: &[]Category{},
 		},
 	})
 }
 
-func (events *Events) RemoveObjectCategories(eventKey string) error {
-	return events.Update(eventKey, &UpdateEventParams{
+func (events *Events) RemoveObjectCategories(context context.Context, eventKey string) error {
+	return events.Update(context, eventKey, &UpdateEventParams{
 		EventParams: &EventParams{
 			ObjectCategories: &map[string]CategoryKey{},
 		},
 	})
 }
 
-func (events *Events) lister() *shared.Lister[Event] {
+func (events *Events) lister(context context.Context) *shared.Lister[Event] {
 	pageFetcher := shared.PageFetcher[Event]{
 		Client:    events.Client,
 		Url:       "/events",
 		UrlParams: map[string]string{},
+		Context:   &context,
 	}
 	return &shared.Lister[Event]{PageFetcher: &pageFetcher}
 }
 
-func (events *Events) ListFirstPage(opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
-	return events.lister().ListFirstPage(opts...)
+func (events *Events) ListFirstPage(context context.Context, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister(context).ListFirstPage(opts...)
 }
 
-func (events *Events) ListPageAfter(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
-	return events.lister().ListPageAfter(id, opts...)
+func (events *Events) ListPageAfter(context context.Context, id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister(context).ListPageAfter(id, opts...)
 }
 
-func (events *Events) ListPageBefore(id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
-	return events.lister().ListPageBefore(id, opts...)
+func (events *Events) ListPageBefore(context context.Context, id int64, opts ...shared.PaginationParamsOption) (*shared.Page[Event], error) {
+	return events.lister(context).ListPageBefore(id, opts...)
 }
 
 func DateFormat(date *time.Time) string {

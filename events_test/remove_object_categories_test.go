@@ -13,17 +13,17 @@ func TestRemoveObjectCategories(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		ObjectCategories: &map[string]events.CategoryKey{
 			"A-1": {10},
 		},
 	}})
 	require.NoError(t, err)
 
-	err = client.Events.RemoveObjectCategories(event.Key)
+	err = client.Events.RemoveObjectCategories(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
-	updatedEvent, err := client.Events.Retrieve(event.Key)
+	updatedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 	require.Empty(t, updatedEvent.ObjectCategories)
 }

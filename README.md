@@ -45,6 +45,7 @@ If you're unsure about your region, have a look at your [company settings page](
 
 ```go
 import (
+	"context",
     "fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -53,8 +54,8 @@ import (
 
 func CreateChartAndEvent() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
-    event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
+    chart, _ := client.Charts.Create(<context.Context>, &charts.CreateChartParams{Name: "aChart"})
+    event, _ := client.Events.Create(<context.Context>, &events.CreateEventParams{ChartKey: chart.Key})
     fmt.Printf(`Created a chart with key %s and an event with key: %s`, chart.Key, event.Key)
 }
 ```
@@ -63,6 +64,7 @@ func CreateChartAndEvent() {
 
 ```go
 import (
+	"context",
     "fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -71,8 +73,9 @@ import (
 
 func CreateMultipleEvents() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
-	result, err := client.Events.CreateMultiple(chartKey,
+    chart, _ := client.Charts.Create(<context.Context>, &charts.CreateChartParams{Name: "aChart"})
+	result, err := client.Events.CreateMultiple(<context.Context>, 
+		chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1", Date: "2023-10-18"}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event2", Date: "2023-10-20"}},
 	)
@@ -90,13 +93,14 @@ Booking an object changes its status to `booked`. Booked seats are not selectabl
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func BookObject() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    result, _ := client.Events.Book(<AN EVENT KEY>, "A-1", "A-2")
+    result, _ := client.Events.Book(<context.Context>, <AN EVENT KEY>, "A-1", "A-2")
 }
 ```
 
@@ -104,13 +108,14 @@ func BookObject() {
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func BookHeldObject() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    result, _ := client.Events.BookWithHoldToken(<AN EVENT KEY>, []string{"A-1", "A-2"}, <A HOLD TOKEN>)
+    result, _ := client.Events.BookWithHoldToken(<context.Context>, <AN EVENT KEY>, []string{"A-1", "A-2"}, <A HOLD TOKEN>)
 }
 ```
 
@@ -120,13 +125,14 @@ Either
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func BookGA() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    result, _ := client.Events.Book(<AN EVENT KEY>, "GA1", "GA1", "GA1")
+    result, _ := client.Events.Book(<context.Context>, <AN EVENT KEY>, "GA1", "GA1", "GA1")
 }
 ```
 
@@ -134,13 +140,14 @@ Or:
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func BookGA() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    result, _ := client.Events.BookWithObjectProperties(event.Key, events.ObjectProperties{ObjectId: "GA1", Quantity: 3})
+    result, _ := client.Events.BookWithObjectProperties(<context.Context>, event.Key, events.ObjectProperties{ObjectId: "GA1", Quantity: 3})
 }
 ```
 
@@ -152,13 +159,14 @@ Releasing objects changes its status to `free`. Free seats are selectable on a r
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func ReleaseObjects() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    result, _ := client.Events.Release(event.Key, "A-1", "A-2")
+    result, _ := client.Events.Release(<context.Context>, event.Key, "A-1", "A-2")
 }
 ```
 
@@ -170,13 +178,14 @@ Changes the object status to a custom status of your choice. If you need more st
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func ChangeObjectStatus() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    objects, err := client.Events.ChangeObjectStatus(&events.StatusChangeParams{
+    objects, err := client.Events.ChangeObjectStatus(<context.Context>, &events.StatusChangeParams{
         Events: []string{event.Key},
         StatusChanges: events.StatusChanges{
             Status:  "unavailable",
@@ -192,13 +201,14 @@ func ChangeObjectStatus() {
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func ListStatusChanges() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    statusChanges, err := client.Events.StatusChanges(event.Key, "", "objectLabel", "desc").All(shared.Pagination.PageSize(2))
+    statusChanges, err := client.Events.StatusChanges(<context.Context>, event.Key, "", "objectLabel", "desc").All(shared.Pagination.PageSize(2))
     for index, change := range statusChanges {
         //Do something with the status change
     }
@@ -209,15 +219,16 @@ You can alternatively use the paginated functions to retrieve status changes. To
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
 
 func ListStatusChanges() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    client.Events.StatusChanges(<AN EVENT KEY>).ListFirstPage(<OPTIONAL parameters>)
-    client.Events.statusChanges(<AN EVENT KEY>).ListPageAfter(<A STATUS CHANGE ID>)
-    client.Events.statusChanges(<AN EVENT KEY>).ListPageBefore(<A STATUS CHANGE ID>)
+    client.Events.StatusChanges(<context.Context>, <AN EVENT KEY>).ListFirstPage(<OPTIONAL parameters>)
+    client.Events.statusChanges(<context.Context>, <AN EVENT KEY>).ListPageAfter(<A STATUS CHANGE ID>)
+    client.Events.statusChanges(<context.Context>, <AN EVENT KEY>).ListPageBefore(<A STATUS CHANGE ID>)
 }
 ```  
 
@@ -225,6 +236,7 @@ You can also pass an optional parameter to _filter_, _sort_ or _order_ status ch
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
 )
@@ -232,9 +244,9 @@ import (
 func ListStatusChanges() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
     support := events.EventSupport
-    client.Events.StatusChanges(<AN EVENT KEY>, support.WithFilter("A"), support.WithSortAsc("objectLabel", "asc")).ListFirstPage(<OPTIONAL parameters>)
-    client.Events.statusChanges(<AN EVENT KEY>, support.WithFilter("A"), support.WithSortDesc("objectLabel", "asc")).ListPageAfter(<A STATUS CHANGE ID>)
-    client.Events.statusChanges(<AN EVENT KEY>, support.WithFilter("A"), support.WithSortAsc("objectLabel", "asc")).ListPageBefore(<A STATUS CHANGE ID>)
+    client.Events.StatusChanges(<context.Context>, <AN EVENT KEY>, support.WithFilter("A"), support.WithSortAsc("objectLabel", "asc")).ListFirstPage(<OPTIONAL parameters>)
+    client.Events.statusChanges(<context.Context>, <AN EVENT KEY>, support.WithFilter("A"), support.WithSortDesc("objectLabel", "asc")).ListPageAfter(<A STATUS CHANGE ID>)
+    client.Events.statusChanges(<context.Context>, <AN EVENT KEY>, support.WithFilter("A"), support.WithSortAsc("objectLabel", "asc")).ListPageBefore(<A STATUS CHANGE ID>)
 }
 ```  
 
@@ -244,6 +256,7 @@ A combination of filter, sorting order and sorting option is also possible.
 
 ```go
 import (
+	"context",
     "fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/events"
@@ -251,7 +264,7 @@ import (
 
 func RetrieveObjectInformation() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    info, _ := client.Events.RetrieveObjectInfo(<AN EVENT KEY>, "A-1", "A-2")
+    info, _ := client.Events.RetrieveObjectInfo(<<context.Context>, AN EVENT KEY>, "A-1", "A-2")
 
     fmt.Println(info["A-1"].CategoryKey)
     fmt.Println(info["A-1"].Label)
@@ -278,18 +291,19 @@ The report types you can choose from are:
 
 ```go
 import (
+	"context",
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/reports"
 )
 
 func GetSummary() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    report, _ := client.EventReports.SummaryByStatus(<AN EVENT KEY>)
+    report, _ := client.EventReports.SummaryByStatus(<context.Context>, <AN EVENT KEY>)
 }
 
 func GetDeepReport() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    report, _ := client.EventReports.DeepSummaryByStatus(<AN EVENT KEY>)
+    report, _ := client.EventReports.DeepSummaryByStatus(<context.Context>, <AN EVENT KEY>)
 }
 ```
 
@@ -299,6 +313,7 @@ You can list all charts using `ListAll()` function which returns an array of cha
 
 ```go
 import (
+	"context",
 	"fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -306,7 +321,7 @@ import (
 
 func GetAllCharts() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    retrievedCharts, _ := client.Charts.ListAll()
+    retrievedCharts, _ := client.Charts.ListAll(<context.Context>)
 	
 	fmt.Println(retrievedCharts[0].Key)
 	fmt.Println(retrievedCharts[1].Key)
@@ -324,6 +339,7 @@ Each page contains an `Items` array of `Chart` instances, and `NextPageStartsAft
 // ... user initially opens the screen ...
 
 import (
+	"context",
 	"fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -331,7 +347,7 @@ import (
 
 func GetFirstPage() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    chartsPage, _ := client.Charts.ListFirstPage()
+    chartsPage, _ := client.Charts.ListFirstPage(<context.Context>)
 
     for _, chart := range chartsPage.Items {
         fmt.Println(chart.Key)
@@ -343,6 +359,7 @@ func GetFirstPage() {
 // ... user clicks on 'next page' button ...
 
 import (
+	"context",
 	"fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -350,7 +367,7 @@ import (
 
 func GetNextPage() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    chartsPage, err := client.Charts.List().ListPageAfter(<NextPageStartsAfter>)
+    chartsPage, err := client.Charts.List(<context.Context>).ListPageAfter(<NextPageStartsAfter>)
 
     for _, chart := range chartsPage.Items {
         fmt.Println(chart.Key)
@@ -362,6 +379,7 @@ func GetNextPage() {
 // ... user clicks on 'previous page' button ...
 
 import (
+	"context",
 	"fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -369,7 +387,7 @@ import (
 
 func GetPreviousPage() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    chartsPage, err := client.Charts.List().ListPageAfter(<PreviousPageEndsBefore>)
+    chartsPage, err := client.Charts.List(<context.Context>).ListPageAfter(<PreviousPageEndsBefore>)
 
     for _, chart := range chartsPage.Items {
         fmt.Println(chart.Key)
@@ -381,13 +399,14 @@ func GetPreviousPage() {
 
 ```go
 import (
+	"context"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/workspaces"
 )
 
 func CreateWorkspace() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
-    workspace, _ := client.Workspaces.CreateProductionWorkspace("a workspace")
+    workspace, _ := client.Workspaces.CreateProductionWorkspace(<context.Context>, "a workspace")
 }
 ```
 
@@ -395,6 +414,7 @@ func CreateWorkspace() {
 
 ```go
 import (
+	"context",
 	"fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -403,8 +423,8 @@ import (
 
 func UsingTheCompanyAdminKey() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>))
-    chart, _ := client.Charts.Create(&charts.CreateChartParams{Name: "aChart"})
-    event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
+    chart, _ := client.Charts.Create(<context.Context>, &charts.CreateChartParams{Name: "aChart"})
+    event, _ := client.Events.Create(<context.Context>, &events.CreateEventParams{ChartKey: chart.Key})
     fmt.Printf(`Created a chart with key %s and an event with key: %s`, chart.Key, event.Key)
 }
 ```
@@ -413,6 +433,7 @@ func UsingTheCompanyAdminKey() {
 
 ```go
 import (
+	"context",
     "fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -421,7 +442,7 @@ import (
 
 func RetrieveAndListCategories() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>))
-    categories, err := client.Charts.ListCategories(<CHART KEY>)
+    categories, err := client.Charts.ListCategories(<context.Context>, <CHART KEY>)
     for _, category := range categories {
         fmt.Println(category.Label)
     }
@@ -432,6 +453,7 @@ func RetrieveAndListCategories() {
 
 ```go
 import (
+	"context",
     "fmt"
     "github.com/seatsio/seatsio-go/v9"
     "github.com/seatsio/seatsio-go/v9/charts"
@@ -440,7 +462,7 @@ import (
 
 func UpdateCategory() {
     client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>))
-    err = client.Charts.UpdateCategory(<CHART KEY>, <CATEGORY KEY>, charts.UpdateCategoryParams{
+    err = client.Charts.UpdateCategory(<context.Context>, <CHART KEY>, <CATEGORY KEY>, charts.UpdateCategoryParams{
         Label:      "New label",
         Color:      "#bbbbbb",
         Accessible: false,

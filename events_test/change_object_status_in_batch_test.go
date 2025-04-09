@@ -15,12 +15,13 @@ func TestChangeObjectStatusInBatch(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event1, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event1, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
-	event2, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event2, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{
 			Event: event1.Key,
 			StatusChanges: events.StatusChanges{
@@ -40,9 +41,9 @@ func TestChangeObjectStatusInBatch(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	event1Info, err := client.Events.RetrieveObjectInfo(event1.Key, "A-1")
+	event1Info, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event1.Key, "A-1")
 	require.NoError(t, err)
-	event2Info, err := client.Events.RetrieveObjectInfo(event2.Key, "A-2")
+	event2Info, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event2.Key, "A-2")
 	require.NoError(t, err)
 
 	require.Equal(t, "lolzor", result.Results[0].Objects["A-1"].Status)
@@ -56,7 +57,7 @@ func TestChannelKeys(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1"}},
 		},
@@ -64,6 +65,7 @@ func TestChannelKeys(t *testing.T) {
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}, IgnoreChannels: true}},
 	)
 	require.NoError(t, err)
@@ -76,10 +78,11 @@ func TestBatchAllowedPreviousStatuses(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{
 			Event: event.Key,
 			StatusChanges: events.StatusChanges{
@@ -98,10 +101,11 @@ func TestBatchRejectedPreviousStatuses(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
 	_, err = client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{Event: event.Key, StatusChanges: events.StatusChanges{Status: "lolzor", Objects: []events.ObjectProperties{{ObjectId: "A-1"}}, RejectedPreviousStatuses: []string{events.FREE}}},
 	)
 	seatsioError := err.(*shared.SeatsioError)
@@ -114,12 +118,13 @@ func TestReleaseInBatch(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
-	_, err = client.Events.Book(event.Key, "A-1")
+	_, err = client.Events.Book(test_util.RequestContext(), event.Key, "A-1")
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{
 			Event: event.Key,
 			StatusChanges: events.StatusChanges{
@@ -130,7 +135,7 @@ func TestReleaseInBatch(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	eventInfo, err := client.Events.RetrieveObjectInfo(event.Key, "A-1")
+	eventInfo, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event.Key, "A-1")
 	require.NoError(t, err)
 	require.Equal(t, events.FREE, result.Results[0].Objects["A-1"].Status)
 	require.Equal(t, events.FREE, eventInfo["A-1"].Status)
@@ -141,12 +146,13 @@ func TestOverrideSeasonStatusInBatch(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
 	require.NoError(t, err)
-	_, err = client.Events.Book(season.Key, "A-1")
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{
 			Event: "event1",
 			StatusChanges: events.StatusChanges{
@@ -158,7 +164,7 @@ func TestOverrideSeasonStatusInBatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, events.FREE, result.Results[0].Objects["A-1"].Status)
-	info, _ := client.Events.RetrieveObjectInfo("event1", "A-1")
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1")
 	require.Equal(t, events.FREE, info["A-1"].Status)
 }
 
@@ -167,14 +173,15 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
 	require.NoError(t, err)
-	_, err = client.Events.Book(season.Key, "A-1")
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
 	require.NoError(t, err)
-	err = client.Events.OverrideSeasonObjectStatus("event1", "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1")
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
 		events.StatusChangeInBatchParams{
 			Event: "event1",
 			StatusChanges: events.StatusChanges{
@@ -186,6 +193,6 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, result.Results[0].Objects["A-1"].Status)
-	info, _ := client.Events.RetrieveObjectInfo("event1", "A-1")
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1")
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }

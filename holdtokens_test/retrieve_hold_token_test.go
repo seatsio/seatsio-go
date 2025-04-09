@@ -12,10 +12,10 @@ func TestRetrieveHoldToken(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	holdToken, err := client.HoldTokens.Create()
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
 	require.NoError(t, err)
 
-	retrievedHoldToken, err := client.HoldTokens.Retrieve(holdToken.HoldToken)
+	retrievedHoldToken, err := client.HoldTokens.Retrieve(test_util.RequestContext(), holdToken.HoldToken)
 	require.NoError(t, err)
 
 	require.NotEmpty(t, retrievedHoldToken.HoldToken)

@@ -14,7 +14,7 @@ func TestCreateHoldToken(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	holdToken, err := client.HoldTokens.Create()
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
 	require.NoError(t, err)
 
 	require.NotEmpty(t, holdToken.HoldToken)
@@ -30,7 +30,7 @@ func TestCreateHoldTokenWithExpiresInMinutes(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	holdToken, err := client.HoldTokens.CreateWithExpiration(5)
+	holdToken, err := client.HoldTokens.CreateWithExpiration(test_util.RequestContext(), 5)
 	require.NoError(t, err)
 
 	require.NotEmpty(t, holdToken.HoldToken)

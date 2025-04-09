@@ -16,7 +16,7 @@ func TestCreateMultipleEventsWithDefaultValues(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{},
 		events.CreateMultipleEventParams{},
 	)
@@ -32,7 +32,7 @@ func TestCreateMultipleEventsWithEventKey(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event2"}},
 	)
@@ -51,7 +51,7 @@ func TestCreateMultipleEventsWithTableBookingConfig(t *testing.T) {
 	tableBookingConfig := events.TableBookingConfig{Mode: "CUSTOM", Tables: map[string]events.TableBookingMode{
 		"T1": events.BY_TABLE, "T2": events.BY_SEAT,
 	}}
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{TableBookingConfig: &tableBookingConfig}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{TableBookingConfig: &tableBookingConfig}},
 	)
@@ -70,7 +70,7 @@ func TestCreateMultipleEventsWithObjectCategories(t *testing.T) {
 	objectCategories := map[string]events.CategoryKey{
 		"A-1": {10},
 	}
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{ObjectCategories: &objectCategories}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{ObjectCategories: &objectCategories}},
 	)
@@ -90,7 +90,7 @@ func TestCreateMultipleEventsWithCategories(t *testing.T) {
 	categories := []events.Category{
 		category,
 	}
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Categories: &categories}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Categories: &categories}},
 	)
@@ -106,7 +106,7 @@ func TestCreateMultipleEventsWithName(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Name: "Event 1"}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Name: "Event 2"}},
 	)
@@ -122,7 +122,7 @@ func TestCreateMultipleEventsWithDate(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Date: "2023-07-18"}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Date: "2023-07-19"}},
 	)
@@ -142,7 +142,7 @@ func TestCreateMultipleEventsWithChannels(t *testing.T) {
 		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
 	}
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Channels: &channels}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{Channels: &channels}},
 	)
@@ -162,7 +162,7 @@ func TestCreateMultipleEventsWithDuplicateKeys(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	_, err := client.Events.CreateMultiple(chartKey,
+	_, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
 		events.CreateMultipleEventParams{EventParams: &events.EventParams{EventKey: "event1"}},
 	)
@@ -178,7 +178,7 @@ func TestCreateSingleEventWithDefaultValues(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	start := time.Now()
-	result, err := client.Events.CreateMultiple(chartKey, events.CreateMultipleEventParams{})
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey, events.CreateMultipleEventParams{})
 	require.NoError(t, err)
 	end := time.Now().Add(time.Second)
 
@@ -212,7 +212,7 @@ func TestCreateMultipleEventsWithForSaleConfig(t *testing.T) {
 		Categories: []string{"Cat1"},
 	}
 
-	result, err := client.Events.CreateMultiple(chartKey,
+	result, err := client.Events.CreateMultiple(test_util.RequestContext(), chartKey,
 		events.CreateMultipleEventParams{ForSaleConfig: forSaleConfig1},
 		events.CreateMultipleEventParams{ForSaleConfig: forSaleConfig2},
 	)

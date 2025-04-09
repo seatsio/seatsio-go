@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"context"
 	"github.com/imroc/req/v3"
 	"strconv"
 )
@@ -10,6 +11,7 @@ type PageFetcher[T interface{}] struct {
 	Url         string
 	UrlParams   map[string]string
 	QueryParams map[string]string
+	Context     *context.Context
 }
 
 type Page[T interface{}] struct {
@@ -32,6 +34,10 @@ func (pageFetcher *PageFetcher[T]) fetchPage(opts ...PaginationParamsOption) (*P
 	var page PageJson[T]
 	request := pageFetcher.Client.R().
 		SetSuccessResult(&page)
+
+	if pageFetcher.Context != nil {
+		request.SetContext(*pageFetcher.Context)
+	}
 
 	if paginationParams.PageSize != nil {
 		request.SetQueryParam("limit", strconv.Itoa(*paginationParams.PageSize))

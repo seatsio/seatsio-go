@@ -13,10 +13,10 @@ func TestChangeBestAvailableObjectStatusWithNumber(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 3},
 	})
@@ -34,10 +34,10 @@ func TestChangeBestAvailableObjectStatusWithCategories(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 3, Categories: []events.CategoryKey{{Key: "cat2"}}},
 	})
@@ -51,17 +51,17 @@ func TestChangeBestAvailableObjectStatusWithZone(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResultMidtrack, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResultMidtrack, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1, Zone: "midtrack"},
 	})
 	require.NoError(t, err)
 	require.Equal(t, []string{"MT3-A-139"}, bestAvailableResultMidtrack.Objects)
 
-	bestAvailableResultFinishline, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResultFinishline, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1, Zone: "finishline"},
 	})
@@ -74,17 +74,17 @@ func TestChangeBestAvailableObjectStatusWithSections(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChartWithSections(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResultSectionA, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResultSectionA, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1, Sections: []string{"Section A"}},
 	})
 	require.NoError(t, err)
 	require.Equal(t, []string{"Section A-A-1"}, bestAvailableResultSectionA.Objects)
 
-	bestAvailableResultSectionB, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResultSectionB, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1, Sections: []string{"Section B"}},
 	})
@@ -97,10 +97,10 @@ func TestChangeBestAvailableObjectStatusWithExtraData(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2, ExtraData: []events.ExtraData{{"foo": "bar"}, {"foo": "baz"}}},
 	})
@@ -115,10 +115,10 @@ func TestChangeBestAvailableObjectStatusWithTicketTypes(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2, TicketTypes: []string{"adult", "child"}},
 	})
@@ -133,13 +133,13 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraData(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(test_util.RequestContext(), event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1},
 		KeepExtraData: true,
@@ -154,13 +154,13 @@ func TestChangeBestAvailableObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(test_util.RequestContext(), event.Key, map[string]events.ExtraData{"A-5": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 1},
 		KeepExtraData: false,
@@ -175,10 +175,10 @@ func TestChangeBestAvailableObjectStatusWithOrderId(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 2},
 		OrderId:       "anOrder",
@@ -196,13 +196,13 @@ func TestChangeBestAvailableObjectStatusWithHoldToken(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	holdToken, err := client.HoldTokens.Create()
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.HELD,
 		BestAvailable: events.BestAvailableParams{Number: 2},
 		HoldToken:     holdToken.HoldToken,
@@ -220,14 +220,14 @@ func TestChangeBestAvailableObjectStatusWithChannelsKeys(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"B-6"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        "foo",
 		BestAvailable: events.BestAvailableParams{Number: 1},
 		ChannelKeys:   []string{"channelKey1"},
@@ -241,14 +241,14 @@ func TestChangeBestAvailableObjectStatusWithIgnoreChannels(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-5"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:         "foo",
 		BestAvailable:  events.BestAvailableParams{Number: 1},
 		IgnoreChannels: true,
@@ -263,10 +263,10 @@ func TestChangeBestAvailableObjectStatusWithAccessibleSeats(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(event.Key, &events.BestAvailableStatusChangeParams{
+	bestAvailableResult, err := client.Events.ChangeBestAvailableObjectStatus(test_util.RequestContext(), event.Key, &events.BestAvailableStatusChangeParams{
 		Status:        events.BOOKED,
 		BestAvailable: events.BestAvailableParams{Number: 3, AccessibleSeats: 1},
 	})

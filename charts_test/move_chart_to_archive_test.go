@@ -13,10 +13,10 @@ func TestMoveToArchive(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	err := client.Charts.MoveToArchive(chartKey)
+	err := client.Charts.MoveToArchive(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
-	retrievedChart, err := client.Charts.Retrieve(chartKey)
+	retrievedChart, err := client.Charts.Retrieve(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 	require.True(t, retrievedChart.Archived)
 }

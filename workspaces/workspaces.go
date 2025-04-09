@@ -1,6 +1,7 @@
 package workspaces
 
 import (
+	"context"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v9/shared"
 )
@@ -34,40 +35,44 @@ const (
 	Inactive WorkspaceStatus = "/inactive"
 )
 
-func (workspaces Workspaces) CreateTestWorkspace(name string) (*Workspace, error) {
-	return workspaces.createWorkspace(name, true)
+func (workspaces Workspaces) CreateTestWorkspace(context context.Context, name string) (*Workspace, error) {
+	return workspaces.createWorkspace(context, name, true)
 }
 
-func (workspaces Workspaces) CreateProductionWorkspace(name string) (*Workspace, error) {
-	return workspaces.createWorkspace(name, false)
+func (workspaces Workspaces) CreateProductionWorkspace(context context.Context, name string) (*Workspace, error) {
+	return workspaces.createWorkspace(context, name, false)
 }
 
-func (workspaces Workspaces) createWorkspace(name string, isTest bool) (*Workspace, error) {
+func (workspaces Workspaces) createWorkspace(context context.Context, name string, isTest bool) (*Workspace, error) {
 	var workspace Workspace
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetBody(CreateWorkspaceParams{Name: name, IsTest: isTest}).
 		SetSuccessResult(&workspace).
 		Post("/workspaces")
 	return shared.AssertOk(result, err, &workspace)
 }
 
-func (workspaces Workspaces) Activate(key string) error {
+func (workspaces Workspaces) Activate(context context.Context, key string) error {
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		Post("/workspaces/{key}/actions/activate")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (workspaces Workspaces) Deactivate(key string) error {
+func (workspaces Workspaces) Deactivate(context context.Context, key string) error {
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		Post("/workspaces/{key}/actions/deactivate")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (workspaces Workspaces) RegenerateSecretKey(key string) (*string, error) {
+func (workspaces Workspaces) RegenerateSecretKey(context context.Context, key string) (*string, error) {
 	var response regenerateSecretKeyResponse
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		SetSuccessResult(&response).
 		Post("/workspaces/{key}/actions/regenerate-secret-key")
@@ -79,51 +84,55 @@ func (workspaces Workspaces) RegenerateSecretKey(key string) (*string, error) {
 	}
 }
 
-func (workspaces Workspaces) SetDefaultWorkspace(key string) error {
+func (workspaces Workspaces) SetDefaultWorkspace(context context.Context, key string) error {
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		Post("/workspaces/actions/set-default/{key}")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (workspaces Workspaces) Update(key string, Name string) error {
+func (workspaces Workspaces) Update(context context.Context, key string, Name string) error {
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetBody(UpdateWorkspaceParams{Name}).
 		SetPathParam("key", key).
 		Post("/workspaces/{key}")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (workspaces Workspaces) Retrieve(key string) (*Workspace, error) {
+func (workspaces Workspaces) Retrieve(context context.Context, key string) (*Workspace, error) {
 	var workspace Workspace
 	result, err := workspaces.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		SetSuccessResult(&workspace).
 		Get("/workspaces/{key}")
 	return shared.AssertOk(result, err, &workspace)
 }
 
-func (workspaces Workspaces) ListAll(status WorkspaceStatus, opts ...shared.PaginationParamsOption) ([]Workspace, error) {
-	return workspaces.lister(status).All(opts...)
+func (workspaces Workspaces) ListAll(context context.Context, status WorkspaceStatus, opts ...shared.PaginationParamsOption) ([]Workspace, error) {
+	return workspaces.lister(context, status).All(opts...)
 }
 
-func (workspaces Workspaces) ListFirstPage(status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
-	return workspaces.lister(status).ListFirstPage(opts...)
+func (workspaces Workspaces) ListFirstPage(context context.Context, status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
+	return workspaces.lister(context, status).ListFirstPage(opts...)
 }
 
-func (workspaces Workspaces) ListPageAfter(id int64, status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
-	return workspaces.lister(status).ListPageAfter(id, opts...)
+func (workspaces Workspaces) ListPageAfter(context context.Context, id int64, status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
+	return workspaces.lister(context, status).ListPageAfter(id, opts...)
 }
 
-func (workspaces Workspaces) ListPageBefore(id int64, status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
-	return workspaces.lister(status).ListPageBefore(id, opts...)
+func (workspaces Workspaces) ListPageBefore(context context.Context, id int64, status WorkspaceStatus, opts ...shared.PaginationParamsOption) (*shared.Page[Workspace], error) {
+	return workspaces.lister(context, status).ListPageBefore(id, opts...)
 }
 
-func (workspaces Workspaces) lister(status WorkspaceStatus) *shared.Lister[Workspace] {
+func (workspaces Workspaces) lister(context context.Context, status WorkspaceStatus) *shared.Lister[Workspace] {
 	pageFetcher := shared.PageFetcher[Workspace]{
 		Client:    workspaces.Client,
 		Url:       string("/workspaces" + status), // avoids URL encoding of forward slash
 		UrlParams: map[string]string{},
+		Context:   &context,
 	}
 	return &shared.Lister[Workspace]{PageFetcher: &pageFetcher}
 }

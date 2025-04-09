@@ -14,10 +14,10 @@ func TestRetrieveChart(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	_ = client.Charts.AddTag(chartKey, "tag1")
-	_ = client.Charts.AddTag(chartKey, "tag2")
+	_ = client.Charts.AddTag(test_util.RequestContext(), chartKey, "tag1")
+	_ = client.Charts.AddTag(test_util.RequestContext(), chartKey, "tag2")
 
-	retrievedChart, err := client.Charts.Retrieve(chartKey)
+	retrievedChart, err := client.Charts.Retrieve(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	require.NotEqual(t, 0, retrievedChart.Id)
@@ -39,7 +39,7 @@ func TestRetrieveChartZones(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
 
-	retrievedChart, err := client.Charts.Retrieve(chartKey)
+	retrievedChart, err := client.Charts.Retrieve(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	require.Equal(t, []charts.Zone{{"finishline", "Finish Line"}, {"midtrack", "Mid Track"}}, retrievedChart.Zones)
@@ -50,10 +50,10 @@ func TestRetrieveChartWithEvents(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	retrievedChart, err := client.Charts.RetrieveWithEvents(chartKey)
+	retrievedChart, err := client.Charts.RetrieveWithEvents(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(retrievedChart.Events))
 

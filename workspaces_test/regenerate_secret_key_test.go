@@ -12,14 +12,14 @@ func TestRegenerateSecretKey(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	workspace, err := client.Workspaces.CreateProductionWorkspace("my workspace")
+	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
 
-	newKey, err := client.Workspaces.RegenerateSecretKey(workspace.Key)
+	newKey, err := client.Workspaces.RegenerateSecretKey(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
 	require.NotEqual(t, newKey, workspace.SecretKey)
 
-	retrievedWorkspace, err := client.Workspaces.Retrieve(workspace.Key)
+	retrievedWorkspace, err := client.Workspaces.Retrieve(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
 	require.Equal(t, *newKey, retrievedWorkspace.SecretKey)
 }

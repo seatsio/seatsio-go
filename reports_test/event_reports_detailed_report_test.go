@@ -16,14 +16,14 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{{
@@ -37,7 +37,7 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	reportItem := report.Items["A-1"][0]
@@ -91,11 +91,11 @@ func TestHoldToken(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	holdToken, err := client.HoldTokens.Create()
-	_, err = client.Events.Hold(event.Key, []string{"A-1"}, &holdToken.HoldToken)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
+	_, err = client.Events.Hold(test_util.RequestContext(), event.Key, []string{"A-1"}, &holdToken.HoldToken)
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 	require.Equal(t, holdToken.HoldToken, report.Items["A-1"][0].HoldToken)
 }
@@ -106,14 +106,14 @@ func TestSeasonStatusOverriddenQuantity(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
+	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
 	require.NoError(t, err)
 
 	event := season.Events[0]
-	err = client.Events.OverrideSeasonObjectStatus(event.Key, "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), event.Key, "A-1")
 	require.NoError(t, err)
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 1, report.Items["A-1"][0].SeasonStatusOverriddenQuantity)
@@ -124,8 +124,8 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.BookWithOptions(&events.StatusChangeParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{{
@@ -134,8 +134,9 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 			}},
 		},
 	})
-	holdToken, err := client.HoldTokens.Create()
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
 	_, err = client.Events.HoldWithObjectProperties(
+		test_util.RequestContext(),
 		event.Key,
 		[]events.ObjectProperties{
 			{
@@ -145,7 +146,7 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 		},
 		&holdToken.HoldToken)
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	reportItem := report.Items["GA1"][0]
@@ -166,14 +167,14 @@ func TestDetailedReportItemPropertiesForTable(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{
 		ChartKey: chartKey,
 		EventParams: &events.EventParams{
 			TableBookingConfig: events.TableBookingSupport.AllByTables(),
 		},
 	})
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	reportItem := report.Items["T1"][0]
@@ -186,8 +187,8 @@ func TestByStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: "lolzor",
@@ -197,9 +198,9 @@ func TestByStatus(t *testing.T) {
 			},
 		},
 	})
-	_, err = client.Events.Book(event.Key, "A-3")
+	_, err = client.Events.Book(test_util.RequestContext(), event.Key, "A-3")
 
-	report, err := client.EventReports.ByStatus(event.Key)
+	report, err := client.EventReports.ByStatus(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(report.Items["lolzor"]))
@@ -211,10 +212,10 @@ func TestByStatusWithEmptyChart(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	chart, err := client.Charts.Create(&charts.CreateChartParams{})
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chart.Key})
 
-	report, err := client.EventReports.ByStatus(event.Key)
+	report, err := client.EventReports.ByStatus(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Empty(t, report.Items)
@@ -225,8 +226,8 @@ func TestBySpecificStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: "lolzor",
@@ -236,9 +237,9 @@ func TestBySpecificStatus(t *testing.T) {
 			},
 		},
 	})
-	_, err = client.Events.Book(event.Key, "A-3")
+	_, err = client.Events.Book(test_util.RequestContext(), event.Key, "A-3")
 
-	items, err := client.EventReports.BySpecificStatus(event.Key, "lolzor")
+	items, err := client.EventReports.BySpecificStatus(test_util.RequestContext(), event.Key, "lolzor")
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))
@@ -249,9 +250,9 @@ func TestBySpecificNonExistingStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificStatus(event.Key, "lolzor")
+	items, err := client.EventReports.BySpecificStatus(test_util.RequestContext(), event.Key, "lolzor")
 	require.NoError(t, err)
 
 	require.Empty(t, len(items))
@@ -262,9 +263,9 @@ func TestDetailedReportByObjectType(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.ByObjectType(event.Key)
+	report, err := client.EventReports.ByObjectType(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 32, len(report.Items["seat"]))
@@ -277,9 +278,9 @@ func TestDetailedReportBySpecificObjectType(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificObjectType(event.Key, "seat")
+	items, err := client.EventReports.BySpecificObjectType(test_util.RequestContext(), event.Key, "seat")
 	require.NoError(t, err)
 
 	require.Equal(t, 32, len(items))
@@ -290,9 +291,9 @@ func TestDetailedReportByCategoryLabel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.ByCategoryLabel(event.Key)
+	report, err := client.EventReports.ByCategoryLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 17, len(report.Items["Cat1"]))
@@ -304,9 +305,9 @@ func TestDetailedReportBySpecificCategoryLabel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificCategoryLabel(event.Key, "Cat1")
+	items, err := client.EventReports.BySpecificCategoryLabel(test_util.RequestContext(), event.Key, "Cat1")
 	require.NoError(t, err)
 
 	require.Equal(t, 17, len(items))
@@ -317,9 +318,9 @@ func TestDetailedReportByCategoryKey(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.ByCategoryKey(event.Key)
+	report, err := client.EventReports.ByCategoryKey(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 17, len(report.Items["9"]))
@@ -331,9 +332,9 @@ func TestDetailedReportBySpecificCategoryKey(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificCategoryKey(event.Key, "9")
+	items, err := client.EventReports.BySpecificCategoryKey(test_util.RequestContext(), event.Key, "9")
 	require.NoError(t, err)
 
 	require.Equal(t, 17, len(items))
@@ -344,9 +345,9 @@ func TestDetailedReportByLabel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.ByLabel(event.Key)
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 1, len(report.Items["A-1"]))
@@ -358,9 +359,9 @@ func TestDetailedReportBySpecificLabel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificLabel(event.Key, "A-1")
+	items, err := client.EventReports.BySpecificLabel(test_util.RequestContext(), event.Key, "A-1")
 	require.NoError(t, err)
 
 	require.Equal(t, 1, len(items))
@@ -371,8 +372,8 @@ func TestDetailedReportByOrderId(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.BookWithOptions(&events.StatusChangeParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{
@@ -382,7 +383,7 @@ func TestDetailedReportByOrderId(t *testing.T) {
 			OrderId: "order1",
 		},
 	})
-	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{
@@ -392,7 +393,7 @@ func TestDetailedReportByOrderId(t *testing.T) {
 		},
 	})
 
-	report, err := client.EventReports.ByOrderId(event.Key)
+	report, err := client.EventReports.ByOrderId(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(report.Items["order1"]))
@@ -405,8 +406,8 @@ func TestDetailedReportBySpecificOrderId(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.BookWithOptions(&events.StatusChangeParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{
@@ -416,7 +417,7 @@ func TestDetailedReportBySpecificOrderId(t *testing.T) {
 			OrderId: "order1",
 		},
 	})
-	_, err = client.Events.BookWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.BookWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Objects: []events.ObjectProperties{
@@ -426,7 +427,7 @@ func TestDetailedReportBySpecificOrderId(t *testing.T) {
 		},
 	})
 
-	items, err := client.EventReports.BySpecificOrderId(event.Key, "order1")
+	items, err := client.EventReports.BySpecificOrderId(test_util.RequestContext(), event.Key, "order1")
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))
@@ -437,9 +438,9 @@ func TestDetailedReportBySection(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.BySection(event.Key)
+	report, err := client.EventReports.BySection(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 34, len(report.Items[reports.NoSection]))
@@ -450,9 +451,9 @@ func TestDetailedReportBySpecificSection(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificSection(event.Key, reports.NoSection)
+	items, err := client.EventReports.BySpecificSection(test_util.RequestContext(), event.Key, reports.NoSection)
 	require.NoError(t, err)
 
 	require.Equal(t, 34, len(items))
@@ -463,9 +464,9 @@ func TestDetailedReportByZone(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.ByZone(event.Key)
+	report, err := client.EventReports.ByZone(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 6032, len(report.Items["midtrack"]))
@@ -477,9 +478,9 @@ func TestDetailedReportBySpecificZone(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	items, err := client.EventReports.BySpecificZone(event.Key, "midtrack")
+	items, err := client.EventReports.BySpecificZone(test_util.RequestContext(), event.Key, "midtrack")
 	require.NoError(t, err)
 
 	require.Equal(t, 6032, len(items))
@@ -490,10 +491,10 @@ func TestDetailedReportByAvailability(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
 
-	report, err := client.EventReports.ByAvailability(event.Key)
+	report, err := client.EventReports.ByAvailability(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 32, len(report.Items[reports.Available]))
@@ -505,10 +506,10 @@ func TestDetailedReportBySpecificAvailability(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
 
-	items, err := client.EventReports.BySpecificAvailability(event.Key, reports.NotAvailable)
+	items, err := client.EventReports.BySpecificAvailability(test_util.RequestContext(), event.Key, reports.NotAvailable)
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))
@@ -519,10 +520,10 @@ func TestDetailedReportByAvailabilityReason(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
 
-	report, err := client.EventReports.ByAvailabilityReason(event.Key)
+	report, err := client.EventReports.ByAvailabilityReason(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 32, len(report.Items[reports.Available]))
@@ -534,10 +535,10 @@ func TestDetailedReportBySpecificAvailabilityReason(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1", "A-2"}, "lolzor")
 
-	items, err := client.EventReports.BySpecificAvailabilityReason(event.Key, "lolzor")
+	items, err := client.EventReports.BySpecificAvailabilityReason(test_util.RequestContext(), event.Key, "lolzor")
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))
@@ -548,14 +549,14 @@ func TestDetailedReportByChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	report, err := client.EventReports.ByChannel(event.Key)
+	report, err := client.EventReports.ByChannel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(report.Items["channel1"]))
@@ -567,14 +568,14 @@ func TestDetailedReportBySpecificChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	items, err := client.EventReports.BySpecificChannel(event.Key, "channel1")
+	items, err := client.EventReports.BySpecificChannel(test_util.RequestContext(), event.Key, "channel1")
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))

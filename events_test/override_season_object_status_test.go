@@ -14,15 +14,15 @@ func TestOverrideSeasonObjectStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
 	require.NoError(t, err)
-	_, err = client.Events.Book(season.Key, "A-1", "A-2")
-	require.NoError(t, err)
-
-	err = client.Events.OverrideSeasonObjectStatus("event1", "A-1", "A-2")
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
 	require.NoError(t, err)
 
-	info, _ := client.Events.RetrieveObjectInfo("event1", "A-1", "A-2")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1", "A-2")
+	require.NoError(t, err)
+
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1", "A-2")
 	require.Equal(t, events.FREE, info["A-1"].Status)
 	require.Equal(t, events.FREE, info["A-2"].Status)
 }

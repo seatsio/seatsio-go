@@ -14,10 +14,10 @@ func TestChangeObjectStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1", "A-2"}, events.BOOKED)
+	objects, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1", "A-2"}, events.BOOKED)
 	require.NoError(t, err)
 
 	require.Equal(t, events.BOOKED, objects.Objects["A-1"].Status)
@@ -29,10 +29,10 @@ func TestChangeObjectStatusWithObjectDetails(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, "foo")
+	objects, err := client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, "foo")
 	require.NoError(t, err)
 
 	var status = "foo"
@@ -64,13 +64,13 @@ func TestChangeObjectStatusWithHoldToken(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	holdToken, err := client.HoldTokens.Create()
+	holdToken, err := client.HoldTokens.Create(test_util.RequestContext())
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:    events.HELD,
@@ -89,10 +89,10 @@ func TestChangeObjectStatusWithExtraData(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -111,13 +111,13 @@ func TestChangeObjectStatusWithKeepExtraData(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(test_util.RequestContext(), event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -137,13 +137,13 @@ func TestChangeObjectStatusWithKeepExtraDataFalse(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	err = client.Events.UpdateExtraData(event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
+	err = client.Events.UpdateExtraData(test_util.RequestContext(), event.Key, map[string]events.ExtraData{"A-1": {"foo": "bar"}})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -163,10 +163,10 @@ func TestChangeObjectStatusWithTicketType(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -185,10 +185,10 @@ func TestChangeObjectStatusWithQuantity(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	objects, err := client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -207,14 +207,14 @@ func TestChangeObjectStatusWithChannelsKeys(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:      events.BOOKED,
@@ -224,7 +224,7 @@ func TestChangeObjectStatusWithChannelsKeys(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	info, _ := client.Events.RetrieveObjectInfo(event.Key, "A-1")
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event.Key, "A-1")
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }
 
@@ -233,14 +233,14 @@ func TestChangeObjectStatusWithIgnoreChannels(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channelKey1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status:         events.BOOKED,
@@ -250,7 +250,7 @@ func TestChangeObjectStatusWithIgnoreChannels(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	info, _ := client.Events.RetrieveObjectInfo(event.Key, "A-1")
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event.Key, "A-1")
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }
 
@@ -259,10 +259,10 @@ func TestChangeObjectStatusWithAllowedPreviousStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
@@ -281,10 +281,10 @@ func TestChangeObjectStatusWithRejectedPreviousStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	_, err = client.Events.ChangeObjectStatusWithOptions(&events.StatusChangeParams{
+	_, err = client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
 		Events: []string{event.Key},
 		StatusChanges: events.StatusChanges{
 			Status: events.BOOKED,
