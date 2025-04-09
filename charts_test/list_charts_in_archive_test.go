@@ -16,12 +16,12 @@ func TestListChartsInArchive(t *testing.T) {
 	chartKey2 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	_ = test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	err1 := client.Charts.MoveToArchive(chartKey1)
+	err1 := client.Charts.MoveToArchive(test_util.RequestContext(), chartKey1)
 	require.NoError(t, err1)
-	err2 := client.Charts.MoveToArchive(chartKey2)
+	err2 := client.Charts.MoveToArchive(test_util.RequestContext(), chartKey2)
 	require.NoError(t, err2)
 
-	charts, err := client.Charts.Archive.All()
+	charts, err := client.Charts.Archive.All(test_util.RequestContext())
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(charts))

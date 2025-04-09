@@ -14,15 +14,15 @@ func TestListAllEventLogItems(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{})
 	require.NoError(t, err)
 
-	err = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "a chart"})
+	err = client.Charts.Update(test_util.RequestContext(), chart.Key, &charts.UpdateChartParams{Name: "a chart"})
 	require.NoError(t, err)
 
 	time.Sleep(2 * time.Second)
 
-	retrievedEventLogItems, err := client.EventLog.ListAll()
+	retrievedEventLogItems, err := client.EventLog.ListAll(test_util.RequestContext())
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(retrievedEventLogItems))
@@ -35,12 +35,12 @@ func TestEventLogItemProperties(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{})
 	require.NoError(t, err)
 
 	time.Sleep(2 * time.Second)
 
-	retrievedEventLogItems, err := client.EventLog.ListFirstPage()
+	retrievedEventLogItems, err := client.EventLog.ListFirstPage(test_util.RequestContext())
 	require.NoError(t, err)
 
 	eventLogItem := retrievedEventLogItems.Items[0]

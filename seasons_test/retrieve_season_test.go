@@ -17,14 +17,14 @@ func TestRetrieveSeason(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
 	startTime := time.Now()
-	season, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1", "event2"}})
+	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)
-	partialSeason1, err := client.Seasons.CreatePartialSeason(season.Key)
+	partialSeason1, err := client.Seasons.CreatePartialSeason(test_util.RequestContext(), season.Key)
 	require.NoError(t, err)
-	partialSeason2, err := client.Seasons.CreatePartialSeason(season.Key)
+	partialSeason2, err := client.Seasons.CreatePartialSeason(test_util.RequestContext(), season.Key)
 	require.NoError(t, err)
 
-	retrievedSeason, err := client.Seasons.Retrieve(season.Key)
+	retrievedSeason, err := client.Seasons.Retrieve(test_util.RequestContext(), season.Key)
 	require.NoError(t, err)
 
 	require.NotEqual(t, 0, retrievedSeason.Id)

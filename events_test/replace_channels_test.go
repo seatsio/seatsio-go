@@ -13,7 +13,7 @@ func TestReplaceChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 		Channels: &[]events.CreateChannelParams{
 			{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
@@ -22,13 +22,13 @@ func TestReplaceChannel(t *testing.T) {
 	}})
 	require.NoError(t, err)
 
-	replaceError := client.Channels.Replace(event.Key,
+	replaceError := client.Channels.Replace(test_util.RequestContext(), event.Key,
 		events.CreateChannelParams{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
 		events.CreateChannelParams{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
 	)
 	require.NoError(t, replaceError)
 
-	postReplacementEvent, err := client.Events.Retrieve(event.Key)
+	postReplacementEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, []events.Channel{

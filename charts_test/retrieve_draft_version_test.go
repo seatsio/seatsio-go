@@ -14,10 +14,10 @@ func TestRetrieveDraftVersion(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_ = client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "newName"})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_ = client.Charts.Update(test_util.RequestContext(), chartKey, &charts.UpdateChartParams{Name: "newName"})
 
-	drawing, err := client.Charts.RetrieveDraftVersion(chartKey)
+	drawing, err := client.Charts.RetrieveDraftVersion(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 	require.Equal(t, "newName", drawing["name"])
 }

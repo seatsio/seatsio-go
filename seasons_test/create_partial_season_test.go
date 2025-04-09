@@ -14,10 +14,10 @@ func TestKeyCanBePassedIn(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason"})
+	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason"})
 	require.NoError(t, err)
 
-	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(topLevelSeason.Key, &seasons.CreatePartialSeasonParams{Key: "aPartialSeason"})
+	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(test_util.RequestContext(), topLevelSeason.Key, &seasons.CreatePartialSeasonParams{Key: "aPartialSeason"})
 	require.NoError(t, err)
 
 	require.Equal(t, "aPartialSeason", partialSeason.Key)
@@ -31,10 +31,10 @@ func TestNameCanBePassedIn(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason"})
+	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason"})
 	require.NoError(t, err)
 
-	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(topLevelSeason.Key, &seasons.CreatePartialSeasonParams{Name: "aPartialSeason"})
+	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(test_util.RequestContext(), topLevelSeason.Key, &seasons.CreatePartialSeasonParams{Name: "aPartialSeason"})
 	require.NoError(t, err)
 
 	require.Equal(t, "aPartialSeason", partialSeason.Name)
@@ -46,10 +46,10 @@ func TestEventKeysCanBePassedIn(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason", EventKeys: []string{"event1", "event2", "event3"}})
+	topLevelSeason, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aTopLevelSeason", EventKeys: []string{"event1", "event2", "event3"}})
 	require.NoError(t, err)
 
-	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(topLevelSeason.Key, &seasons.CreatePartialSeasonParams{EventKeys: []string{"event1", "event3"}})
+	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(test_util.RequestContext(), topLevelSeason.Key, &seasons.CreatePartialSeasonParams{EventKeys: []string{"event1", "event3"}})
 	require.NoError(t, err)
 	require.Subset(t, []string{partialSeason.Events[0].Key, partialSeason.Events[1].Key}, []string{"event1", "event3"})
 	require.Equal(t, []string{partialSeason.Key}, partialSeason.Events[0].PartialSeasonKeysForEvent)

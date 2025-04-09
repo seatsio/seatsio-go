@@ -16,7 +16,7 @@ func TestSummaryByObjectType(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey)
+	summaryChartReport, err := client.ChartReports.SummaryByObjectType(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	seatReportItem := reports.ChartSummaryReportItem{
@@ -61,7 +61,7 @@ func TestSummaryByObjectType_BookWholeTablesTrue(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithTables(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByObjectType(chartKey, reports.ChartReportOptions.BookWholeTablesTrue())
+	summaryChartReport, err := client.ChartReports.SummaryByObjectType(test_util.RequestContext(), chartKey, reports.ChartReportOptions.BookWholeTablesTrue())
 
 	require.NoError(t, err)
 	tableReportItem := reports.ChartSummaryReportItem{
@@ -92,7 +92,7 @@ func TestSummaryByCategoryKey(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(chartKey)
+	summaryChartReport, err := client.ChartReports.SummaryByCategoryKey(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	cat9Report := reports.ChartSummaryReportItem{
@@ -133,7 +133,7 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByCategoryLabel(chartKey)
+	summaryChartReport, err := client.ChartReports.SummaryByCategoryLabel(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	cat1Report := reports.ChartSummaryReportItem{
@@ -174,7 +174,7 @@ func TestSummaryBySection(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey)
+	summaryChartReport, err := client.ChartReports.SummaryBySection(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	noSectionReport := reports.ChartSummaryReportItem{
@@ -201,7 +201,7 @@ func TestSummaryByZone(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
 
-	summaryChartReport, err := client.ChartReports.SummaryByZone(chartKey)
+	summaryChartReport, err := client.ChartReports.SummaryByZone(test_util.RequestContext(), chartKey)
 
 	require.NoError(t, err)
 	midtrackReport := reports.ChartSummaryReportItem{
@@ -228,10 +228,10 @@ func TestSummaryDraftVersion(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_ = client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "Foo"})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_ = client.Charts.Update(test_util.RequestContext(), chartKey, &charts.UpdateChartParams{Name: "Foo"})
 
-	summaryChartReport, err := client.ChartReports.SummaryBySection(chartKey, reports.ChartReportOptionsNS{}.UseDraftVersion())
+	summaryChartReport, err := client.ChartReports.SummaryBySection(test_util.RequestContext(), chartKey, reports.ChartReportOptionsNS{}.UseDraftVersion())
 
 	require.NoError(t, err)
 	noSectionReport := reports.ChartSummaryReportItem{

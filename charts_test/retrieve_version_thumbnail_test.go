@@ -15,10 +15,10 @@ func TestRetrievePublishedVersionThumbnail(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "SIMPLE"})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{VenueType: "SIMPLE"})
 	require.NoError(t, err)
 
-	file, err := client.Charts.RetrievePublishedVersionThumbnail(chart.Key)
+	file, err := client.Charts.RetrievePublishedVersionThumbnail(test_util.RequestContext(), chart.Key)
 	require.NoError(t, err)
 	require.Contains(t, file.Name(), chart.Key)
 	_ = os.Remove(file.Name())
@@ -29,12 +29,12 @@ func TestRetrieveDraftVersionThumbnail(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	chart, err := client.Charts.Create(&charts.CreateChartParams{Name: "oldname"})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{Name: "oldname"})
 	require.NoError(t, err)
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chart.Key})
-	_ = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "newname"})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chart.Key})
+	_ = client.Charts.Update(test_util.RequestContext(), chart.Key, &charts.UpdateChartParams{Name: "newname"})
 
-	file, err := client.Charts.RetrieveDraftVersionThumbnail(chart.Key)
+	file, err := client.Charts.RetrieveDraftVersionThumbnail(test_util.RequestContext(), chart.Key)
 	require.NoError(t, err)
 	require.Contains(t, file.Name(), chart.Key)
 	_ = os.Remove(file.Name())

@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v9/shared"
+	"golang.org/x/net/context"
 	"log"
 	"os"
 	"testing"
@@ -92,4 +93,8 @@ func AssertDemoCompanySecretKeySet(t *testing.T) {
 	if !exists {
 		t.Skip("DEMO_COMPANY_SECRET_KEY environment variable not set, skipping test")
 	}
+}
+
+func RequestContext() context.Context {
+	return context.Background()
 }

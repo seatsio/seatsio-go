@@ -15,10 +15,10 @@ func TestRetrieveEvent(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 
 	require.NoError(t, err)
 	require.NotZero(t, retrievedEvent.Id)

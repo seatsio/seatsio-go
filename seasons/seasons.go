@@ -1,6 +1,7 @@
 package seasons
 
 import (
+	"context"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v9/events"
 	"github.com/seatsio/seatsio-go/v9/shared"
@@ -40,31 +41,33 @@ type addEventsToPartialSeasonParams struct {
 	EventKeys []string `json:"eventKeys"`
 }
 
-func (seasons *Seasons) CreateSeason(chartKey string) (*Season, error) {
-	return seasons.CreateSeasonWithOptions(chartKey, &CreateSeasonParams{})
+func (seasons *Seasons) CreateSeason(context context.Context, chartKey string) (*Season, error) {
+	return seasons.CreateSeasonWithOptions(context, chartKey, &CreateSeasonParams{})
 }
 
-func (seasons *Seasons) CreateSeasonWithOptions(chartKey string, params *CreateSeasonParams) (*Season, error) {
+func (seasons *Seasons) CreateSeasonWithOptions(context context.Context, chartKey string, params *CreateSeasonParams) (*Season, error) {
 	params.ChartKey = chartKey
 	var season Season
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetBody(params).
 		SetSuccessResult(&season).
 		Post("/seasons")
 	return shared.AssertOk(result, err, &season)
 }
 
-func (seasons *Seasons) CreateEventsWithEventKeys(seasonKey string, eventKeys ...string) ([]*events.Event, error) {
-	return seasons.createEvents(seasonKey, createEventsParams{EventKeys: eventKeys})
+func (seasons *Seasons) CreateEventsWithEventKeys(context context.Context, seasonKey string, eventKeys ...string) ([]*events.Event, error) {
+	return seasons.createEvents(context, seasonKey, createEventsParams{EventKeys: eventKeys})
 }
 
-func (seasons *Seasons) CreateNumberOfEvents(seasonKey string, numberOfEvents int) ([]*events.Event, error) {
-	return seasons.createEvents(seasonKey, createEventsParams{NumberOfEvents: numberOfEvents})
+func (seasons *Seasons) CreateNumberOfEvents(context context.Context, seasonKey string, numberOfEvents int) ([]*events.Event, error) {
+	return seasons.createEvents(context, seasonKey, createEventsParams{NumberOfEvents: numberOfEvents})
 }
 
-func (seasons *Seasons) createEvents(seasonKey string, params createEventsParams) ([]*events.Event, error) {
+func (seasons *Seasons) createEvents(context context.Context, seasonKey string, params createEventsParams) ([]*events.Event, error) {
 	var response eventsCreationResponse
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetPathParam("seasonKey", seasonKey).
 		SetBody(params).
 		SetSuccessResult(&response).
@@ -77,13 +80,14 @@ func (seasons *Seasons) createEvents(seasonKey string, params createEventsParams
 	}
 }
 
-func (seasons *Seasons) CreatePartialSeason(topLevelSeasonKey string) (*Season, error) {
-	return seasons.CreatePartialSeasonWithOptions(topLevelSeasonKey, &CreatePartialSeasonParams{})
+func (seasons *Seasons) CreatePartialSeason(context context.Context, topLevelSeasonKey string) (*Season, error) {
+	return seasons.CreatePartialSeasonWithOptions(context, topLevelSeasonKey, &CreatePartialSeasonParams{})
 }
 
-func (seasons *Seasons) CreatePartialSeasonWithOptions(topLevelSeasonKey string, params *CreatePartialSeasonParams) (*Season, error) {
+func (seasons *Seasons) CreatePartialSeasonWithOptions(context context.Context, topLevelSeasonKey string, params *CreatePartialSeasonParams) (*Season, error) {
 	var season Season
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetPathParam("topLevelSeasonKey", topLevelSeasonKey).
 		SetBody(params).
 		SetSuccessResult(&season).
@@ -91,9 +95,10 @@ func (seasons *Seasons) CreatePartialSeasonWithOptions(topLevelSeasonKey string,
 	return shared.AssertOk(result, err, &season)
 }
 
-func (seasons *Seasons) RemoveEventFromPartialSeason(topLevelSeasonKey string, partialSeasonKey string, eventKey string) (*Season, error) {
+func (seasons *Seasons) RemoveEventFromPartialSeason(context context.Context, topLevelSeasonKey string, partialSeasonKey string, eventKey string) (*Season, error) {
 	var season Season
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetPathParam("topLevelSeasonKey", topLevelSeasonKey).
 		SetPathParam("partialSeasonKey", partialSeasonKey).
 		SetPathParam("eventKey", eventKey).
@@ -102,9 +107,10 @@ func (seasons *Seasons) RemoveEventFromPartialSeason(topLevelSeasonKey string, p
 	return shared.AssertOk(result, err, &season)
 }
 
-func (seasons *Seasons) AddEventsToPartialSeason(topLevelSeasonKey string, partialSeasonKey string, eventKeys ...string) (*Season, error) {
+func (seasons *Seasons) AddEventsToPartialSeason(context context.Context, topLevelSeasonKey string, partialSeasonKey string, eventKeys ...string) (*Season, error) {
 	var season Season
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetPathParam("topLevelSeasonKey", topLevelSeasonKey).
 		SetPathParam("partialSeasonKey", partialSeasonKey).
 		SetBody(addEventsToPartialSeasonParams{EventKeys: eventKeys}).
@@ -113,9 +119,10 @@ func (seasons *Seasons) AddEventsToPartialSeason(topLevelSeasonKey string, parti
 	return shared.AssertOk(result, err, &season)
 }
 
-func (seasons *Seasons) Retrieve(key string) (*Season, error) {
+func (seasons *Seasons) Retrieve(context context.Context, key string) (*Season, error) {
 	var season Season
 	result, err := seasons.Client.R().
+		SetContext(context).
 		SetPathParam("key", key).
 		SetSuccessResult(&season).
 		Get("/events/{key}")

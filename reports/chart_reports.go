@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"context"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v9/events"
 	"github.com/seatsio/seatsio-go/v9/shared"
@@ -63,57 +64,58 @@ type ChartReportOptionsNS struct{}
 
 var ChartReportOptions ChartReportOptionsNS
 
-func (reports *ChartReports) SummaryByObjectType(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
-	return reports.fetchSummaryChartReport("byObjectType", chartKey, chartReportOptions...)
+func (reports *ChartReports) SummaryByObjectType(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport(context, "byObjectType", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) SummaryByCategoryKey(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
-	return reports.fetchSummaryChartReport("byCategoryKey", chartKey, chartReportOptions...)
+func (reports *ChartReports) SummaryByCategoryKey(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport(context, "byCategoryKey", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) SummaryByCategoryLabel(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
-	return reports.fetchSummaryChartReport("byCategoryLabel", chartKey, chartReportOptions...)
+func (reports *ChartReports) SummaryByCategoryLabel(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport(context, "byCategoryLabel", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) SummaryBySection(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
-	return reports.fetchSummaryChartReport("bySection", chartKey, chartReportOptions...)
+func (reports *ChartReports) SummaryBySection(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport(context, "bySection", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) SummaryByZone(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
-	return reports.fetchSummaryChartReport("byZone", chartKey, chartReportOptions...)
+func (reports *ChartReports) SummaryByZone(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+	return reports.fetchSummaryChartReport(context, "byZone", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) ByLabel(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("byLabel", chartKey, chartReportOptions...)
+func (reports *ChartReports) ByLabel(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "byLabel", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) ByObjectType(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("byObjectType", chartKey, chartReportOptions...)
+func (reports *ChartReports) ByObjectType(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "byObjectType", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) ByCategoryKey(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("byCategoryKey", chartKey, chartReportOptions...)
+func (reports *ChartReports) ByCategoryKey(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "byCategoryKey", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) ByCategoryLabel(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("byCategoryLabel", chartKey, chartReportOptions...)
+func (reports *ChartReports) ByCategoryLabel(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "byCategoryLabel", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) BySection(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("bySection", chartKey, chartReportOptions...)
+func (reports *ChartReports) BySection(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "bySection", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) ByZone(chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
-	return reports.fetchChartReport("byZone", chartKey, chartReportOptions...)
+func (reports *ChartReports) ByZone(context context.Context, chartKey string, chartReportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+	return reports.fetchChartReport(context, "byZone", chartKey, chartReportOptions...)
 }
 
-func (reports *ChartReports) fetchChartReport(reportType string, chartKey string, reportOptions ...chartReportOptionsOption) (*ChartReport, error) {
+func (reports *ChartReports) fetchChartReport(context context.Context, reportType string, chartKey string, reportOptions ...chartReportOptionsOption) (*ChartReport, error) {
 	options := chartReportOptions{options: map[string]string{}}
 	for _, opt := range reportOptions {
 		opt(&options)
 	}
 	var report map[string][]ChartReportItem
 	result, err := reports.Client.R().
+		SetContext(context).
 		SetSuccessResult(&report).
 		SetPathParam("reportItemType", "charts").
 		SetPathParam("key", chartKey).
@@ -123,13 +125,14 @@ func (reports *ChartReports) fetchChartReport(reportType string, chartKey string
 	return shared.AssertOk(result, err, &ChartReport{Items: report})
 }
 
-func (reports *ChartReports) fetchSummaryChartReport(reportType string, chartKey string, reportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
+func (reports *ChartReports) fetchSummaryChartReport(context context.Context, reportType string, chartKey string, reportOptions ...chartReportOptionsOption) (*ChartSummaryReport, error) {
 	options := chartReportOptions{options: map[string]string{}}
 	for _, opt := range reportOptions {
 		opt(&options)
 	}
 	var report map[string]ChartSummaryReportItem
 	result, err := reports.Client.R().
+		SetContext(context).
 		SetSuccessResult(&report).
 		SetPathParam("reportItemType", "charts").
 		SetPathParam("key", chartKey).

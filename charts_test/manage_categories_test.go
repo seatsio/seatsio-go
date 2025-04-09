@@ -17,10 +17,10 @@ func TestAddCategory(t *testing.T) {
 	chartKey1 := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
 	category := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa", Accessible: true}
-	err := client.Charts.AddCategory(chartKey1, category)
+	err := client.Charts.AddCategory(test_util.RequestContext(), chartKey1, category)
 	require.NoError(t, err)
 
-	drawing, err := client.Charts.RetrievePublishedVersion(chartKey1)
+	drawing, err := client.Charts.RetrievePublishedVersion(test_util.RequestContext(), chartKey1)
 	require.NoError(t, err)
 	require.Contains(t,
 		getCategories(drawing),
@@ -35,12 +35,12 @@ func TestRemoveCategory(t *testing.T) {
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
 	categories := []events.Category{category1, category2}
-	chart, err := client.Charts.Create(&charts.CreateChartParams{Categories: categories})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{Categories: categories})
 
-	err = client.Charts.RemoveCategory(chart.Key, events.CategoryKey{Key: 1})
+	err = client.Charts.RemoveCategory(test_util.RequestContext(), chart.Key, events.CategoryKey{Key: 1})
 	require.NoError(t, err)
 
-	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
+	drawing, err := client.Charts.RetrievePublishedVersion(test_util.RequestContext(), chart.Key)
 	require.NoError(t, err)
 	require.NotContains(t,
 		getCategories(drawing),
@@ -54,9 +54,9 @@ func TestListCategories(t *testing.T) {
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
-	chart, err := client.Charts.Create(&charts.CreateChartParams{Categories: []events.Category{category1, category2}})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{Categories: []events.Category{category1, category2}})
 
-	categories, err := client.Charts.ListCategories(chart.Key)
+	categories, err := client.Charts.ListCategories(test_util.RequestContext(), chart.Key)
 	require.NoError(t, err)
 	require.Contains(t, categories, category1)
 	require.Contains(t, categories, category2)
@@ -68,7 +68,7 @@ func TestListCategories_unknownChart(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	_, err := client.Charts.ListCategories("someUnknownChart")
+	_, err := client.Charts.ListCategories(test_util.RequestContext(), "someUnknownChart")
 	require.Error(t, err)
 }
 
@@ -79,14 +79,14 @@ func TestUpdateCategory(t *testing.T) {
 
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	err := client.Charts.UpdateCategory(chartKey, events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
+	err := client.Charts.UpdateCategory(test_util.RequestContext(), chartKey, events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
 		Label:      "New label",
 		Color:      "#bbbbbb",
 		Accessible: false,
 	})
 	require.NoError(t, err)
 
-	categories, err := client.Charts.ListCategories(chartKey)
+	categories, err := client.Charts.ListCategories(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 	require.Contains(t, categories, events.Category{Key: events.CategoryKey{Key: "string11"}, Label: "New label", Color: "#bbbbbb", Accessible: false})
 }
@@ -96,7 +96,7 @@ func TestUpdateCategory_unknownChart(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	err := client.Charts.UpdateCategory("someUnknownChart", events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
+	err := client.Charts.UpdateCategory(test_util.RequestContext(), "someUnknownChart", events.CategoryKey{Key: "string11"}, charts.UpdateCategoryParams{
 		Label:      "New label",
 		Color:      "#bbbbbb",
 		Accessible: false,
@@ -111,7 +111,7 @@ func TestUpdateCategory_unknownCategory(t *testing.T) {
 
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 
-	err := client.Charts.UpdateCategory(chartKey, events.CategoryKey{Key: "unknownCategory"}, charts.UpdateCategoryParams{
+	err := client.Charts.UpdateCategory(test_util.RequestContext(), chartKey, events.CategoryKey{Key: "unknownCategory"}, charts.UpdateCategoryParams{
 		Label:      "New label",
 		Color:      "#bbbbbb",
 		Accessible: false,

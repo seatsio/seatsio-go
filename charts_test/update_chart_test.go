@@ -16,12 +16,12 @@ func TestUpdateName(t *testing.T) {
 
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	categories := []events.Category{category1}
-	chart, err := client.Charts.Create(&charts.CreateChartParams{VenueType: "SIMPLE", Categories: categories})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{VenueType: "SIMPLE", Categories: categories})
 
-	err = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Name: "aChart"})
+	err = client.Charts.Update(test_util.RequestContext(), chart.Key, &charts.UpdateChartParams{Name: "aChart"})
 	require.NoError(t, err)
 
-	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
+	drawing, err := client.Charts.RetrievePublishedVersion(test_util.RequestContext(), chart.Key)
 	require.Equal(t, "aChart", drawing["name"])
 	require.Equal(t, "SIMPLE", drawing["venueType"])
 }
@@ -34,13 +34,13 @@ func TestUpdateCategories(t *testing.T) {
 	category1 := events.Category{Key: events.CategoryKey{Key: 1}, Label: "Category 1", Color: "#aaaaaa"}
 	category2 := events.Category{Key: events.CategoryKey{Key: "anotherCat"}, Label: "Category 2", Color: "#bbbbbb", Accessible: true}
 	categories := []events.Category{category1, category2}
-	chart, err := client.Charts.Create(&charts.CreateChartParams{})
+	chart, err := client.Charts.Create(test_util.RequestContext(), &charts.CreateChartParams{})
 	require.NoError(t, err)
 
-	err = client.Charts.Update(chart.Key, &charts.UpdateChartParams{Categories: categories})
+	err = client.Charts.Update(test_util.RequestContext(), chart.Key, &charts.UpdateChartParams{Categories: categories})
 	require.NoError(t, err)
 
-	drawing, err := client.Charts.RetrievePublishedVersion(chart.Key)
+	drawing, err := client.Charts.RetrievePublishedVersion(test_util.RequestContext(), chart.Key)
 	require.Contains(t,
 		getCategories(drawing),
 		map[string]interface{}{"key": float64(1), "label": "Category 1", "color": "#aaaaaa", "accessible": false})

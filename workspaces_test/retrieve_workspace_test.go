@@ -12,10 +12,10 @@ func TestRetrieveWorkspace(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	workspace, err := client.Workspaces.CreateProductionWorkspace("my workspace")
+	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
 
-	retrievedWorkspace, err := client.Workspaces.Retrieve(workspace.Key)
+	retrievedWorkspace, err := client.Workspaces.Retrieve(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
 
 	require.Equal(t, workspace.Key, retrievedWorkspace.Key)

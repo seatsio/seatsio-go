@@ -12,7 +12,7 @@ func TestCreateProductionWorkspace(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	workspace, err := client.Workspaces.CreateProductionWorkspace("my workspace")
+	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
 
 	require.Equal(t, "my workspace", workspace.Name)
@@ -27,7 +27,7 @@ func TestCreateTestWorkspace(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	workspace, err := client.Workspaces.CreateTestWorkspace("my workspace")
+	workspace, err := client.Workspaces.CreateTestWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
 
 	require.Equal(t, "my workspace", workspace.Name)

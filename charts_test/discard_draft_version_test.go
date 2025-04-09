@@ -14,13 +14,13 @@ func TestDiscardDraftVersion(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	_, _ = client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_ = client.Charts.Update(chartKey, &charts.UpdateChartParams{Name: "newname"})
+	_, _ = client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_ = client.Charts.Update(test_util.RequestContext(), chartKey, &charts.UpdateChartParams{Name: "newname"})
 
-	err := client.Charts.DiscardDraftVersion(chartKey)
+	err := client.Charts.DiscardDraftVersion(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 
-	retrievedChart, err := client.Charts.Retrieve(chartKey)
+	retrievedChart, err := client.Charts.Retrieve(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 	require.Equal(t, "Sample chart", retrievedChart.Name)
 	require.Equal(t, "PUBLISHED", retrievedChart.Status)

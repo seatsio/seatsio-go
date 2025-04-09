@@ -12,7 +12,7 @@ func TestUsageReportForAllMonths(t *testing.T) {
 	test_util.AssertDemoCompanySecretKeySet(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
 
-	report, err := client.UsageReports.SummaryForAllMonths()
+	report, err := client.UsageReports.SummaryForAllMonths(test_util.RequestContext())
 
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, len(report.Usage), 0)
@@ -26,7 +26,7 @@ func TestUsageReportForMonth(t *testing.T) {
 	test_util.AssertDemoCompanySecretKeySet(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
 
-	report, err := client.UsageReports.DetailsForMonth(2021, 11)
+	report, err := client.UsageReports.DetailsForMonth(test_util.RequestContext(), 2021, 11)
 
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, len(report), 0)
@@ -39,7 +39,7 @@ func TestUsageReportForEventInMonth(t *testing.T) {
 	test_util.AssertDemoCompanySecretKeySet(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
 
-	report1, report2, err := client.UsageReports.DetailsForEventInMonth(580293, 2021, 11)
+	report1, report2, err := client.UsageReports.DetailsForEventInMonth(test_util.RequestContext(), 580293, 2021, 11)
 
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, len(report1), 0)

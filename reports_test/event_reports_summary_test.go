@@ -14,10 +14,10 @@ func TestSummaryByStatus(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryByStatus(event.Key)
+	report, err := client.EventReports.SummaryByStatus(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 	bookedReportItem := reports.EventSummaryReportItem{
 		Count:                1,
@@ -54,9 +54,9 @@ func TestSummaryByObjectType(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.SummaryByObjectType(event.Key)
+	report, err := client.EventReports.SummaryByObjectType(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	seatReport := reports.EventSummaryReportItem{
@@ -115,10 +115,10 @@ func TestSummaryByCategoryKey(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryByCategoryKey(event.Key)
+	report, err := client.EventReports.SummaryByCategoryKey(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	cat9Report := reports.EventSummaryReportItem{
@@ -168,10 +168,10 @@ func TestSummaryByCategoryLabel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryByCategoryLabel(event.Key)
+	report, err := client.EventReports.SummaryByCategoryLabel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	cat1Report := reports.EventSummaryReportItem{
@@ -221,10 +221,10 @@ func TestSummaryBySection(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryBySection(event.Key)
+	report, err := client.EventReports.SummaryBySection(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	noSectionReport := reports.EventSummaryReportItem{
@@ -251,9 +251,9 @@ func TestSummaryByZone(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChartWithZones(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 
-	report, err := client.EventReports.SummaryByZone(event.Key)
+	report, err := client.EventReports.SummaryByZone(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	midtrackReport := reports.EventSummaryReportItem{
@@ -278,10 +278,10 @@ func TestSummaryByAvailability(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryByAvailability(event.Key)
+	report, err := client.EventReports.SummaryByAvailability(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	availableReport := reports.EventSummaryReportItem{
@@ -320,10 +320,10 @@ func TestSummaryByAvailabilityReason(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey})
-	_, _ = client.Events.ChangeObjectStatus([]string{event.Key}, []string{"A-1"}, events.BOOKED)
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	_, _ = client.Events.ChangeObjectStatus(test_util.RequestContext(), []string{event.Key}, []string{"A-1"}, events.BOOKED)
 
-	report, err := client.EventReports.SummaryByAvailabilityReason(event.Key)
+	report, err := client.EventReports.SummaryByAvailabilityReason(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	availableReport := reports.EventSummaryReportItem{
@@ -374,14 +374,14 @@ func TestSummaryByChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	event, err := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		Channels: &[]events.CreateChannelParams{
 			{Key: "channel1", Name: "channel 1", Color: "#FFFF99", Index: 1, Objects: []string{"A-1", "A-2"}},
 		},
 	}})
 	require.NoError(t, err)
 
-	report, err := client.EventReports.SummaryByChannel(event.Key)
+	report, err := client.EventReports.SummaryByChannel(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 
 	channelReport := reports.EventSummaryReportItem{

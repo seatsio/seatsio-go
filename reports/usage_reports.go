@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/imroc/req/v3"
@@ -75,25 +76,28 @@ type UsageSummaryForMonth struct {
 	NumUsedObjects int   `json:"numUsedObjects"`
 }
 
-func (usageReports *UsageReports) SummaryForAllMonths() (*UsageSummaryForAllMonths, error) {
+func (usageReports *UsageReports) SummaryForAllMonths(context context.Context) (*UsageSummaryForAllMonths, error) {
 	var report UsageSummaryForAllMonths
 	result, err := usageReports.Client.R().
+		SetContext(context).
 		SetSuccessResult(&report).
 		Get("/reports/usage?version=2")
 	return shared.AssertOk(result, err, &report)
 }
 
-func (usageReports *UsageReports) DetailsForMonth(year int, month int) ([]UsageDetails, error) {
+func (usageReports *UsageReports) DetailsForMonth(context context.Context, year int, month int) ([]UsageDetails, error) {
 	var details []UsageDetails
 	result, err := usageReports.Client.R().
+		SetContext(context).
 		SetSuccessResult(&details).
 		SetPathParam("month", formatMonth(year, month)).
 		Get("/reports/usage/month/{month}")
 	return shared.AssertOkArray(result, err, &details)
 }
 
-func (usageReports *UsageReports) DetailsForEventInMonth(eventId int, year int, month int) ([]UsageForObjectV1, []UsageForObjectV2, error) {
+func (usageReports *UsageReports) DetailsForEventInMonth(context context.Context, eventId int, year int, month int) ([]UsageForObjectV1, []UsageForObjectV2, error) {
 	result, err := usageReports.Client.R().
+		SetContext(context).
 		SetPathParam("month", formatMonth(year, month)).
 		SetPathParam("eventId", strconv.Itoa(eventId)).
 		Get("/reports/usage/month/{month}/event/{eventId}")

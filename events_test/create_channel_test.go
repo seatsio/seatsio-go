@@ -13,15 +13,15 @@ func TestCreateChannel(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(event.Key, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
+	err := client.Channels.Create(test_util.RequestContext(), event.Key, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Equal(t, []events.Channel{{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}}}, retrievedEvent.Channels)
 }
 
@@ -30,18 +30,18 @@ func TestCreateChannels(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(event.Key,
+	err := client.Channels.Create(test_util.RequestContext(), event.Key,
 		&events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
 		&events.CreateChannelParams{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
 	)
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Equal(t, []events.Channel{
 		{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
 		{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
@@ -53,12 +53,12 @@ func TestIndexIsOptional(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(event.Key, &events.CreateChannelParams{
+	err := client.Channels.Create(test_util.RequestContext(), event.Key, &events.CreateChannelParams{
 		Key:     "foo",
 		Name:    "bar",
 		Color:   "#ED303D",
@@ -66,7 +66,7 @@ func TestIndexIsOptional(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Equal(t, 1, len(retrievedEvent.Channels))
 	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
 	require.Equal(t, 0, retrievedEvent.Channels[0].Index)
@@ -78,12 +78,12 @@ func TestObjectsIsOptional(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	event, _ := client.Events.Create(&events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
+	event, _ := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(event.Key, &events.CreateChannelParams{
+	err := client.Channels.Create(test_util.RequestContext(), event.Key, &events.CreateChannelParams{
 		Key:   "foo",
 		Name:  "bar",
 		Color: "#ED303D",
@@ -91,7 +91,7 @@ func TestObjectsIsOptional(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	retrievedEvent, err := client.Events.Retrieve(event.Key)
+	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Equal(t, 1, len(retrievedEvent.Channels))
 	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
 	require.Equal(t, 1, retrievedEvent.Channels[0].Index)
