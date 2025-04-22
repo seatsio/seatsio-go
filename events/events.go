@@ -60,8 +60,6 @@ type BestAvailableResult struct {
 	ObjectDetails   map[string]EventObjectInfo `json:"objectDetails"`
 }
 
-type ObjectStatus string
-
 const (
 	FREE   = "free"
 	BOOKED = "booked"
@@ -80,7 +78,7 @@ const (
 
 type StatusChanges struct {
 	Type                     StatusChangeType   `json:"type,omitempty"`
-	Status                   ObjectStatus       `json:"status,omitempty"`
+	Status                   string             `json:"status,omitempty"`
 	Objects                  []ObjectProperties `json:"objects"`
 	HoldToken                string             `json:"holdToken,omitempty"`
 	OrderId                  string             `json:"orderId,omitempty"`
@@ -106,7 +104,7 @@ type StatusChangeInBatchParams struct {
 }
 
 type BestAvailableStatusChangeParams struct {
-	Status         ObjectStatus        `json:"status"`
+	Status         string              `json:"status"`
 	BestAvailable  BestAvailableParams `json:"bestAvailable"`
 	HoldToken      string              `json:"holdToken,omitempty"`
 	OrderId        string              `json:"orderId,omitempty"`
@@ -179,7 +177,7 @@ func (events *Events) Update(context context.Context, eventKey string, params *U
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) ChangeObjectStatus(context context.Context, eventKeys []string, objects []string, status ObjectStatus) (*ChangeObjectStatusResult, error) {
+func (events *Events) ChangeObjectStatus(context context.Context, eventKeys []string, objects []string, status string) (*ChangeObjectStatusResult, error) {
 	objectProperties := make([]ObjectProperties, len(objects))
 	for i, object := range objects {
 		objectProperties[i] = ObjectProperties{ObjectId: object}
@@ -436,7 +434,7 @@ func (events *Events) releaseObjects(context context.Context, eventKey string, o
 	return events.ChangeObjectStatusWithOptions(context, &params)
 }
 
-func (events *Events) changeStatus(context context.Context, status ObjectStatus, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+func (events *Events) changeStatus(context context.Context, status string, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
 	params := StatusChangeParams{
 		Events: []string{eventKey},
 		StatusChanges: StatusChanges{
