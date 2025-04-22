@@ -3,7 +3,7 @@ package workspaces
 import (
 	"context"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v10/shared"
+	"github.com/seatsio/seatsio-go/v11/shared"
 )
 
 type Workspaces struct {

@@ -3,8 +3,8 @@ package charts
 import (
 	"context"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v10/events"
-	"github.com/seatsio/seatsio-go/v10/shared"
+	"github.com/seatsio/seatsio-go/v11/events"
+	"github.com/seatsio/seatsio-go/v11/shared"
 	"os"
 	"strconv"
 )

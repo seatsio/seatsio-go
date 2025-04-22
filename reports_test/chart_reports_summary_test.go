@@ -1,11 +1,11 @@
 package reports_test
 
 import (
-	"github.com/seatsio/seatsio-go/v10"
-	"github.com/seatsio/seatsio-go/v10/charts"
-	"github.com/seatsio/seatsio-go/v10/events"
-	"github.com/seatsio/seatsio-go/v10/reports"
-	"github.com/seatsio/seatsio-go/v10/test_util"
+	"github.com/seatsio/seatsio-go/v11"
+	"github.com/seatsio/seatsio-go/v11/charts"
+	"github.com/seatsio/seatsio-go/v11/events"
+	"github.com/seatsio/seatsio-go/v11/reports"
+	"github.com/seatsio/seatsio-go/v11/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
