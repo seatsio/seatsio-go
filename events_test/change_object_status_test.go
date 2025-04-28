@@ -297,3 +297,24 @@ func TestChangeObjectStatusWithRejectedPreviousStatus(t *testing.T) {
 
 	require.Equal(t, "ILLEGAL_STATUS_CHANGE", err.(*shared.SeatsioError).Code)
 }
+
+func TestChangeObjectStatusWithResaleListingId(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	objects, err := client.Events.ChangeObjectStatusWithOptions(test_util.RequestContext(), &events.StatusChangeParams{
+		Events: []string{event.Key},
+		StatusChanges: events.StatusChanges{
+			Status:          events.RESALE,
+			Objects:         []events.ObjectProperties{{ObjectId: "A-1"}, {ObjectId: "A-2"}},
+			ResaleListingId: "listing1",
+		},
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, "listing1", objects.Objects["A-1"].ResaleListingId)
+}

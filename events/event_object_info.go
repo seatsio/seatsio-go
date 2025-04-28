@@ -39,6 +39,7 @@ type EventObjectInfo struct {
 	NumNotForSale                  int                       `json:"numNotForSale"`
 	Zone                           string                    `json:"zone"`
 	Floor                          Floor                     `json:"floor"`
+	ResaleListingId                string                    `json:"resaleListingId,omitempty"`
 }
 
 type IDs struct {

@@ -196,3 +196,47 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1")
 	require.Equal(t, events.BOOKED, info["A-1"].Status)
 }
+
+func TestResaleListingIdInBatch(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event1, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
+		events.StatusChangeInBatchParams{
+			Event: event1.Key,
+			StatusChanges: events.StatusChanges{
+				Type:            events.CHANGE_STATUS_TO,
+				Status:          events.RESALE,
+				Objects:         []events.ObjectProperties{{ObjectId: "A-1"}},
+				ResaleListingId: "listing1",
+			},
+		},
+		events.StatusChangeInBatchParams{
+			Event: event2.Key,
+			StatusChanges: events.StatusChanges{
+				Type:            events.CHANGE_STATUS_TO,
+				Status:          events.RESALE,
+				Objects:         []events.ObjectProperties{{ObjectId: "A-2"}},
+				ResaleListingId: "listing1",
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	event1Info, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event1.Key, "A-1")
+	require.NoError(t, err)
+	event2Info, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event2.Key, "A-2")
+	require.NoError(t, err)
+
+	require.Equal(t, "listing1", result.Results[0].Objects["A-1"].ResaleListingId)
+	require.Equal(t, "listing1", event1Info["A-1"].ResaleListingId)
+	require.Equal(t, "listing1", result.Results[0].Objects["A-1"].ResaleListingId)
+	require.Equal(t, "listing1", event2Info["A-2"].ResaleListingId)
+}
