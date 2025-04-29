@@ -240,3 +240,37 @@ func TestRejectedPreviousStatuses(t *testing.T) {
 	seatsioErr := err.(*shared.SeatsioError)
 	require.Equal(t, "ILLEGAL_STATUS_CHANGE", seatsioErr.Code)
 }
+
+func TestResaleListingId(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	event1, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	event2, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	results, err := client.Events.ChangeObjectStatusWithOptions(
+		test_util.RequestContext(),
+		&events.StatusChangeParams{
+			Events: []string{event1.Key, event2.Key},
+			StatusChanges: events.StatusChanges{
+				Status:          events.RESALE,
+				Objects:         []events.ObjectProperties{{ObjectId: "A-1"}},
+				ResaleListingId: "listing1",
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, "listing1", string(results.Objects["A-1"].ResaleListingId))
+
+	event1Data, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event1.Key, "A-1")
+	require.NoError(t, err)
+	event2Data, err := client.Events.RetrieveObjectInfo(test_util.RequestContext(), event2.Key, "A-1")
+	require.NoError(t, err)
+
+	require.Equal(t, "listing1", string(event1Data["A-1"].ResaleListingId))
+	require.Equal(t, "listing1", string(event2Data["A-1"].ResaleListingId))
+}

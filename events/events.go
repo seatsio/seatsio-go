@@ -87,6 +87,7 @@ type StatusChanges struct {
 	ChannelKeys              []string           `json:"channelKeys,omitempty"`
 	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
 	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
+	ResaleListingId          string             `json:"resaleListingId,omitempty"`
 }
 
 type StatusChangeParams struct {
@@ -343,19 +344,19 @@ func (events *Events) ListAll(context context.Context, opts ...shared.Pagination
 }
 
 func (events *Events) Book(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), nil)
+	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), nil, nil)
 }
 
 func (events *Events) BookWithHoldToken(context context.Context, eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken)
+	return events.changeStatus(context, BOOKED, eventKey, events.toObjectProperties(objectIds), holdToken, nil)
 }
 
 func (events *Events) BookWithObjectProperties(context context.Context, eventKey string, objectProperties ...ObjectProperties) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, BOOKED, eventKey, objectProperties, nil)
+	return events.changeStatus(context, BOOKED, eventKey, objectProperties, nil, nil)
 }
 
 func (events *Events) BookWithObjectPropertiesAndHoldToken(context context.Context, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, BOOKED, eventKey, objectProperties, holdToken)
+	return events.changeStatus(context, BOOKED, eventKey, objectProperties, holdToken, nil)
 }
 
 func (events *Events) BookWithOptions(context context.Context, statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
@@ -383,11 +384,11 @@ func (events *Events) BookBestAvailableWithOptions(context context.Context, even
 }
 
 func (events *Events) Hold(context context.Context, eventKey string, objectIds []string, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, HELD, eventKey, events.toObjectProperties(objectIds), holdToken)
+	return events.changeStatus(context, HELD, eventKey, events.toObjectProperties(objectIds), holdToken, nil)
 }
 
 func (events *Events) HoldWithObjectProperties(context context.Context, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, HELD, eventKey, objectProperties, holdToken)
+	return events.changeStatus(context, HELD, eventKey, objectProperties, holdToken, nil)
 }
 
 func (events *Events) HoldWithOptions(context context.Context, statusChangeParams *StatusChangeParams) (*ChangeObjectStatusResult, error) {
@@ -403,8 +404,8 @@ func (events *Events) HoldBestAvailable(context context.Context, eventKey string
 	})
 }
 
-func (events *Events) PutUpForResale(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
-	return events.changeStatus(context, RESALE, eventKey, events.toObjectProperties(objectIds), nil)
+func (events *Events) PutUpForResale(context context.Context, eventKey string, objectIds []string, resaleListingId *string) (*ChangeObjectStatusResult, error) {
+	return events.changeStatus(context, RESALE, eventKey, events.toObjectProperties(objectIds), nil, resaleListingId)
 }
 
 func (events *Events) Release(context context.Context, eventKey string, objectIds ...string) (*ChangeObjectStatusResult, error) {
@@ -434,7 +435,7 @@ func (events *Events) releaseObjects(context context.Context, eventKey string, o
 	return events.ChangeObjectStatusWithOptions(context, &params)
 }
 
-func (events *Events) changeStatus(context context.Context, status string, eventKey string, objectProperties []ObjectProperties, holdToken *string) (*ChangeObjectStatusResult, error) {
+func (events *Events) changeStatus(context context.Context, status string, eventKey string, objectProperties []ObjectProperties, holdToken *string, resaleListingId *string) (*ChangeObjectStatusResult, error) {
 	params := StatusChangeParams{
 		Events: []string{eventKey},
 		StatusChanges: StatusChanges{
@@ -444,6 +445,9 @@ func (events *Events) changeStatus(context context.Context, status string, event
 	}
 	if holdToken != nil {
 		params.HoldToken = *holdToken
+	}
+	if resaleListingId != nil {
+		params.ResaleListingId = *resaleListingId
 	}
 	return events.ChangeObjectStatusWithOptions(context, &params)
 }

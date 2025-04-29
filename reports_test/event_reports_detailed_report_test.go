@@ -79,6 +79,7 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.Equal(t, "channel1", reportItem.Channel)
 	require.NotNil(t, reportItem.DistanceToFocalPoint)
 	require.Equal(t, 0, reportItem.SeasonStatusOverriddenQuantity)
+	require.Empty(t, reportItem.ResaleListingId)
 
 	gaItem := report.Items["GA1"][0]
 	require.True(t, gaItem.VariableOccupancy)
@@ -579,4 +580,21 @@ func TestDetailedReportBySpecificChannel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(items))
+}
+
+func TestResaleListingId(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	listingId := "listing1"
+	_, err = client.Events.PutUpForResale(test_util.RequestContext(), event.Key, []string{"A-1"}, &listingId)
+	require.NoError(t, err)
+
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
+	require.NoError(t, err)
+	require.Equal(t, "listing1", report.Items["A-1"][0].ResaleListingId)
 }
