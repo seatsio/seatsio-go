@@ -10,6 +10,7 @@ import (
 	"github.com/seatsio/seatsio-go/v11/reports"
 	"github.com/seatsio/seatsio-go/v11/seasons"
 	"github.com/seatsio/seatsio-go/v11/shared"
+	"github.com/seatsio/seatsio-go/v11/ticketbuyers"
 	"github.com/seatsio/seatsio-go/v11/workspaces"
 )
 
@@ -43,6 +44,7 @@ type SeatsioClient struct {
 	Channels     *events.Channels
 	Seasons      *seasons.Seasons
 	EventLog     *eventlog.EventLog
+	TicketBuyers *ticketbuyers.TicketBuyers
 }
 
 func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
@@ -63,6 +65,7 @@ func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...sha
 		Channels:     &events.Channels{Client: apiClient},
 		Seasons:      &seasons.Seasons{Client: apiClient},
 		EventLog:     &eventlog.EventLog{Client: apiClient},
+		TicketBuyers: &ticketbuyers.TicketBuyers{Client: apiClient},
 	}
 	ClientSupport.apiClient = apiClient
 	return client
