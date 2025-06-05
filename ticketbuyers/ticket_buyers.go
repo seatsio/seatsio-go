@@ -58,24 +58,3 @@ func (ticketBuyers *TicketBuyers) lister(context context.Context) *shared.Lister
 func (ticketBuyers *TicketBuyers) ListAll(context context.Context) ([]uuid.UUID, error) {
 	return ticketBuyers.lister(context).All()
 }
-
-func (ticketBuyers *TicketBuyers) ListFirstPage(context context.Context, pageSize ...int) (*shared.Page[uuid.UUID], error) {
-	if pageSize != nil {
-		return ticketBuyers.lister(context).ListFirstPage(shared.Pagination.PageSize(pageSize[0]))
-	}
-	return ticketBuyers.lister(context).ListFirstPage()
-}
-
-func (ticketBuyers *TicketBuyers) ListPageAfter(context context.Context, id int64, pageSize ...int) (*shared.Page[uuid.UUID], error) {
-	if pageSize != nil {
-		return ticketBuyers.lister(context).ListPageAfter(id, shared.Pagination.PageSize(pageSize[0]))
-	}
-	return ticketBuyers.lister(context).ListPageAfter(id)
-}
-
-func (ticketBuyers *TicketBuyers) ListPageBefore(context context.Context, id int64, pageSize ...int) (*shared.Page[uuid.UUID], error) {
-	if pageSize != nil {
-		return ticketBuyers.lister(context).ListPageBefore(id, shared.Pagination.PageSize(pageSize[0]))
-	}
-	return ticketBuyers.lister(context).ListPageBefore(id)
-}
