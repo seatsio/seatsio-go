@@ -69,6 +69,14 @@ func (workspaces Workspaces) Deactivate(context context.Context, key string) err
 	return shared.AssertOkNoBody(result, err)
 }
 
+func (workspaces Workspaces) Delete(context context.Context, key string) error {
+	result, err := workspaces.Client.R().
+		SetContext(context).
+		SetPathParam("key", key).
+		Delete("/workspaces/{key}")
+	return shared.AssertOkNoBody(result, err)
+}
+
 func (workspaces Workspaces) RegenerateSecretKey(context context.Context, key string) (*string, error) {
 	var response regenerateSecretKeyResponse
 	result, err := workspaces.Client.R().
