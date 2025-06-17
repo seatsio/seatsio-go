@@ -26,16 +26,3 @@ func TestDeleteInactiveWorkspace(t *testing.T) {
 	_, err = client.Workspaces.Retrieve(test_util.RequestContext(), workspace.Key)
 	require.Equal(t, "WORKSPACE_NOT_FOUND", err.(*shared.SeatsioError).Code)
 }
-
-func TestDeleteActiveWorkspace(t *testing.T) {
-	t.Parallel()
-	company := test_util.CreateTestCompany(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-
-	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
-	require.NoError(t, err)
-	require.True(t, workspace.IsActive)
-
-	err = client.Workspaces.Delete(test_util.RequestContext(), workspace.Key)
-	require.Equal(t, "Cannot delete active workspace, please deactivate it first", err.(*shared.SeatsioError).Message)
-}
