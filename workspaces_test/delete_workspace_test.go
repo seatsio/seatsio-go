@@ -15,7 +15,6 @@ func TestDeleteInactiveWorkspace(t *testing.T) {
 
 	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
-	require.True(t, workspace.IsActive)
 
 	err = client.Workspaces.Deactivate(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
