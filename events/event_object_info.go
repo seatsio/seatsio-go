@@ -25,6 +25,7 @@ type EventObjectInfo struct {
 	IsCompanionSeat                bool                      `json:"isCompanionSeat"`
 	HasRestrictedView              bool                      `json:"hasRestrictedView"`
 	DisplayedObjectType            string                    `json:"displayedObjectType,omitempty"`
+	ParentDisplayedObjectType      string                    `json:"parentDisplayedObjectType,omitempty"`
 	LeftNeighbour                  string                    `json:"leftNeighbour,omitempty"`
 	RightNeighbour                 string                    `json:"rightNeighbour,omitempty"`
 	IsAvailable                    bool                      `json:"isAvailable"`
