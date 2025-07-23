@@ -72,6 +72,7 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.False(t, reportItem.IsAccessible)
 	require.False(t, reportItem.IsCompanionSeat)
 	require.Empty(t, reportItem.DisplayedObjectType)
+	require.Empty(t, reportItem.ParentDisplayedObjectType)
 	require.Empty(t, reportItem.LeftNeighbour)
 	require.Equal(t, "A-2", reportItem.RightNeighbour)
 	require.False(t, reportItem.IsAvailable)
@@ -161,6 +162,7 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 	require.Empty(t, reportItem.IsAccessible)
 	require.Empty(t, reportItem.IsCompanionSeat)
 	require.Empty(t, reportItem.DisplayedObjectType)
+	require.Empty(t, reportItem.ParentDisplayedObjectType)
 }
 
 func TestDetailedReportItemPropertiesForTable(t *testing.T) {
