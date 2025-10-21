@@ -2,9 +2,10 @@ package events
 
 import (
 	"context"
+	"time"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v11/shared"
-	"time"
 )
 
 type Events struct {
@@ -474,6 +475,16 @@ func (events *Events) RemoveObjectCategories(context context.Context, eventKey s
 			ObjectCategories: &map[string]CategoryKey{},
 		},
 	})
+}
+
+func (events *Events) MoveEventToNewChartCopy(context context.Context, eventKey string) (*Event, error) {
+	var event Event
+	result, err := events.Client.R().
+		SetContext(context).
+		SetPathParam("event", eventKey).
+		SetSuccessResult(&event).
+		Post("/events/{event}/actions/move-to-new-chart-copy")
+	return shared.AssertOk(result, err, &event)
 }
 
 func (events *Events) lister(context context.Context) *shared.Lister[Event] {
