@@ -299,26 +299,30 @@ func (events *Events) Retrieve(context context.Context, eventKey string) (*Event
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) EditForSaleConfig(context context.Context, eventKey string, forSale []ObjectAndQuantity, notForSale []ObjectAndQuantity) error {
+func (events *Events) EditForSaleConfig(context context.Context, eventKey string, forSale []ObjectAndQuantity, notForSale []ObjectAndQuantity) (*EditForSaleConfigResult, error) {
+	var editForSaleConfigResult EditForSaleConfigResult
 	result, err := events.Client.R().
 		SetContext(context).
+		SetSuccessResult(&editForSaleConfigResult).
 		SetBody(&EditForSaleConfigRequest{
 			ForSale:    forSale,
 			NotForSale: notForSale,
 		}).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/edit-for-sale-config")
-	return shared.AssertOkWithoutResult(result, err)
+	return shared.AssertOk(result, err, &editForSaleConfigResult)
 }
 
-func (events *Events) EditForSaleConfigForEvents(context context.Context, params map[string]EditForSaleConfigRequest) error {
+func (events *Events) EditForSaleConfigForEvents(context context.Context, params map[string]EditForSaleConfigRequest) (map[string]EditForSaleConfigResult, error) {
+	var editForSaleConfigForEventsResult map[string]EditForSaleConfigResult
 	result, err := events.Client.R().
 		SetContext(context).
+		SetSuccessResult(&editForSaleConfigForEventsResult).
 		SetBody(&EditForSaleConfigForEventsRequest{
 			Events: params,
 		}).
 		Post("/events/actions/edit-for-sale-config")
-	return shared.AssertOkWithoutResult(result, err)
+	return shared.AssertOkMap(result, err, editForSaleConfigForEventsResult)
 }
 
 func (events *Events) ReplaceForSaleConfig(context context.Context, eventKey string, forSale bool, forSaleConfig *ForSaleConfigParams) error {
