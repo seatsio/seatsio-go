@@ -11,4 +11,5 @@ type Season struct {
 	IsPartialSeason   bool           `json:"isPartialSeason"`
 	IsEventInSeason   bool           `json:"isEventInSeason"`
 	TopLevelSeasonKey *string        `json:"topLevelSeasonKey"`
+	ForSalePropagated bool           `json:"forSalePropagated"`
 }

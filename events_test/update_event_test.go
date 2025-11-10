@@ -1,14 +1,15 @@
 package events_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/seatsio/seatsio-go/v11"
 	"github.com/seatsio/seatsio-go/v11/events"
 	"github.com/seatsio/seatsio-go/v11/seasons"
 	"github.com/seatsio/seatsio-go/v11/shared"
 	"github.com/seatsio/seatsio-go/v11/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestUpdateEventEventKey(t *testing.T) {
@@ -185,7 +186,7 @@ func TestUpdateEventIsInThePast(t *testing.T) {
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
-	_, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	_, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
 	require.NoError(t, err)
 
 	err = client.Events.Update(test_util.RequestContext(), "event1", &events.UpdateEventParams{IsInThePast: shared.OptionalBool(true)})

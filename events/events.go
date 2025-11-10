@@ -133,11 +133,20 @@ type ForSaleConfigParams struct {
 	Categories []string       `json:"categories,omitempty"`
 }
 
-type overrideSeasonObjectStatusRequest struct {
+type EditForSaleConfigForEventsRequest struct {
+	Events map[string]EditForSaleConfigRequest `json:"events,omitempty"`
+}
+
+type EditForSaleConfigRequest struct {
+	ForSale    []ObjectAndQuantity `json:"forSale,omitempty"`
+	NotForSale []ObjectAndQuantity `json:"notForSale,omitempty"`
+}
+
+type OverrideSeasonObjectStatusRequest struct {
 	Objects []string `json:"objects"`
 }
 
-type updateExtraDataRequest struct {
+type UpdateExtraDataRequest struct {
 	ExtraData map[string]ExtraData `json:"extraData"`
 }
 
@@ -231,7 +240,7 @@ func (events *Events) ChangeBestAvailableObjectStatus(context context.Context, e
 func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
 	result, err := events.Client.R().
 		SetContext(context).
-		SetBody(&overrideSeasonObjectStatusRequest{
+		SetBody(&OverrideSeasonObjectStatusRequest{
 			Objects: objects,
 		}).
 		SetPathParam("event", eventKey).
@@ -242,7 +251,7 @@ func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventK
 func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
 	result, err := events.Client.R().
 		SetContext(context).
-		SetBody(&overrideSeasonObjectStatusRequest{
+		SetBody(&OverrideSeasonObjectStatusRequest{
 			Objects: objects,
 		}).
 		SetPathParam("event", eventKey).
@@ -253,7 +262,7 @@ func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey st
 func (events *Events) UpdateExtraData(context context.Context, eventKey string, extraData map[string]ExtraData) error {
 	result, err := events.Client.R().
 		SetContext(context).
-		SetBody(&updateExtraDataRequest{
+		SetBody(&UpdateExtraDataRequest{
 			ExtraData: extraData,
 		}).
 		SetPathParam("event", eventKey).
@@ -290,22 +299,56 @@ func (events *Events) Retrieve(context context.Context, eventKey string) (*Event
 	return shared.AssertOk(result, err, &event)
 }
 
-func (events *Events) MarkAsNotForSale(context context.Context, eventKey string, forSaleConfig *ForSaleConfigParams) error {
+func (events *Events) EditForSaleConfig(context context.Context, eventKey string, forSale []ObjectAndQuantity, notForSale []ObjectAndQuantity) (*EditForSaleConfigResult, error) {
+	var editForSaleConfigResult EditForSaleConfigResult
+	result, err := events.Client.R().
+		SetContext(context).
+		SetSuccessResult(&editForSaleConfigResult).
+		SetBody(&EditForSaleConfigRequest{
+			ForSale:    forSale,
+			NotForSale: notForSale,
+		}).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/edit-for-sale-config")
+	return shared.AssertOk(result, err, &editForSaleConfigResult)
+}
+
+func (events *Events) EditForSaleConfigForEvents(context context.Context, params map[string]EditForSaleConfigRequest) (map[string]EditForSaleConfigResult, error) {
+	var editForSaleConfigForEventsResult map[string]EditForSaleConfigResult
+	result, err := events.Client.R().
+		SetContext(context).
+		SetSuccessResult(&editForSaleConfigForEventsResult).
+		SetBody(&EditForSaleConfigForEventsRequest{
+			Events: params,
+		}).
+		Post("/events/actions/edit-for-sale-config")
+	return shared.AssertOkMap(result, err, editForSaleConfigForEventsResult)
+}
+
+func (events *Events) ReplaceForSaleConfig(context context.Context, eventKey string, forSale bool, forSaleConfig *ForSaleConfigParams) error {
 	result, err := events.Client.R().
 		SetContext(context).
 		SetBody(forSaleConfig).
 		SetPathParam("event", eventKey).
-		Post("/events/{event}/actions/mark-as-not-for-sale")
+		Post("/events/{event}/actions/" + forSaleAction(forSale))
 	return shared.AssertOkWithoutResult(result, err)
 }
 
+func forSaleAction(forSale bool) string {
+	if forSale {
+		return "mark-as-for-sale"
+	}
+	return "mark-as-not-for-sale"
+}
+
+// Deprecated: Use ReplaceForSaleConfig instead
+func (events *Events) MarkAsNotForSale(context context.Context, eventKey string, forSaleConfig *ForSaleConfigParams) error {
+	return events.ReplaceForSaleConfig(context, eventKey, false, forSaleConfig)
+}
+
+// Deprecated: Use ReplaceForSaleConfig instead
 func (events *Events) MarkAsForSale(context context.Context, eventKey string, forSaleConfig *ForSaleConfigParams) error {
-	result, err := events.Client.R().
-		SetContext(context).
-		SetBody(forSaleConfig).
-		SetPathParam("event", eventKey).
-		Post("/events/{event}/actions/mark-as-for-sale")
-	return shared.AssertOkWithoutResult(result, err)
+	return events.ReplaceForSaleConfig(context, eventKey, true, forSaleConfig)
 }
 
 func (events *Events) MarkEverythingAsForSale(context context.Context, eventKey string) error {
