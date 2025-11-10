@@ -1,6 +1,6 @@
 package seasons
 
-import "github.com/seatsio/seatsio-go/v11/events"
+import "github.com/seatsio/seatsio-go/v12/events"
 
 type Season struct {
 	events.Event

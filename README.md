@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/seatsio/seatsio-go)](https://goreportcard.com/report/github.com/seatsio/seatsio-go)
 ![License](https://img.shields.io/github/license/seatsio/seatsio-go)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/seatsio/seatsio-go?sort=semver&display_name=tag)
-[![Go Reference](https://pkg.go.dev/badge/github.com/seatsio/seatsio-go.svg)](https://pkg.go.dev/github.com/seatsio/seatsio-go/v11)
+[![Go Reference](https://pkg.go.dev/badge/github.com/seatsio/seatsio-go.svg)](https://pkg.go.dev/github.com/seatsio/seatsio-go/v12)
 
 This is the official Go client library for the [Seats.io V2 REST API](https://docs.seats.io/docs/api-overview).
 
@@ -12,7 +12,7 @@ This is the official Go client library for the [Seats.io V2 REST API](https://do
 
 ```
 require (
-    github.com/seatsio/seatsio-go/v11 v11.9.0
+    github.com/seatsio/seatsio-go/v12 v12.0.0
 )
 ```
 
@@ -24,7 +24,7 @@ To use this library, you'll need to create a `SeatsioClient`:
 
 ```go
 import (
-    "github.com/seatsio/seatsio-go/v11"
+    "github.com/seatsio/seatsio-go/v12"
 )
 
 client := seatsio.NewSeatsioClient(seatsio.EU, <WORKSPACE SECRET KEY>)
@@ -47,9 +47,9 @@ If you're unsure about your region, have a look at your [company settings page](
 import (
 	"context",
     "fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func CreateChartAndEvent() {
@@ -66,9 +66,9 @@ func CreateChartAndEvent() {
 import (
 	"context",
     "fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func CreateMultipleEvents() {
@@ -94,8 +94,8 @@ Booking an object changes its status to `booked`. Booked seats are not selectabl
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func BookObject() {
@@ -109,8 +109,8 @@ func BookObject() {
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func BookHeldObject() {
@@ -126,8 +126,8 @@ Either
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func BookGA() {
@@ -141,8 +141,8 @@ Or:
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func BookGA() {
@@ -160,8 +160,8 @@ Releasing objects changes its status to `free`. Free seats are selectable on a r
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func ReleaseObjects() {
@@ -179,8 +179,8 @@ Changes the object status to a custom status of your choice. If you need more st
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func ChangeObjectStatus() {
@@ -202,8 +202,8 @@ func ChangeObjectStatus() {
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func ListStatusChanges() {
@@ -220,8 +220,8 @@ You can alternatively use the paginated functions to retrieve status changes. To
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func ListStatusChanges() {
@@ -237,8 +237,8 @@ You can also pass an optional parameter to _filter_, _sort_ or _order_ status ch
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func ListStatusChanges() {
@@ -258,8 +258,8 @@ A combination of filter, sorting order and sorting option is also possible.
 import (
 	"context",
     "fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func RetrieveObjectInformation() {
@@ -292,8 +292,8 @@ The report types you can choose from are:
 ```go
 import (
 	"context",
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/reports"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/reports"
 )
 
 func GetSummary() {
@@ -315,8 +315,8 @@ You can list all charts using `ListAll()` function which returns an array of cha
 import (
 	"context",
 	"fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
 )
 
 func GetAllCharts() {
@@ -341,8 +341,8 @@ Each page contains an `Items` array of `Chart` instances, and `NextPageStartsAft
 import (
 	"context",
 	"fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
 )
 
 func GetFirstPage() {
@@ -361,8 +361,8 @@ func GetFirstPage() {
 import (
 	"context",
 	"fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
 )
 
 func GetNextPage() {
@@ -381,8 +381,8 @@ func GetNextPage() {
 import (
 	"context",
 	"fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
 )
 
 func GetPreviousPage() {
@@ -400,8 +400,8 @@ func GetPreviousPage() {
 ```go
 import (
 	"context"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/workspaces"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/workspaces"
 )
 
 func CreateWorkspace() {
@@ -416,9 +416,9 @@ func CreateWorkspace() {
 import (
 	"context",
 	"fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func UsingTheCompanyAdminKey() {
@@ -435,9 +435,9 @@ func UsingTheCompanyAdminKey() {
 import (
 	"context",
     "fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func RetrieveAndListCategories() {
@@ -455,9 +455,9 @@ func RetrieveAndListCategories() {
 import (
 	"context",
     "fmt"
-    "github.com/seatsio/seatsio-go/v11"
-    "github.com/seatsio/seatsio-go/v11/charts"
-    "github.com/seatsio/seatsio-go/v11/events"
+    "github.com/seatsio/seatsio-go/v12"
+    "github.com/seatsio/seatsio-go/v12/charts"
+    "github.com/seatsio/seatsio-go/v12/events"
 )
 
 func UpdateCategory() {
@@ -493,7 +493,7 @@ To change the maximum number of retries, create the `SeatsioClient` as follows:
 
 ```go
 import (
-    "github.com/seatsio/seatsio-go/v11"
+    "github.com/seatsio/seatsio-go/v12"
 )
 
 client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>)).SetMaxRetries(3)

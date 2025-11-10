@@ -2,9 +2,9 @@ package ticketbuyers
 
 import (
 	"github.com/google/uuid"
-	"github.com/seatsio/seatsio-go/v11"
-	"github.com/seatsio/seatsio-go/v11/test_util"
-	"github.com/seatsio/seatsio-go/v11/ticketbuyers"
+	"github.com/seatsio/seatsio-go/v12"
+	"github.com/seatsio/seatsio-go/v12/test_util"
+	"github.com/seatsio/seatsio-go/v12/ticketbuyers"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
