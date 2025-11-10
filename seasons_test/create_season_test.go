@@ -136,7 +136,7 @@ func TestCreateSeasonWithObjectCategories(t *testing.T) {
 	require.Equal(t, objectCategories, season.ObjectCategories)
 }
 
-func TestCreateSeasontWithCategories(t *testing.T) {
+func TestCreateSeasonWithCategories(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
