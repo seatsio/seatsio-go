@@ -14,7 +14,7 @@ func TestRemoveEventFromPartialSeason(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeasonWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aSeason", EventKeys: []string{"event1", "event2"}})
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aSeason", EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)
 	partialSeason, err := client.Seasons.CreatePartialSeasonWithOptions(test_util.RequestContext(), season.Key, &seasons.CreatePartialSeasonParams{Key: "aPartialSeason", EventKeys: []string{"event1", "event2"}})
 	require.NoError(t, err)

@@ -30,7 +30,7 @@ func TestDeleteSeason(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeason(test_util.RequestContext(), chartKey)
+	season, err := client.Seasons.Create(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 
 	err = client.Events.Delete(test_util.RequestContext(), season.Key)

@@ -2,6 +2,7 @@ package seasons
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v11/events"
 	"github.com/seatsio/seatsio-go/v11/shared"
@@ -12,14 +13,27 @@ type Seasons struct {
 }
 
 type CreateSeasonParams struct {
-	ChartKey           string                        `json:"chartKey"`
-	Key                string                        `json:"key,omitempty"`
-	Name               string                        `json:"name,omitempty"`
-	TableBookingConfig *events.TableBookingConfig    `json:"tableBookingConfig,omitempty"`
-	EventKeys          []string                      `json:"eventKeys,omitempty"`
-	NumberOfEvents     int                           `json:"numberOfEvents,omitempty"`
-	Channels           *[]events.CreateChannelParams `json:"channels,omitempty"`
-	ForSaleConfig      *events.ForSaleConfig         `json:"forSaleConfig,omitempty"`
+	ChartKey           string                         `json:"chartKey"`
+	Key                string                         `json:"key,omitempty"`
+	Name               string                         `json:"name,omitempty"`
+	TableBookingConfig *events.TableBookingConfig     `json:"tableBookingConfig,omitempty"`
+	ObjectCategories   *map[string]events.CategoryKey `json:"objectCategories,omitempty"`
+	Categories         *[]events.Category             `json:"categories,omitempty"`
+	EventKeys          []string                       `json:"eventKeys,omitempty"`
+	NumberOfEvents     int                            `json:"numberOfEvents,omitempty"`
+	Channels           *[]events.CreateChannelParams  `json:"channels,omitempty"`
+	ForSaleConfig      *events.ForSaleConfig          `json:"forSaleConfig,omitempty"`
+	ForSalePropagated  *bool                          `json:"forSalePropagated,omitempty"`
+}
+
+type UpdateSeasonParams struct {
+	EventKey           string                         `json:"eventKey,omitempty"`
+	Name               string                         `json:"name,omitempty"`
+	TableBookingConfig *events.TableBookingConfig     `json:"tableBookingConfig,omitempty"`
+	ObjectCategories   *map[string]events.CategoryKey `json:"objectCategories,omitempty"`
+	Categories         *[]events.Category             `json:"categories,omitempty"`
+	Channels           *[]events.CreateChannelParams  `json:"channels,omitempty"`
+	ForSalePropagated  *bool                          `json:"forSalePropagated,omitempty"`
 }
 
 type CreatePartialSeasonParams struct {
@@ -41,11 +55,11 @@ type addEventsToPartialSeasonParams struct {
 	EventKeys []string `json:"eventKeys"`
 }
 
-func (seasons *Seasons) CreateSeason(context context.Context, chartKey string) (*Season, error) {
-	return seasons.CreateSeasonWithOptions(context, chartKey, &CreateSeasonParams{})
+func (seasons *Seasons) Create(context context.Context, chartKey string) (*Season, error) {
+	return seasons.CreateWithOptions(context, chartKey, &CreateSeasonParams{})
 }
 
-func (seasons *Seasons) CreateSeasonWithOptions(context context.Context, chartKey string, params *CreateSeasonParams) (*Season, error) {
+func (seasons *Seasons) CreateWithOptions(context context.Context, chartKey string, params *CreateSeasonParams) (*Season, error) {
 	params.ChartKey = chartKey
 	var season Season
 	result, err := seasons.Client.R().
@@ -54,6 +68,15 @@ func (seasons *Seasons) CreateSeasonWithOptions(context context.Context, chartKe
 		SetSuccessResult(&season).
 		Post("/seasons")
 	return shared.AssertOk(result, err, &season)
+}
+
+func (events *Seasons) Update(context context.Context, eventKey string, params *UpdateSeasonParams) error {
+	result, err := events.Client.R().
+		SetContext(context).
+		SetBody(params).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}")
+	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (seasons *Seasons) CreateEventsWithEventKeys(context context.Context, seasonKey string, eventKeys ...string) ([]*events.Event, error) {

@@ -13,7 +13,7 @@ func TestCreateEventsWithEventKeys(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeason(test_util.RequestContext(), chartKey)
+	season, err := client.Seasons.Create(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 
 	events, err := client.Seasons.CreateEventsWithEventKeys(test_util.RequestContext(), season.Key, "event1", "event2")
@@ -27,7 +27,7 @@ func TestCreateEventsWithNumberOfEvents(t *testing.T) {
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	season, err := client.Seasons.CreateSeason(test_util.RequestContext(), chartKey)
+	season, err := client.Seasons.Create(test_util.RequestContext(), chartKey)
 	require.NoError(t, err)
 
 	events, err := client.Seasons.CreateNumberOfEvents(test_util.RequestContext(), season.Key, 2)
