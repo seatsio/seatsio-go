@@ -13,6 +13,7 @@ type AdditionalHeader func(headers *map[string]string)
 func ApiClient(secretKey string, baseUrl string, additionalHeaders ...AdditionalHeader) *req.Client {
 	client := req.C().SetBaseURL(baseUrl).
 		SetCommonBasicAuth(secretKey, "").
+		SetTimeout(10*time.Second).
 		SetCommonRetryCount(5).
 		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
 		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
