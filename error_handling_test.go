@@ -6,6 +6,7 @@ import (
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func Test300(t *testing.T) {
@@ -61,4 +62,17 @@ func TestWeirdError(t *testing.T) {
 	_, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: "foo"})
 
 	require.EqualError(t, err, "Post \"unknownprotocol:/events\": unsupported protocol scheme \"unknownprotocol\"")
+}
+
+func TestTimeout(t *testing.T) {
+	t.Parallel()
+	var event *events.Event
+	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+		SetTimeout(10 * time.Millisecond).
+		R().
+		Get("/delay/5")
+
+	_, e := shared.AssertOk(response, err, &event)
+
+	require.ErrorContains(t, e, "context deadline exceeded")
 }
