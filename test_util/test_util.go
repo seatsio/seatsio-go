@@ -1,13 +1,14 @@
 package test_util
 
 import (
+	"log"
+	"os"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v12/shared"
 	"golang.org/x/net/context"
-	"log"
-	"os"
-	"testing"
 )
 
 var client = req.C()
@@ -32,9 +33,10 @@ func CreateTestCompany(t *testing.T) *TestCompany {
 	var testCompany TestCompany
 	result, err := req.C().
 		SetBaseURL(BaseUrl).
+		SetCommonBasicAuth(SystemApiSecret(), "").
 		R().
 		SetSuccessResult(&testCompany).
-		Post("/system/public/users/actions/create-test-company")
+		Post("/system/private/create-test-company")
 	_, e := shared.AssertOk(result, err, &testCompany)
 	if e != nil {
 		t.Fatalf("unable to create test company: #{err}")
@@ -93,6 +95,14 @@ func AssertDemoCompanySecretKeySet(t *testing.T) {
 	if !exists {
 		t.Skip("DEMO_COMPANY_SECRET_KEY environment variable not set, skipping test")
 	}
+}
+
+func SystemApiSecret() string {
+	secret, ok := os.LookupEnv("CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
+	if !ok || secret == "" {
+		panic("Missing CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
+	}
+	return secret
 }
 
 func RequestContext() context.Context {
