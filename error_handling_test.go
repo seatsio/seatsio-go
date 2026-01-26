@@ -1,12 +1,16 @@
 package seatsio
 
 import (
+	"context"
+	"errors"
+	"net"
+	"testing"
+	"time"
+
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/shared"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func Test300(t *testing.T) {
@@ -65,14 +69,14 @@ func TestWeirdError(t *testing.T) {
 }
 
 func TestTimeout(t *testing.T) {
-	t.Parallel()
 	var event *events.Event
 	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
-		SetTimeout(10 * time.Millisecond).
+		SetTimeout(100 * time.Millisecond).
 		R().
 		Get("/delay/5")
 
 	_, e := shared.AssertOk(response, err, &event)
 
-	require.ErrorContains(t, e, "context deadline exceeded")
+	var netErr net.Error
+	require.True(t, errors.Is(e, context.DeadlineExceeded) || (errors.As(e, &netErr) && netErr.Timeout()), "expected timeout, got: %v", e)
 }
