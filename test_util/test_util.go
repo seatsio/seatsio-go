@@ -13,7 +13,15 @@ import (
 
 var client = req.C()
 
-const BaseUrl = "https://api-staging-eu.seatsio.net"
+var BaseUrl = BaseURL()
+
+func BaseURL() string {
+	u := os.Getenv("API_URL")
+	if u == "" {
+		return "http://localhost:9001"
+	}
+	return u
+}
 
 type User struct {
 	SecretKey string `json:"secretKey"`
@@ -32,7 +40,7 @@ type TestCompany struct {
 func CreateTestCompany(t *testing.T) *TestCompany {
 	var testCompany TestCompany
 	result, err := req.C().
-		SetBaseURL(BaseUrl).
+		SetBaseURL(BaseURL()).
 		SetCommonBasicAuth(SystemApiSecret(), "").
 		R().
 		SetSuccessResult(&testCompany).
@@ -74,9 +82,9 @@ func createTestChart(t *testing.T, secretKey string, fileName string) string {
 		log.Fatalf("unable to read file: %v", err)
 	}
 	chartKey := uuid.New().String()
-	result, err := shared.ApiClient(secretKey, BaseUrl).R().
+	result, err := shared.ApiClient(secretKey, BaseURL()).R().
 		SetBody(string(chartJson)).
-		Post(BaseUrl + "/system/public/charts/" + chartKey)
+		Post(BaseURL() + "/system/public/charts/" + chartKey)
 	if err != nil {
 		t.Fatalf("unable to create test chart: %v", err)
 	}
@@ -98,9 +106,9 @@ func AssertDemoCompanySecretKeySet(t *testing.T) {
 }
 
 func SystemApiSecret() string {
-	secret, ok := os.LookupEnv("CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
-	if !ok || secret == "" {
-		panic("Missing CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
+	secret := os.Getenv("CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
+	if secret == "" {
+		return "superSecretSystemApi"
 	}
 	return secret
 }
