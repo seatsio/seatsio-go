@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/shared"
@@ -33,25 +34,30 @@ type Floor struct {
 }
 
 type ChartReportItem struct {
-	Label                string        `json:"label,omitempty"`
-	Labels               events.Labels `json:"labels,omitempty"`
-	IDs                  events.IDs    `json:"ids,omitempty"`
-	CategoryLabel        string        `json:"categoryLabel,omitempty"`
-	CategoryKey          string        `json:"categoryKey,omitempty"`
-	Section              string        `json:"section,omitempty"`
-	Entrance             string        `json:"entrance,omitempty"`
-	Capacity             int           `json:"capacity,omitempty"`
-	ObjectType           string        `json:"objectType,omitempty"`
-	LeftNeighbour        string        `json:"leftNeighbour,omitempty"`
-	RightNeighbour       string        `json:"rightNeighbour,omitempty"`
-	DistanceToFocalPoint float64       `json:"distanceToFocalPoint,omitempty"`
-	BookAsAWhole         bool          `json:"bookAsAWhole,omitempty"`
-	NumSeats             int           `json:"numSeats,omitempty"`
-	IsAccessible         bool          `json:"isAccessible,omitempty"`
-	IsCompanionSeat      bool          `json:"isCompanionSeat,omitempty"`
-	HasRestrictedView    bool          `json:"hasRestrictedView,omitempty"`
-	Zone                 string        `json:"zone,omitempty"`
-	Floor                Floor         `json:"floor,omitempty"`
+	Label                         string        `json:"label,omitempty"`
+	Labels                        events.Labels `json:"labels,omitempty"`
+	IDs                           events.IDs    `json:"ids,omitempty"`
+	CategoryLabel                 string        `json:"categoryLabel,omitempty"`
+	CategoryKey                   string        `json:"categoryKey,omitempty"`
+	Section                       string        `json:"section,omitempty"`
+	Entrance                      string        `json:"entrance,omitempty"`
+	Capacity                      int           `json:"capacity,omitempty"`
+	ObjectType                    string        `json:"objectType,omitempty"`
+	LeftNeighbour                 string        `json:"leftNeighbour,omitempty"`
+	RightNeighbour                string        `json:"rightNeighbour,omitempty"`
+	DistanceToFocalPoint          float64       `json:"distanceToFocalPoint,omitempty"`
+	BookAsAWhole                  bool          `json:"bookAsAWhole,omitempty"`
+	NumSeats                      int           `json:"numSeats,omitempty"`
+	IsAccessible                  bool          `json:"isAccessible,omitempty"`
+	IsCompanionSeat               bool          `json:"isCompanionSeat,omitempty"`
+	HasLiftUpArmrests             bool          `json:"hasLiftUpArmrests,omitempty"`
+	IsHearingImpaired             bool          `json:"isHearingImpaired,omitempty"`
+	IsSemiAmbulatorySeat          bool          `json:"isSemiAmbulatorySeat,omitempty"`
+	HasSignLanguageInterpretation bool          `json:"hasSignLanguageInterpretation,omitempty"`
+	IsPlusSize                    bool          `json:"isPlusSize,omitempty"`
+	HasRestrictedView             bool          `json:"hasRestrictedView,omitempty"`
+	Zone                          string        `json:"zone,omitempty"`
+	Floor                         Floor         `json:"floor,omitempty"`
 }
 
 type chartReportOptions struct {

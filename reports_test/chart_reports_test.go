@@ -1,13 +1,14 @@
 package reports
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12"
 	"github.com/seatsio/seatsio-go/v12/charts"
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/reports"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestReportItemProperties(t *testing.T) {
@@ -35,9 +36,14 @@ func TestReportItemProperties(t *testing.T) {
 	require.Empty(t, item.LeftNeighbour)
 	require.Equal(t, "A-2", item.RightNeighbour)
 	require.NotEmpty(t, item.DistanceToFocalPoint)
-	require.NotNil(t, item.IsAccessible)
-	require.NotNil(t, item.IsCompanionSeat)
-	require.NotNil(t, item.HasRestrictedView)
+	require.False(t, item.IsAccessible)
+	require.False(t, item.HasLiftUpArmrests)
+	require.False(t, item.IsHearingImpaired)
+	require.False(t, item.IsSemiAmbulatorySeat)
+	require.False(t, item.HasSignLanguageInterpretation)
+	require.False(t, item.IsPlusSize)
+	require.False(t, item.IsCompanionSeat)
+	require.False(t, item.HasRestrictedView)
 	require.NotNil(t, item.Floor)
 }
 
