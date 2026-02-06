@@ -10,36 +10,41 @@ type EventObjectInfo struct {
 	TicketType                     string                    `json:"ticketType,omitempty"`
 	HoldToken                      string                    `json:"holdToken,omitempty"`
 	ObjectType                     string                    `json:"objectType,omitempty"`
-	BookAsAWhole                   bool                      `json:"bookAsAWhole"`
+	BookAsAWhole                   bool                      `json:"bookAsAWhole,omitempty"`
 	OrderId                        string                    `json:"orderId,omitempty"`
-	ForSale                        bool                      `json:"forSale"`
+	ForSale                        bool                      `json:"forSale,omitempty"`
 	Section                        string                    `json:"section,omitempty"`
 	Entrance                       string                    `json:"entrance,omitempty"`
-	Capacity                       int                       `json:"capacity"`
-	NumBooked                      int                       `json:"numBooked"`
-	NumFree                        int                       `json:"numFree"`
-	NumHeld                        int                       `json:"numHeld"`
-	NumSeats                       int                       `json:"numSeats"`
+	Capacity                       int                       `json:"capacity,omitempty"`
+	NumBooked                      int                       `json:"numBooked,omitempty"`
+	NumFree                        int                       `json:"numFree,omitempty"`
+	NumHeld                        int                       `json:"numHeld,omitempty"`
+	NumSeats                       int                       `json:"numSeats,omitempty"`
 	ExtraData                      ExtraData                 `json:"extraData,omitempty"`
-	IsAccessible                   bool                      `json:"isAccessible"`
-	IsCompanionSeat                bool                      `json:"isCompanionSeat"`
-	HasRestrictedView              bool                      `json:"hasRestrictedView"`
+	IsAccessible                   bool                      `json:"isAccessible,omitempty"`
+	IsCompanionSeat                bool                      `json:"isCompanionSeat,omitempty"`
+	HasLiftUpArmrests              bool                      `json:"hasLiftUpArmrests,omitempty"`
+	IsHearingImpaired              bool                      `json:"isHearingImpaired,omitempty"`
+	IsSemiAmbulatorySeat           bool                      `json:"isSemiAmbulatorySeat,omitempty"`
+	HasSignLanguageInterpretation  bool                      `json:"hasSignLanguageInterpretation,omitempty"`
+	IsPlusSize                     bool                      `json:"isPlusSize,omitempty"`
+	HasRestrictedView              bool                      `json:"hasRestrictedView,omitempty"`
 	DisplayedObjectType            string                    `json:"displayedObjectType,omitempty"`
 	ParentDisplayedObjectType      string                    `json:"parentDisplayedObjectType,omitempty"`
 	LeftNeighbour                  string                    `json:"leftNeighbour,omitempty"`
 	RightNeighbour                 string                    `json:"rightNeighbour,omitempty"`
-	IsAvailable                    bool                      `json:"isAvailable"`
+	IsAvailable                    bool                      `json:"isAvailable,omitempty"`
 	AvailabilityReason             string                    `json:"availabilityReason,omitempty"`
 	Channel                        string                    `json:"channel,omitempty"`
-	DistanceToFocalPoint           float64                   `json:"distanceToFocalPoint"`
+	DistanceToFocalPoint           float64                   `json:"distanceToFocalPoint,omitempty"`
 	Holds                          map[string]map[string]int `json:"holds,omitempty"`
-	VariableOccupancy              bool                      `json:"variableOccupancy"`
-	MinOccupancy                   int                       `json:"minOccupancy"`
-	MaxOccupancy                   int                       `json:"maxOccupancy"`
-	SeasonStatusOverriddenQuantity int                       `json:"seasonStatusOverriddenQuantity"`
-	NumNotForSale                  int                       `json:"numNotForSale"`
-	Zone                           string                    `json:"zone"`
-	Floor                          Floor                     `json:"floor"`
+	VariableOccupancy              bool                      `json:"variableOccupancy,omitempty"`
+	MinOccupancy                   int                       `json:"minOccupancy,omitempty"`
+	MaxOccupancy                   int                       `json:"maxOccupancy,omitempty"`
+	SeasonStatusOverriddenQuantity int                       `json:"seasonStatusOverriddenQuantity,omitempty"`
+	NumNotForSale                  int                       `json:"numNotForSale,omitempty"`
+	Zone                           string                    `json:"zone,omitempty"`
+	Floor                          Floor                     `json:"floor,omitempty"`
 	ResaleListingId                string                    `json:"resaleListingId,omitempty"`
 }
 

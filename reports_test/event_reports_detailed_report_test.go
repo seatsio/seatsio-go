@@ -1,6 +1,8 @@
 package reports
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12"
 	"github.com/seatsio/seatsio-go/v12/charts"
 	"github.com/seatsio/seatsio-go/v12/events"
@@ -8,7 +10,6 @@ import (
 	"github.com/seatsio/seatsio-go/v12/seasons"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestDetailedReportItemProperties(t *testing.T) {
@@ -71,6 +72,11 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.False(t, reportItem.HasRestrictedView)
 	require.False(t, reportItem.IsAccessible)
 	require.False(t, reportItem.IsCompanionSeat)
+	require.False(t, reportItem.HasLiftUpArmrests)
+	require.False(t, reportItem.IsHearingImpaired)
+	require.False(t, reportItem.IsSemiAmbulatorySeat)
+	require.False(t, reportItem.HasSignLanguageInterpretation)
+	require.False(t, reportItem.IsPlusSize)
 	require.Empty(t, reportItem.DisplayedObjectType)
 	require.Empty(t, reportItem.ParentDisplayedObjectType)
 	require.Empty(t, reportItem.LeftNeighbour)
@@ -161,6 +167,11 @@ func TestDetailedReportItemPropertiesForGA(t *testing.T) {
 	require.Empty(t, reportItem.HasRestrictedView)
 	require.Empty(t, reportItem.IsAccessible)
 	require.Empty(t, reportItem.IsCompanionSeat)
+	require.Empty(t, reportItem.HasLiftUpArmrests)
+	require.Empty(t, reportItem.IsHearingImpaired)
+	require.Empty(t, reportItem.IsSemiAmbulatorySeat)
+	require.Empty(t, reportItem.HasSignLanguageInterpretation)
+	require.Empty(t, reportItem.IsPlusSize)
 	require.Empty(t, reportItem.DisplayedObjectType)
 	require.Empty(t, reportItem.ParentDisplayedObjectType)
 }
