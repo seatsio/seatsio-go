@@ -89,6 +89,7 @@ type StatusChanges struct {
 	AllowedPreviousStatuses  []string           `json:"allowedPreviousStatuses,omitempty"`
 	RejectedPreviousStatuses []string           `json:"rejectedPreviousStatuses,omitempty"`
 	ResaleListingId          string             `json:"resaleListingId,omitempty"`
+	Season                   string             `json:"season,omitempty"`
 }
 
 type StatusChangeParams struct {
@@ -144,6 +145,7 @@ type EditForSaleConfigRequest struct {
 
 type OverrideSeasonObjectStatusRequest struct {
 	Objects []string `json:"objects"`
+	Season  string   `json:"season,omitempty"`
 }
 
 type UpdateExtraDataRequest struct {
@@ -238,22 +240,26 @@ func (events *Events) ChangeBestAvailableObjectStatus(context context.Context, e
 }
 
 func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
+	return events.OverrideSeasonObjectStatusWithOptions(context, eventKey, &OverrideSeasonObjectStatusRequest{Objects: objects})
+}
+
+func (events *Events) OverrideSeasonObjectStatusWithOptions(context context.Context, eventKey string, request *OverrideSeasonObjectStatusRequest) error {
 	result, err := events.Client.R().
 		SetContext(context).
-		SetBody(&OverrideSeasonObjectStatusRequest{
-			Objects: objects,
-		}).
+		SetBody(request).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/override-season-status")
 	return shared.AssertOkWithoutResult(result, err)
 }
 
 func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
+	return events.UseSeasonObjectStatusWithOptions(context, eventKey, &OverrideSeasonObjectStatusRequest{Objects: objects})
+}
+
+func (events *Events) UseSeasonObjectStatusWithOptions(context context.Context, eventKey string, request *OverrideSeasonObjectStatusRequest) error {
 	result, err := events.Client.R().
 		SetContext(context).
-		SetBody(&OverrideSeasonObjectStatusRequest{
-			Objects: objects,
-		}).
+		SetBody(request).
 		SetPathParam("event", eventKey).
 		Post("/events/{event}/actions/use-season-status")
 	return shared.AssertOkWithoutResult(result, err)
