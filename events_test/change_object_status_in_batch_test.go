@@ -1,13 +1,14 @@
 package events_test
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12"
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/seasons"
 	"github.com/seatsio/seatsio-go/v12/shared"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestChangeObjectStatusInBatch(t *testing.T) {
@@ -177,7 +178,7 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 	require.NoError(t, err)
 	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
 	require.NoError(t, err)
-	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1"})
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
@@ -187,6 +188,64 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 			StatusChanges: events.StatusChanges{
 				Type:    events.USE_SEASON_STATUS,
 				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, events.BOOKED, result.Results[0].Objects["A-1"].Status)
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1")
+	require.Equal(t, events.BOOKED, info["A-1"].Status)
+}
+
+func TestOverrideSeasonStatusInBatchWithSeason(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	require.NoError(t, err)
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
+	require.NoError(t, err)
+
+	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
+		events.StatusChangeInBatchParams{
+			Event: "event1",
+			StatusChanges: events.StatusChanges{
+				Type:    events.OVERRIDE_SEASON_STATUS,
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+				Season:  season.Key,
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	require.Equal(t, events.FREE, result.Results[0].Objects["A-1"].Status)
+	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1")
+	require.Equal(t, events.FREE, info["A-1"].Status)
+}
+
+func TestUseSeasonStatusInBatchWithSeason(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{EventKeys: []string{"event1"}})
+	require.NoError(t, err)
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
+	require.NoError(t, err)
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1"})
+	require.NoError(t, err)
+
+	result, err := client.Events.ChangeObjectStatusInBatch(
+		test_util.RequestContext(),
+		events.StatusChangeInBatchParams{
+			Event: "event1",
+			StatusChanges: events.StatusChanges{
+				Type:    events.USE_SEASON_STATUS,
+				Objects: []events.ObjectProperties{{ObjectId: "A-1"}},
+				Season:  season.Key,
 			},
 		},
 	)
