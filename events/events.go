@@ -239,11 +239,11 @@ func (events *Events) ChangeBestAvailableObjectStatus(context context.Context, e
 	return shared.AssertOk(result, err, &bestAvailableResult)
 }
 
-func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
-	return events.OverrideSeasonObjectStatusWithOptions(context, eventKey, &OverrideSeasonObjectStatusRequest{Objects: objects})
-}
-
-func (events *Events) OverrideSeasonObjectStatusWithOptions(context context.Context, eventKey string, request *OverrideSeasonObjectStatusRequest) error {
+func (events *Events) OverrideSeasonObjectStatus(context context.Context, eventKey string, objects []string, seasonKey ...string) error {
+	request := &OverrideSeasonObjectStatusRequest{Objects: objects}
+	if len(seasonKey) > 0 {
+		request.Season = seasonKey[0]
+	}
 	result, err := events.Client.R().
 		SetContext(context).
 		SetBody(request).
@@ -252,11 +252,11 @@ func (events *Events) OverrideSeasonObjectStatusWithOptions(context context.Cont
 	return shared.AssertOkWithoutResult(result, err)
 }
 
-func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey string, objects ...string) error {
-	return events.UseSeasonObjectStatusWithOptions(context, eventKey, &OverrideSeasonObjectStatusRequest{Objects: objects})
-}
-
-func (events *Events) UseSeasonObjectStatusWithOptions(context context.Context, eventKey string, request *OverrideSeasonObjectStatusRequest) error {
+func (events *Events) UseSeasonObjectStatus(context context.Context, eventKey string, objects []string, seasonKey ...string) error {
+	request := &OverrideSeasonObjectStatusRequest{Objects: objects}
+	if len(seasonKey) > 0 {
+		request.Season = seasonKey[0]
+	}
 	result, err := events.Client.R().
 		SetContext(context).
 		SetBody(request).

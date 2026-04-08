@@ -20,7 +20,7 @@ func TestOverrideSeasonObjectStatus(t *testing.T) {
 	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
 	require.NoError(t, err)
 
-	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1", "A-2")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1", "A-2"})
 	require.NoError(t, err)
 
 	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1", "A-2")
@@ -38,10 +38,7 @@ func TestOverrideSeasonObjectStatusWithSeason(t *testing.T) {
 	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
 	require.NoError(t, err)
 
-	err = client.Events.OverrideSeasonObjectStatusWithOptions(test_util.RequestContext(), "event1", &events.OverrideSeasonObjectStatusRequest{
-		Objects: []string{"A-1", "A-2"},
-		Season:  season.Key,
-	})
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1", "A-2"}, season.Key)
 	require.NoError(t, err)
 
 	info, _ := client.Events.RetrieveObjectInfo(test_util.RequestContext(), "event1", "A-1", "A-2")

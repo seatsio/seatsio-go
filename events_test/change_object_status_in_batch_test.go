@@ -178,7 +178,7 @@ func TestUseSeasonStatusInBatch(t *testing.T) {
 	require.NoError(t, err)
 	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
 	require.NoError(t, err)
-	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1"})
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(
@@ -235,7 +235,7 @@ func TestUseSeasonStatusInBatchWithSeason(t *testing.T) {
 	require.NoError(t, err)
 	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1")
 	require.NoError(t, err)
-	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), "event1", []string{"A-1"})
 	require.NoError(t, err)
 
 	result, err := client.Events.ChangeObjectStatusInBatch(

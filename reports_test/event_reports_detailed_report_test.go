@@ -118,7 +118,7 @@ func TestSeasonStatusOverriddenQuantity(t *testing.T) {
 	require.NoError(t, err)
 
 	event := season.Events[0]
-	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), event.Key, "A-1")
+	err = client.Events.OverrideSeasonObjectStatus(test_util.RequestContext(), event.Key, []string{"A-1"})
 	require.NoError(t, err)
 
 	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
