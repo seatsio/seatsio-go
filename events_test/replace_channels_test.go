@@ -32,7 +32,7 @@ func TestReplaceChannel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, []events.Channel{
-		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}, AreaPlaces: map[string]int{}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}, AreaPlaces: map[string]int{}},
 	}, postReplacementEvent.Channels)
 }

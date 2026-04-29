@@ -88,15 +88,15 @@ func TestChannelsCanBePassedIn(t *testing.T) {
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 	channels := []events.CreateChannelParams{
 		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2},
 	}
 
 	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{Key: "aSeason", Channels: &channels})
 	require.NoError(t, err)
 
 	expectedChannels := []events.Channel{
-		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}, AreaPlaces: map[string]int{}},
 	}
 	require.Equal(t, expectedChannels, season.Channels)
 }

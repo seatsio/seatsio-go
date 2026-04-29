@@ -160,8 +160,8 @@ func TestCreateEventWithChannels(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedChannels := []events.Channel{
-		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}},
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}, AreaPlaces: map[string]int{}},
 	}
 	require.Equal(t, expectedChannels, event.Channels)
 }
