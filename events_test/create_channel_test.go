@@ -1,11 +1,12 @@
 package events
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12"
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestCreateChannel(t *testing.T) {
@@ -18,11 +19,11 @@ func TestCreateChannel(t *testing.T) {
 	}})
 	require.Equal(t, 0, len(event.Channels))
 
-	err := client.Channels.Create(test_util.RequestContext(), event.Key, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
+	err := client.Channels.Create(test_util.RequestContext(), event.Key, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}})
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
-	require.Equal(t, []events.Channel{{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{}}}, retrievedEvent.Channels)
+	require.Equal(t, []events.Channel{{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}}}, retrievedEvent.Channels)
 }
 
 func TestCreateChannels(t *testing.T) {
@@ -36,14 +37,14 @@ func TestCreateChannels(t *testing.T) {
 	require.Equal(t, 0, len(event.Channels))
 
 	err := client.Channels.Create(test_util.RequestContext(), event.Key,
-		&events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
+		&events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}},
 		&events.CreateChannelParams{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
 	)
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Equal(t, []events.Channel{
-		{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{}},
+		{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}},
 		{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}, AreaPlaces: map[string]int{}},
 	}, retrievedEvent.Channels)
 }
