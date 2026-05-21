@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v12/shared"
 )
@@ -11,23 +12,26 @@ type Channels struct {
 }
 
 type CreateChannelParams struct {
-	Key     string   `json:"key"`
-	Name    string   `json:"name"`
-	Color   string   `json:"color"`
-	Index   int      `json:"index,omitempty"`
-	Objects []string `json:"objects,omitempty"`
+	Key        string         `json:"key"`
+	Name       string         `json:"name"`
+	Color      string         `json:"color"`
+	Index      int            `json:"index,omitempty"`
+	Objects    []string       `json:"objects,omitempty"`
+	AreaPlaces map[string]int `json:"areaPlaces,omitempty"`
 }
 
 type CreateChannelParamsOption func(Params *CreateChannelParams)
 
 type UpdateChannelParams struct {
-	Name    string   `json:"name,omitempty"`
-	Color   string   `json:"color,omitempty"`
-	Objects []string `json:"objects,omitempty"`
+	Name       string         `json:"name,omitempty"`
+	Color      string         `json:"color,omitempty"`
+	Objects    []string       `json:"objects,omitempty"`
+	AreaPlaces map[string]int `json:"areaPlaces,omitempty"`
 }
 
 type changeChannelObjectsRequest struct {
-	Objects []string `json:"objects"`
+	Objects    []string       `json:"objects,omitempty"`
+	AreaPlaces map[string]int `json:"areaPlaces,omitempty"`
 }
 
 type replaceChannelsRequest struct {
@@ -62,20 +66,28 @@ func (channels *Channels) Delete(context context.Context, eventKey string, chann
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) AddObjects(context context.Context, eventKey string, channelKey string, objects []string) error {
+func (channels *Channels) AddObjects(context context.Context, eventKey string, channelKey string, objects []string, areaPlaces ...map[string]int) error {
+	var ap map[string]int
+	if len(areaPlaces) > 0 {
+		ap = areaPlaces[0]
+	}
 	result, err := channels.Client.R().
 		SetContext(context).
-		SetBody(changeChannelObjectsRequest{objects}).
+		SetBody(changeChannelObjectsRequest{objects, ap}).
 		SetPathParam("eventKey", eventKey).
 		SetPathParam("channelKey", channelKey).
 		Post("/events/{eventKey}/channels/{channelKey}/objects")
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (channels *Channels) RemoveObjects(context context.Context, eventKey string, channelKey string, objects []string) error {
+func (channels *Channels) RemoveObjects(context context.Context, eventKey string, channelKey string, objects []string, areaPlaces ...map[string]int) error {
+	var ap map[string]int
+	if len(areaPlaces) > 0 {
+		ap = areaPlaces[0]
+	}
 	result, err := channels.Client.R().
 		SetContext(context).
-		SetBody(changeChannelObjectsRequest{objects}).
+		SetBody(changeChannelObjectsRequest{objects, ap}).
 		SetPathParam("eventKey", eventKey).
 		SetPathParam("channelKey", channelKey).
 		Delete("/events/{eventKey}/channels/{channelKey}/objects")

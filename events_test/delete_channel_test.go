@@ -1,18 +1,19 @@
 package events
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestDeleteChannel(t *testing.T) {
 	t.Parallel()
 
-	event, client := CreateChannel(t, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}})
+	event, client := CreateChannel(t, &events.CreateChannelParams{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}})
 	retrievedEvent, _ := client.Events.Retrieve(test_util.RequestContext(), event.Key)
-	require.Equal(t, []events.Channel{{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}}}, retrievedEvent.Channels)
+	require.Equal(t, []events.Channel{{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}}}, retrievedEvent.Channels)
 
 	deleteErr := client.Channels.Delete(test_util.RequestContext(), event.Key, "foo")
 	require.NoError(t, deleteErr)

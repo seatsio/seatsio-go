@@ -1,11 +1,12 @@
 package events
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v12"
 	"github.com/seatsio/seatsio-go/v12/events"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestReplaceChannel(t *testing.T) {
@@ -16,14 +17,14 @@ func TestReplaceChannel(t *testing.T) {
 	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey, EventParams: &events.EventParams{
 		EventKey: "anEvent",
 		Channels: &[]events.CreateChannelParams{
-			{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}},
-			{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}},
+			{Key: "foo", Name: "bar", Color: "#ED303D", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}},
+			{Key: "hurdy", Name: "gurdy", Color: "#DFDFDF", Index: 2, Objects: []string{"A-3", "A-4"}, AreaPlaces: map[string]int{"GA1": 3}},
 		},
 	}})
 	require.NoError(t, err)
 
 	replaceError := client.Channels.Replace(test_util.RequestContext(), event.Key,
-		events.CreateChannelParams{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
+		events.CreateChannelParams{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}, AreaPlaces: map[string]int{"GA1": 7}},
 		events.CreateChannelParams{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
 	)
 	require.NoError(t, replaceError)
@@ -32,7 +33,7 @@ func TestReplaceChannel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, []events.Channel{
-		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}},
+		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-5", "A-6"}, AreaPlaces: map[string]int{"GA1": 7}},
+		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{"A-7", "A-8"}, AreaPlaces: map[string]int{}},
 	}, postReplacementEvent.Channels)
 }
