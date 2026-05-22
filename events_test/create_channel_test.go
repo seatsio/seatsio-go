@@ -26,12 +26,16 @@ func TestCreateChannel(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, retrievedEvent.Channels, 1)
 	ch := retrievedEvent.Channels[0]
-	require.Equal(t, "foo", ch.Key)
-	require.Equal(t, "bar", ch.Name)
-	require.Equal(t, "#ED303D", ch.Color)
-	require.Equal(t, 1, ch.Index)
-	require.Equal(t, []string{"A-1", "A-2"}, ch.Objects)
-	require.Equal(t, map[string]int{"GA1": 5}, ch.AreaPlaces)
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "foo",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-1", "A-2"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch)
+	require.NotEmpty(t, ch.Id)
 }
 
 func TestCreateChannels(t *testing.T) {
@@ -54,19 +58,25 @@ func TestCreateChannels(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, retrievedEvent.Channels, 2)
 	ch1 := retrievedEvent.Channels[0]
-	require.Equal(t, "foo", ch1.Key)
-	require.Equal(t, "bar", ch1.Name)
-	require.Equal(t, "#ED303D", ch1.Color)
-	require.Equal(t, 1, ch1.Index)
-	require.Equal(t, []string{"A-1", "A-2"}, ch1.Objects)
-	require.Equal(t, map[string]int{"GA1": 5}, ch1.AreaPlaces)
+	require.Equal(t, events.Channel{
+		Id:         ch1.Id,
+		Key:        "foo",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-1", "A-2"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch1)
 	ch2 := retrievedEvent.Channels[1]
-	require.Equal(t, "hurdy", ch2.Key)
-	require.Equal(t, "gurdy", ch2.Name)
-	require.Equal(t, "#DFDFDF", ch2.Color)
-	require.Equal(t, 2, ch2.Index)
-	require.Equal(t, []string{"A-3", "A-4"}, ch2.Objects)
-	require.Empty(t, ch2.AreaPlaces)
+	require.Equal(t, events.Channel{
+		Id:         ch2.Id,
+		Key:        "hurdy",
+		Name:       "gurdy",
+		Color:      "#DFDFDF",
+		Index:      2,
+		Objects:    []string{"A-3", "A-4"},
+		AreaPlaces: map[string]int{},
+	}, ch2)
 }
 
 func TestIndexIsOptional(t *testing.T) {
@@ -88,10 +98,18 @@ func TestIndexIsOptional(t *testing.T) {
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
-	require.Equal(t, 1, len(retrievedEvent.Channels))
-	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
-	require.Equal(t, 0, retrievedEvent.Channels[0].Index)
-	require.Equal(t, "A-1", retrievedEvent.Channels[0].Objects[0])
+	require.NoError(t, err)
+	require.Len(t, retrievedEvent.Channels, 1)
+	ch := retrievedEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "foo",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      0,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{},
+	}, ch)
 }
 
 func TestObjectsIsOptional(t *testing.T) {
@@ -113,10 +131,18 @@ func TestObjectsIsOptional(t *testing.T) {
 	require.NoError(t, err)
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
-	require.Equal(t, 1, len(retrievedEvent.Channels))
-	require.Equal(t, "foo", retrievedEvent.Channels[0].Key)
-	require.Equal(t, 1, retrievedEvent.Channels[0].Index)
-	require.Empty(t, retrievedEvent.Channels[0].Objects)
+	require.NoError(t, err)
+	require.Len(t, retrievedEvent.Channels, 1)
+	ch := retrievedEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "foo",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{},
+		AreaPlaces: map[string]int{},
+	}, ch)
 }
 
 func TestCreateChannelWithAreaPlaces(t *testing.T) {
@@ -140,7 +166,17 @@ func TestCreateChannelWithAreaPlaces(t *testing.T) {
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
-	require.Equal(t, map[string]int{"GA1": 5}, retrievedEvent.Channels[0].AreaPlaces)
+	require.Len(t, retrievedEvent.Channels, 1)
+	ch := retrievedEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "foo",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch)
 }
 
 func TestChannelHasID(t *testing.T) {
