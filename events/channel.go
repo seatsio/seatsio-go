@@ -8,8 +8,8 @@ type Channel struct {
 	Name       string         `json:"name"`
 	Color      string         `json:"color"`
 	Index      int            `json:"index"`
-	Objects    []string       `json:"objects,omitempty"`
-	AreaPlaces map[string]int `json:"areaPlaces,omitempty"`
+	Objects    []string       `json:"objects"`
+	AreaPlaces map[string]int `json:"areaPlaces"`
 }
 
 func (c Channel) AreaPartitionLabel(areaLabel string) string {
