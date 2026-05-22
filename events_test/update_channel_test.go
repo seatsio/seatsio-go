@@ -23,6 +23,7 @@ func TestUpdateName(t *testing.T) {
 	require.Equal(t, "#ED303D", postUpdateEvent.Channels[0].Color)
 	require.Equal(t, []string{"A-1", "A-2"}, postUpdateEvent.Channels[0].Objects)
 	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
+	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
 }
 
 func TestUpdateColor(t *testing.T) {
@@ -40,6 +41,7 @@ func TestUpdateColor(t *testing.T) {
 	require.Equal(t, "#1E1E1E", postUpdateEvent.Channels[0].Color)
 	require.Equal(t, []string{"A-1", "A-2"}, postUpdateEvent.Channels[0].Objects)
 	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
+	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
 }
 
 func TestUpdateObjects(t *testing.T) {
@@ -57,6 +59,7 @@ func TestUpdateObjects(t *testing.T) {
 	require.Equal(t, "#ED303D", postUpdateEvent.Channels[0].Color)
 	require.Equal(t, []string{"A-3", "A-4"}, postUpdateEvent.Channels[0].Objects)
 	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
+	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
 }
 
 func TestUpdateAreaPlaces(t *testing.T) {

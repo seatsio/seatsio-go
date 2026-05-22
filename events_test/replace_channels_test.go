@@ -46,4 +46,5 @@ func TestReplaceChannel(t *testing.T) {
 	require.Equal(t, "#F2F2F2", ch2.Color)
 	require.Equal(t, 2, ch2.Index)
 	require.Equal(t, []string{"A-7", "A-8"}, ch2.Objects)
+	require.Empty(t, ch2.AreaPlaces)
 }

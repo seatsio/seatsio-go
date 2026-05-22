@@ -66,6 +66,7 @@ func TestCreateChannels(t *testing.T) {
 	require.Equal(t, "#DFDFDF", ch2.Color)
 	require.Equal(t, 2, ch2.Index)
 	require.Equal(t, []string{"A-3", "A-4"}, ch2.Objects)
+	require.Empty(t, ch2.AreaPlaces)
 }
 
 func TestIndexIsOptional(t *testing.T) {
@@ -161,6 +162,7 @@ func TestChannelHasID(t *testing.T) {
 
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
+	require.Len(t, retrievedEvent.Channels, 1)
 	require.NotEmpty(t, retrievedEvent.Channels[0].ID)
 }
 
