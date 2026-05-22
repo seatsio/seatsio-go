@@ -3,7 +3,7 @@ package events
 import "fmt"
 
 type Channel struct {
-	ID         string         `json:"id"`
+	Id         string         `json:"id"`
 	Key        string         `json:"key"`
 	Name       string         `json:"name"`
 	Color      string         `json:"color"`
@@ -13,5 +13,5 @@ type Channel struct {
 }
 
 func (c Channel) AreaPartitionLabel(areaLabel string) string {
-	return fmt.Sprintf("%s##%s", areaLabel, c.ID)
+	return fmt.Sprintf("%s##%s", areaLabel, c.Id)
 }

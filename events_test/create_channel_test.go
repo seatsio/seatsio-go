@@ -163,10 +163,10 @@ func TestChannelHasID(t *testing.T) {
 	retrievedEvent, err := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.NoError(t, err)
 	require.Len(t, retrievedEvent.Channels, 1)
-	require.NotEmpty(t, retrievedEvent.Channels[0].ID)
+	require.NotEmpty(t, retrievedEvent.Channels[0].Id)
 }
 
 func TestAreaPartitionLabel(t *testing.T) {
-	ch := events.Channel{ID: "abc123"}
+	ch := events.Channel{Id: "abc123"}
 	require.Equal(t, "myArea##abc123", ch.AreaPartitionLabel("myArea"))
 }
