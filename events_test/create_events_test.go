@@ -149,20 +149,28 @@ func TestCreateMultipleEventsWithChannels(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	expectedChannels := []events.Channel{
-		{Key: "aaa", Name: "bbb", Color: "#101010", Index: 1, Objects: []string{"A-1", "A-2"}, AreaPlaces: map[string]int{"GA1": 5}},
-		{Key: "ccc", Name: "ddd", Color: "#F2F2F2", Index: 2, Objects: []string{}, AreaPlaces: map[string]int{}},
-	}
 	for _, ev := range result.Events {
 		require.Len(t, ev.Channels, 2)
-		for i, expected := range expectedChannels {
-			require.Equal(t, expected.Key, ev.Channels[i].Key)
-			require.Equal(t, expected.Name, ev.Channels[i].Name)
-			require.Equal(t, expected.Color, ev.Channels[i].Color)
-			require.Equal(t, expected.Index, ev.Channels[i].Index)
-			require.Equal(t, expected.Objects, ev.Channels[i].Objects)
-			require.Equal(t, expected.AreaPlaces, ev.Channels[i].AreaPlaces)
-		}
+		ch1 := ev.Channels[0]
+		require.Equal(t, events.Channel{
+			Id:         ch1.Id,
+			Key:        "aaa",
+			Name:       "bbb",
+			Color:      "#101010",
+			Index:      1,
+			Objects:    []string{"A-1", "A-2"},
+			AreaPlaces: map[string]int{"GA1": 5},
+		}, ch1)
+		ch2 := ev.Channels[1]
+		require.Equal(t, events.Channel{
+			Id:         ch2.Id,
+			Key:        "ccc",
+			Name:       "ddd",
+			Color:      "#F2F2F2",
+			Index:      2,
+			Objects:    []string{},
+			AreaPlaces: map[string]int{},
+		}, ch2)
 	}
 }
 

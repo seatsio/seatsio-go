@@ -34,17 +34,23 @@ func TestReplaceChannel(t *testing.T) {
 
 	require.Len(t, postReplacementEvent.Channels, 2)
 	ch1 := postReplacementEvent.Channels[0]
-	require.Equal(t, "aaa", ch1.Key)
-	require.Equal(t, "bbb", ch1.Name)
-	require.Equal(t, "#101010", ch1.Color)
-	require.Equal(t, 1, ch1.Index)
-	require.Equal(t, []string{"A-5", "A-6"}, ch1.Objects)
-	require.Equal(t, map[string]int{"GA1": 7}, ch1.AreaPlaces)
+	require.Equal(t, events.Channel{
+		Id:         ch1.Id,
+		Key:        "aaa",
+		Name:       "bbb",
+		Color:      "#101010",
+		Index:      1,
+		Objects:    []string{"A-5", "A-6"},
+		AreaPlaces: map[string]int{"GA1": 7},
+	}, ch1)
 	ch2 := postReplacementEvent.Channels[1]
-	require.Equal(t, "ccc", ch2.Key)
-	require.Equal(t, "ddd", ch2.Name)
-	require.Equal(t, "#F2F2F2", ch2.Color)
-	require.Equal(t, 2, ch2.Index)
-	require.Equal(t, []string{"A-7", "A-8"}, ch2.Objects)
-	require.Empty(t, ch2.AreaPlaces)
+	require.Equal(t, events.Channel{
+		Id:         ch2.Id,
+		Key:        "ccc",
+		Name:       "ddd",
+		Color:      "#F2F2F2",
+		Index:      2,
+		Objects:    []string{"A-7", "A-8"},
+		AreaPlaces: map[string]int{},
+	}, ch2)
 }

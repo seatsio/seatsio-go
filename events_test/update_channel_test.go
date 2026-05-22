@@ -18,12 +18,16 @@ func TestUpdateName(t *testing.T) {
 
 	postUpdateEvent, _ := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Len(t, postUpdateEvent.Channels, 1)
-	require.Equal(t, "channelKey1", postUpdateEvent.Channels[0].Key)
-	require.Equal(t, "hurdy", postUpdateEvent.Channels[0].Name)
-	require.Equal(t, "#ED303D", postUpdateEvent.Channels[0].Color)
-	require.Equal(t, []string{"A-1", "A-2"}, postUpdateEvent.Channels[0].Objects)
-	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
-	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
+	ch := postUpdateEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "channelKey1",
+		Name:       "hurdy",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-1", "A-2"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch)
 }
 
 func TestUpdateColor(t *testing.T) {
@@ -36,12 +40,16 @@ func TestUpdateColor(t *testing.T) {
 
 	postUpdateEvent, _ := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Len(t, postUpdateEvent.Channels, 1)
-	require.Equal(t, "channelKey1", postUpdateEvent.Channels[0].Key)
-	require.Equal(t, "bar", postUpdateEvent.Channels[0].Name)
-	require.Equal(t, "#1E1E1E", postUpdateEvent.Channels[0].Color)
-	require.Equal(t, []string{"A-1", "A-2"}, postUpdateEvent.Channels[0].Objects)
-	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
-	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
+	ch := postUpdateEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "channelKey1",
+		Name:       "bar",
+		Color:      "#1E1E1E",
+		Index:      1,
+		Objects:    []string{"A-1", "A-2"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch)
 }
 
 func TestUpdateObjects(t *testing.T) {
@@ -54,12 +62,16 @@ func TestUpdateObjects(t *testing.T) {
 
 	postUpdateEvent, _ := client.Events.Retrieve(test_util.RequestContext(), event.Key)
 	require.Len(t, postUpdateEvent.Channels, 1)
-	require.Equal(t, "channelKey1", postUpdateEvent.Channels[0].Key)
-	require.Equal(t, "bar", postUpdateEvent.Channels[0].Name)
-	require.Equal(t, "#ED303D", postUpdateEvent.Channels[0].Color)
-	require.Equal(t, []string{"A-3", "A-4"}, postUpdateEvent.Channels[0].Objects)
-	require.Equal(t, map[string]int{"GA1": 5}, postUpdateEvent.Channels[0].AreaPlaces)
-	require.Equal(t, 1, postUpdateEvent.Channels[0].Index)
+	ch := postUpdateEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "channelKey1",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-3", "A-4"},
+		AreaPlaces: map[string]int{"GA1": 5},
+	}, ch)
 }
 
 func TestUpdateAreaPlaces(t *testing.T) {
@@ -71,5 +83,15 @@ func TestUpdateAreaPlaces(t *testing.T) {
 	require.NoError(t, err)
 
 	postUpdateEvent, _ := client.Events.Retrieve(test_util.RequestContext(), event.Key)
-	require.Equal(t, map[string]int{"GA1": 3}, postUpdateEvent.Channels[0].AreaPlaces)
+	require.Len(t, postUpdateEvent.Channels, 1)
+	ch := postUpdateEvent.Channels[0]
+	require.Equal(t, events.Channel{
+		Id:         ch.Id,
+		Key:        "channelKey1",
+		Name:       "bar",
+		Color:      "#ED303D",
+		Index:      1,
+		Objects:    []string{"A-1"},
+		AreaPlaces: map[string]int{"GA1": 3},
+	}, ch)
 }
