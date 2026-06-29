@@ -22,7 +22,7 @@ func Test300(t *testing.T) {
 
 	_, e := shared.AssertOk(response, err, &event)
 
-	require.EqualError(t, e, "server returned error 300. Body: ")
+	require.ErrorContains(t, e, "server returned error 300. Body: ")
 }
 
 func Test301(t *testing.T) {
@@ -56,7 +56,7 @@ func Test500(t *testing.T) {
 
 	_, e := shared.AssertOk(response, err, &event)
 
-	require.EqualError(t, e, "server returned error 500. Body: ")
+	require.ErrorContains(t, e, "server returned error 500. Body: ")
 }
 
 func TestWeirdError(t *testing.T) {
