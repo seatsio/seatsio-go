@@ -16,19 +16,19 @@ import (
 func Test300(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/300")
 
 	_, e := shared.AssertOk(response, err, &event)
 
-	require.EqualError(t, e, "server returned error 300. Body: ")
+	require.ErrorContains(t, e, "server returned error 300. Body: ")
 }
 
 func Test301(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/301")
 
@@ -50,13 +50,13 @@ func Test400(t *testing.T) {
 func Test500(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/500")
 
 	_, e := shared.AssertOk(response, err, &event)
 
-	require.EqualError(t, e, "server returned error 500. Body: ")
+	require.ErrorContains(t, e, "server returned error 500. Body: ")
 }
 
 func TestWeirdError(t *testing.T) {
@@ -70,7 +70,7 @@ func TestWeirdError(t *testing.T) {
 
 func TestTimeout(t *testing.T) {
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		SetTimeout(100 * time.Millisecond).
 		R().
 		Get("/delay/5")

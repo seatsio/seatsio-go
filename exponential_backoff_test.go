@@ -1,15 +1,16 @@
 package seatsio
 
 import (
+	"testing"
+	"time"
+
 	"github.com/seatsio/seatsio-go/v12/shared"
 	"github.com/seatsio/seatsio-go/v12/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
-	_, _ = shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").R().Get("/status/200")
+	_, _ = shared.ApiClient("aSecretKey", "https://httpbingo.org").R().Get("/status/200")
 	m.Run()
 }
 
@@ -17,7 +18,7 @@ func TestAbortsEventuallyIfServerKeepsReturning429(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 
-	response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
+	response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/429")
 
@@ -31,7 +32,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 
-	response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
+	response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/400")
 
@@ -43,7 +44,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 func TestReturnsSuccessfullyWhenServerSends429FirstAndThenSuccess(t *testing.T) {
 	t.Parallel()
 	for i := 0; i < 20; i++ {
-		response, _ := shared.ApiClient("aSecretKey", "https://httpbin.seatsio.net").
+		response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
 			R().
 			Get("/status/429:0.25,204:0.75")
 
