@@ -16,7 +16,7 @@ import (
 func Test300(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/300")
 
@@ -28,7 +28,7 @@ func Test300(t *testing.T) {
 func Test301(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/301")
 
@@ -50,7 +50,7 @@ func Test400(t *testing.T) {
 func Test500(t *testing.T) {
 	t.Parallel()
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		R().
 		Get("/status/500")
 
@@ -70,7 +70,7 @@ func TestWeirdError(t *testing.T) {
 
 func TestTimeout(t *testing.T) {
 	var event *events.Event
-	response, err := shared.ApiClient("someSecretKey", "https://httpbin.seatsio.net").
+	response, err := shared.ApiClient("someSecretKey", "https://httpbingo.org").
 		SetTimeout(100 * time.Millisecond).
 		R().
 		Get("/delay/5")
