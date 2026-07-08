@@ -56,6 +56,28 @@ type DetailedEventReport struct {
 	Items map[string][]events.EventObjectInfo
 }
 
+func (reports *EventReports) FlatList(context context.Context, eventKey string) ([]events.EventObjectInfo, error) {
+	var report []events.EventObjectInfo
+	result, err := reports.Client.R().
+		SetContext(context).
+		SetSuccessResult(&report).
+		SetPathParam("eventKey", eventKey).
+		Get("/reports/events/{eventKey}")
+	return shared.AssertOkArray(result, err, &report)
+}
+
+func (reports *EventReports) FlatListCsv(context context.Context, eventKey string) (string, error) {
+	result, err := reports.Client.R().
+		SetContext(context).
+		SetPathParam("eventKey", eventKey).
+		Get("/reports/events/{eventKey}.csv")
+	err = shared.AssertOkWithoutResult(result, err)
+	if err != nil {
+		return "", err
+	}
+	return result.String(), nil
+}
+
 func (reports *EventReports) fetchReport(context context.Context, eventKey string, reportType string) (*DetailedEventReport, error) {
 	var report map[string][]events.EventObjectInfo
 	result, err := reports.Client.R().
