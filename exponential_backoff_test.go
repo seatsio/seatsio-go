@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seatsio/seatsio-go/v12/shared"
-	"github.com/seatsio/seatsio-go/v12/test_util"
+	"github.com/seatsio/seatsio-go/v13/shared"
+	"github.com/seatsio/seatsio-go/v13/test_util"
 	"github.com/stretchr/testify/require"
 )
 
