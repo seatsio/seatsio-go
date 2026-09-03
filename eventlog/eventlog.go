@@ -3,7 +3,7 @@ package eventlog
 import (
 	"context"
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v12/shared"
+	"github.com/seatsio/seatsio-go/v13/shared"
 )
 
 type EventLog struct {

@@ -1,6 +1,6 @@
 package charts
 
-import "github.com/seatsio/seatsio-go/v12/events"
+import "github.com/seatsio/seatsio-go/v13/events"
 
 type Chart struct {
 	Id                           int64                  `json:"id"`

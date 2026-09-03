@@ -1,10 +1,10 @@
 package reports
 
 import (
-	"github.com/seatsio/seatsio-go/v12"
-	"github.com/seatsio/seatsio-go/v12/events"
-	"github.com/seatsio/seatsio-go/v12/reports"
-	"github.com/seatsio/seatsio-go/v12/test_util"
+	"github.com/seatsio/seatsio-go/v13"
+	"github.com/seatsio/seatsio-go/v13/events"
+	"github.com/seatsio/seatsio-go/v13/reports"
+	"github.com/seatsio/seatsio-go/v13/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

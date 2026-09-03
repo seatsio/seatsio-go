@@ -2,8 +2,9 @@ package workspaces
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
-	"github.com/seatsio/seatsio-go/v12/shared"
+	"github.com/seatsio/seatsio-go/v13/shared"
 )
 
 type Workspaces struct {
@@ -19,7 +20,11 @@ type UpdateWorkspaceParams struct {
 	Name string `json:"name"`
 }
 
-type regenerateSecretKeyResponse struct {
+type RemoveSecretKeyParams struct {
+	SecretKey string `json:"secretKey"`
+}
+
+type manageSecretKeyResponse struct {
 	SecretKey string `json:"secretKey"`
 }
 
@@ -77,8 +82,9 @@ func (workspaces Workspaces) Delete(context context.Context, key string) error {
 	return shared.AssertOkNoBody(result, err)
 }
 
+// Deprecated: Use AddSecretKey and RemoveSecretKey instead
 func (workspaces Workspaces) RegenerateSecretKey(context context.Context, key string) (*string, error) {
-	var response regenerateSecretKeyResponse
+	var response manageSecretKeyResponse
 	result, err := workspaces.Client.R().
 		SetContext(context).
 		SetPathParam("key", key).
@@ -90,6 +96,32 @@ func (workspaces Workspaces) RegenerateSecretKey(context context.Context, key st
 	} else {
 		return nil, err
 	}
+}
+
+func (workspaces Workspaces) AddSecretKey(context context.Context, key string) (*string, error) {
+	var response manageSecretKeyResponse
+	result, err := workspaces.Client.R().
+		SetContext(context).
+		SetPathParam("key", key).
+		SetSuccessResult(&response).
+		Post("/workspaces/{key}/actions/add-secret-key")
+	ok, err := shared.AssertOk(result, err, &response)
+	if err == nil {
+		return &ok.SecretKey, nil
+	} else {
+		return nil, err
+	}
+}
+
+func (workspaces Workspaces) RemoveSecretKey(context context.Context, key string, secretKeyToRemove string) error {
+	var response manageSecretKeyResponse
+	result, err := workspaces.Client.R().
+		SetContext(context).
+		SetPathParam("key", key).
+		SetBody(RemoveSecretKeyParams{secretKeyToRemove}).
+		SetSuccessResult(&response).
+		Post("/workspaces/{key}/actions/remove-secret-key")
+	return shared.AssertOkNoBody(result, err)
 }
 
 func (workspaces Workspaces) SetDefaultWorkspace(context context.Context, key string) error {

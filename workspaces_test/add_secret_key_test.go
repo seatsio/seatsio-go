@@ -1,13 +1,14 @@
 package workspaces
 
 import (
+	"testing"
+
 	"github.com/seatsio/seatsio-go/v13"
 	"github.com/seatsio/seatsio-go/v13/test_util"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
-func TestActivateWorkspace(t *testing.T) {
+func TestAddSecretKey(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
 	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
@@ -15,17 +16,11 @@ func TestActivateWorkspace(t *testing.T) {
 	workspace, err := client.Workspaces.CreateProductionWorkspace(test_util.RequestContext(), "my workspace")
 	require.NoError(t, err)
 
-	err = client.Workspaces.Deactivate(test_util.RequestContext(), workspace.Key)
+	newKey, err := client.Workspaces.AddSecretKey(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
+	require.NotEqual(t, newKey, workspace.SecretKey)
 
 	retrievedWorkspace, err := client.Workspaces.Retrieve(test_util.RequestContext(), workspace.Key)
 	require.NoError(t, err)
-	require.False(t, retrievedWorkspace.IsActive)
-
-	err = client.Workspaces.Activate(test_util.RequestContext(), workspace.Key)
-	require.NoError(t, err)
-
-	activatedWorkspace, err := client.Workspaces.Retrieve(test_util.RequestContext(), workspace.Key)
-	require.NoError(t, err)
-	require.True(t, activatedWorkspace.IsActive)
+	require.Contains(t, retrievedWorkspace.SecretKeys, workspace.SecretKey, *newKey)
 }
