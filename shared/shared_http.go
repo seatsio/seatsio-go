@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/imroc/req/v3"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -17,8 +18,12 @@ func ApiClient(secretKey string, baseUrl string, additionalHeaders ...Additional
 		SetCommonRetryCount(5).
 		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
 		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
-			return err == nil && resp.StatusCode == 429
-		})
+			if err != nil {
+				return resp.Response == nil && isIdempotent(resp)
+			}
+			return resp.StatusCode == 429
+		}).
+		SetHTTP2ReadIdleTimeout(30 * time.Second)
 	headers := make(map[string]string)
 	for _, opt := range additionalHeaders {
 		opt(&headers)
@@ -27,6 +32,15 @@ func ApiClient(secretKey string, baseUrl string, additionalHeaders ...Additional
 		client.SetCommonHeader(key, value)
 	}
 	return client
+}
+
+func isIdempotent(resp *req.Response) bool {
+	switch resp.Request.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
+		return true
+	default:
+		return false
+	}
 }
 
 func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, error) {
