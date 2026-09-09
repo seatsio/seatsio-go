@@ -196,6 +196,43 @@ func TestDetailedReportItemPropertiesForTable(t *testing.T) {
 	require.Equal(t, 6, reportItem.NumSeats)
 }
 
+func TestWithSeasonBookingsNotPropagatedReturnsANewInstanceRatherThanMutatingTheOriginal(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+
+	withoutPropagation := client.EventReports.WithSeasonBookingsNotPropagated()
+	require.NotSame(t, client.EventReports, withoutPropagation)
+
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+
+	report, err := client.EventReports.ByLabel(test_util.RequestContext(), event.Key)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(report.Items["A-1"]))
+}
+
+func TestWithSeasonBookingsNotPropagatedCanBeUsedToFetchAReportForAnEventInASeason(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
+	require.NoError(t, err)
+	event := season.Events[0]
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	_, err = client.Events.Book(test_util.RequestContext(), event.Key, "A-3")
+	require.NoError(t, err)
+
+	report, err := client.EventReports.WithSeasonBookingsNotPropagated().ByLabel(test_util.RequestContext(), event.Key)
+	require.NoError(t, err)
+
+	require.NotEqual(t, events.BOOKED, report.Items["A-1"][0].Status)
+	require.Equal(t, events.BOOKED, report.Items["A-3"][0].Status)
+}
+
 func TestByStatus(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
@@ -220,6 +257,28 @@ func TestByStatus(t *testing.T) {
 	require.Equal(t, 2, len(report.Items["lolzor"]))
 	require.Equal(t, 1, len(report.Items[events.BOOKED]))
 	require.Equal(t, 31, len(report.Items[events.FREE]))
+}
+
+func TestByStatusWithSeasonBookingsNotPropagated(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
+	require.NoError(t, err)
+	event := season.Events[0]
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
+	require.NoError(t, err)
+	_, err = client.Events.Book(test_util.RequestContext(), event.Key, "A-3")
+	require.NoError(t, err)
+
+	reportWithPropagation, err := client.EventReports.ByStatus(test_util.RequestContext(), season.Key)
+	require.NoError(t, err)
+	reportWithoutPropagation, err := client.EventReports.WithSeasonBookingsNotPropagated().ByStatus(test_util.RequestContext(), season.Key)
+	require.NoError(t, err)
+
+	require.Equal(t, events.BOOKED, findByLabelInDetailedReport(reportWithPropagation.Items, "A-3").Status)
+	require.NotEqual(t, events.BOOKED, findByLabelInDetailedReport(reportWithoutPropagation.Items, "A-3").Status)
 }
 
 func TestByStatusWithEmptyChart(t *testing.T) {
