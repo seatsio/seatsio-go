@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v13/events"
 	"github.com/seatsio/seatsio-go/v13/shared"
@@ -12,10 +13,6 @@ type EventReports struct {
 	seasonBookingsNotPropagated bool
 }
 
-// WithSeasonBookingsNotPropagated returns a new EventReports that, when fetching a report for an
-// event that's part of a season, only takes into account bookings made directly on that event -
-// not bookings made on the season (or on other events in the season) that are normally propagated
-// to it. The original EventReports is left unchanged.
 func (reports *EventReports) WithSeasonBookingsNotPropagated() *EventReports {
 	return &EventReports{Client: reports.Client, seasonBookingsNotPropagated: true}
 }
