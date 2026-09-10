@@ -2,13 +2,26 @@ package reports
 
 import (
 	"context"
+
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v13/events"
 	"github.com/seatsio/seatsio-go/v13/shared"
 )
 
 type EventReports struct {
-	Client *req.Client
+	Client                      *req.Client
+	seasonBookingsNotPropagated bool
+}
+
+func (reports *EventReports) WithSeasonBookingsNotPropagated() *EventReports {
+	return &EventReports{Client: reports.Client, seasonBookingsNotPropagated: true}
+}
+
+func (reports *EventReports) queryParams() map[string]string {
+	if reports.seasonBookingsNotPropagated {
+		return map[string]string{"seasonBookingsPropagated": "false"}
+	}
+	return map[string]string{}
 }
 
 type EventDeepSummaryReport struct {
@@ -62,6 +75,7 @@ func (reports *EventReports) FlatList(context context.Context, eventKey string) 
 		SetContext(context).
 		SetSuccessResult(&report).
 		SetPathParam("eventKey", eventKey).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{eventKey}")
 	return shared.AssertOkArray(result, err, &report)
 }
@@ -70,6 +84,7 @@ func (reports *EventReports) FlatListCsv(context context.Context, eventKey strin
 	result, err := reports.Client.R().
 		SetContext(context).
 		SetPathParam("eventKey", eventKey).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{eventKey}.csv")
 	err = shared.AssertOkWithoutResult(result, err)
 	if err != nil {
@@ -85,6 +100,7 @@ func (reports *EventReports) fetchReport(context context.Context, eventKey strin
 		SetSuccessResult(&report).
 		SetPathParam("eventKey", eventKey).
 		SetPathParam("reportType", reportType).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{eventKey}/{reportType}")
 	return shared.AssertOk(result, err, &DetailedEventReport{Items: report})
 }
@@ -97,6 +113,7 @@ func (reports *EventReports) fetchReportWithFilter(context context.Context, even
 		SetPathParam("eventKey", eventKey).
 		SetPathParam("reportType", reportType).
 		SetPathParam("filter", filter).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{eventKey}/{reportType}/{filter}")
 	ok, err := shared.AssertOk(result, err, &DetailedEventReport{Items: report})
 	if err == nil {
@@ -278,6 +295,7 @@ func (reports *EventReports) fetchEventDeepSummaryReport(context context.Context
 		SetPathParam("reportItemType", "charts").
 		SetPathParam("key", eventKey).
 		SetPathParam("reportType", reportType).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{key}/{reportType}/summary/deep")
 	return shared.AssertOk(result, err, &EventDeepSummaryReport{Items: report})
 }
@@ -290,6 +308,7 @@ func (reports *EventReports) fetchEventSummaryReport(context context.Context, re
 		SetPathParam("reportItemType", "charts").
 		SetPathParam("key", eventKey).
 		SetPathParam("reportType", reportType).
+		SetQueryParams(reports.queryParams()).
 		Get("/reports/events/{key}/{reportType}/summary")
 	return shared.AssertOk(result, err, &EventSummaryReport{Items: report})
 }

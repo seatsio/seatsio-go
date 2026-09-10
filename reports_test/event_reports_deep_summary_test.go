@@ -3,10 +3,28 @@ package reports
 import (
 	"github.com/seatsio/seatsio-go/v13"
 	"github.com/seatsio/seatsio-go/v13/events"
+	"github.com/seatsio/seatsio-go/v13/seasons"
 	"github.com/seatsio/seatsio-go/v13/test_util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+func TestWithSeasonBookingsNotPropagatedCanBeUsedToFetchADeepSummaryReportForAnEventInASeason(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompany(t)
+	client := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	season, err := client.Seasons.CreateWithOptions(test_util.RequestContext(), chartKey, &seasons.CreateSeasonParams{NumberOfEvents: 1})
+	require.NoError(t, err)
+	event := season.Events[0]
+	_, err = client.Events.Book(test_util.RequestContext(), season.Key, "A-1", "A-2")
+	require.NoError(t, err)
+
+	report, err := client.EventReports.WithSeasonBookingsNotPropagated().DeepSummaryByStatus(test_util.RequestContext(), event.Key)
+	require.NoError(t, err)
+
+	require.Equal(t, 232, report.Items[events.FREE].Count)
+}
 
 func TestDeepSummaryByStatus(t *testing.T) {
 	t.Parallel()
