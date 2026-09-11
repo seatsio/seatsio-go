@@ -365,6 +365,14 @@ func (events *Events) MarkEverythingAsForSale(context context.Context, eventKey 
 	return shared.AssertOkWithoutResult(result, err)
 }
 
+func (events *Events) MarkEverythingAsNotForSale(context context.Context, eventKey string) error {
+	result, err := events.Client.R().
+		SetContext(context).
+		SetPathParam("event", eventKey).
+		Post("/events/{event}/actions/mark-everything-as-not-for-sale")
+	return shared.AssertOkWithoutResult(result, err)
+}
+
 func (events *Events) StatusChanges(context context.Context, eventKey string, opts ...ListParamsOption) *shared.Lister[StatusChange] {
 	pageFetcher := shared.PageFetcher[StatusChange]{
 		Client:      events.Client,
