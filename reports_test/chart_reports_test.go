@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/seatsio/seatsio-go/v13"
@@ -59,7 +60,24 @@ func TestReportItemPropertiesForGA(t *testing.T) {
 	item := chartReport.Items["GA1"][0]
 	require.Equal(t, item.Capacity, 100)
 	require.Equal(t, "generalAdmission", item.ObjectType)
+	require.Equal(t, events.AreaTypeGeneralAdmission, item.AreaType)
 	require.False(t, item.BookAsAWhole)
+}
+
+func TestReportItemAreaTypePossibleValues(t *testing.T) {
+	t.Parallel()
+	require.Equal(t, events.AreaType("generalAdmission"), events.AreaTypeGeneralAdmission)
+	require.Equal(t, events.AreaType("variableOccupancy"), events.AreaTypeVariableOccupancy)
+	require.Equal(t, events.AreaType("fixedOccupancy"), events.AreaTypeFixedOccupancy)
+}
+
+// AreaType is a plain string type, so area types added server-side later still
+// decode without error instead of breaking the client.
+func TestReportItemUnknownAreaTypeIsPreserved(t *testing.T) {
+	t.Parallel()
+	var item reports.ChartReportItem
+	require.NoError(t, json.Unmarshal([]byte(`{"areaType":"someFutureAreaType"}`), &item))
+	require.Equal(t, events.AreaType("someFutureAreaType"), item.AreaType)
 }
 
 func TestReportItemPropertiesForTable(t *testing.T) {

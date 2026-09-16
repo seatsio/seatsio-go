@@ -92,6 +92,7 @@ func TestDetailedReportItemProperties(t *testing.T) {
 	require.True(t, gaItem.VariableOccupancy)
 	require.Equal(t, 1, gaItem.MinOccupancy)
 	require.Equal(t, 100, gaItem.MaxOccupancy)
+	require.Equal(t, events.AreaTypeGeneralAdmission, gaItem.AreaType)
 }
 
 func TestHoldToken(t *testing.T) {

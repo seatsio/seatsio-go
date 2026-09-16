@@ -1,5 +1,13 @@
 package events
 
+type AreaType string
+
+const (
+	AreaTypeGeneralAdmission  AreaType = "generalAdmission"
+	AreaTypeVariableOccupancy AreaType = "variableOccupancy"
+	AreaTypeFixedOccupancy    AreaType = "fixedOccupancy"
+)
+
 type EventObjectInfo struct {
 	Status                         string                    `json:"status,omitempty"`
 	Label                          string                    `json:"label,omitempty"`
@@ -44,6 +52,7 @@ type EventObjectInfo struct {
 	SeasonStatusOverriddenQuantity int                       `json:"seasonStatusOverriddenQuantity,omitempty"`
 	NumNotForSale                  int                       `json:"numNotForSale,omitempty"`
 	Zone                           string                    `json:"zone,omitempty"`
+	AreaType                       AreaType                  `json:"areaType,omitempty"`
 	Floor                          Floor                     `json:"floor,omitempty"`
 	ResaleListingId                string                    `json:"resaleListingId,omitempty"`
 }
