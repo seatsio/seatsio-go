@@ -23,6 +23,14 @@ func BaseURL() string {
 	return u
 }
 
+func HttpbinURL() string {
+	u := os.Getenv("HTTPBIN_URL")
+	if u == "" {
+		return "https://httpbingo.org"
+	}
+	return u
+}
+
 type User struct {
 	SecretKey string `json:"secretKey"`
 }

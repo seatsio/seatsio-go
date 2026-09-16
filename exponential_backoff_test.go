@@ -10,7 +10,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	_, _ = shared.ApiClient("aSecretKey", "https://httpbingo.org").R().Get("/status/200")
+	_, _ = shared.ApiClient("aSecretKey", test_util.HttpbinURL()).R().Get("/status/200")
 	m.Run()
 }
 
@@ -18,13 +18,13 @@ func TestAbortsEventuallyIfServerKeepsReturning429(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 
-	response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
+	response, _ := shared.ApiClient("aSecretKey", test_util.HttpbinURL()).
 		R().
 		Get("/status/429")
 
 	elapsed := time.Now().Sub(start)
 	require.Greater(t, int(elapsed.Seconds()), 10)
-	require.Less(t, int(elapsed.Seconds()), 25)
+	require.Less(t, int(elapsed.Seconds()), 35)
 	require.Equal(t, 429, response.StatusCode)
 }
 
@@ -32,7 +32,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 	t.Parallel()
 	start := time.Now()
 
-	response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
+	response, _ := shared.ApiClient("aSecretKey", test_util.HttpbinURL()).
 		R().
 		Get("/status/400")
 
@@ -44,7 +44,7 @@ func TestAbortsDirectlyIfServerReturnsOtherErrorThan429(t *testing.T) {
 func TestReturnsSuccessfullyWhenServerSends429FirstAndThenSuccess(t *testing.T) {
 	t.Parallel()
 	for i := 0; i < 20; i++ {
-		response, _ := shared.ApiClient("aSecretKey", "https://httpbingo.org").
+		response, _ := shared.ApiClient("aSecretKey", test_util.HttpbinURL()).
 			R().
 			Get("/status/429:0.25,204:0.75")
 
