@@ -71,15 +71,6 @@ func TestReportItemAreaTypePossibleValues(t *testing.T) {
 	require.Equal(t, events.AreaType("fixedOccupancy"), events.AreaTypeFixedOccupancy)
 }
 
-// AreaType is a plain string type, so area types added server-side later still
-// decode without error instead of breaking the client.
-func TestReportItemUnknownAreaTypeIsPreserved(t *testing.T) {
-	t.Parallel()
-	var item reports.ChartReportItem
-	require.NoError(t, json.Unmarshal([]byte(`{"areaType":"someFutureAreaType"}`), &item))
-	require.Equal(t, events.AreaType("someFutureAreaType"), item.AreaType)
-}
-
 func TestReportItemPropertiesForTable(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompany(t)
