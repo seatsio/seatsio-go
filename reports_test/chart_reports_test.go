@@ -1,7 +1,6 @@
 package reports
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/seatsio/seatsio-go/v13"
