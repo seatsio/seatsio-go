@@ -102,19 +102,22 @@ func createTestChart(t *testing.T, secretKey string, fileName string) string {
 	return chartKey
 }
 
-func DemoCompanySecretKey() string {
-	return os.Getenv("DEMO_COMPANY_SECRET_KEY")
+func UsageReportingTestsApiUrl() string {
+	return os.Getenv("USAGE_REPORTING_TESTS_API_URL")
 }
 
-func AssertDemoCompanySecretKeySet(t *testing.T) {
-	_, exists := os.LookupEnv("DEMO_COMPANY_SECRET_KEY")
-	if !exists {
-		t.Skip("DEMO_COMPANY_SECRET_KEY environment variable not set, skipping test")
+func UsageReportingTestsSecretKey() string {
+	return os.Getenv("USAGE_REPORTING_TESTS_SECRET_KEY")
+}
+
+func AssertUsageReportingTestsConfigured(t *testing.T) {
+	if UsageReportingTestsApiUrl() == "" || UsageReportingTestsSecretKey() == "" {
+		t.Skip("USAGE_REPORTING_TESTS_API_URL and/or USAGE_REPORTING_TESTS_SECRET_KEY environment variable not set, skipping test")
 	}
 }
 
 func SystemApiSecret() string {
-	secret := os.Getenv("CORE_V2_STAGING_EU_SYSTEM_API_SECRET")
+	secret := os.Getenv("CORE_V2_API_SECRET")
 	if secret == "" {
 		return "superSecretSystemApi"
 	}

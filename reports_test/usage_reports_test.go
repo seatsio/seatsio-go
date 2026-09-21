@@ -9,8 +9,8 @@ import (
 
 func TestUsageReportForAllMonths(t *testing.T) {
 	t.Parallel()
-	test_util.AssertDemoCompanySecretKeySet(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
+	test_util.AssertUsageReportingTestsConfigured(t)
+	client := seatsio.NewSeatsioClient(test_util.UsageReportingTestsApiUrl(), test_util.UsageReportingTestsSecretKey())
 
 	report, err := client.UsageReports.SummaryForAllMonths(test_util.RequestContext())
 
@@ -23,8 +23,8 @@ func TestUsageReportForAllMonths(t *testing.T) {
 
 func TestUsageReportForMonth(t *testing.T) {
 	t.Parallel()
-	test_util.AssertDemoCompanySecretKeySet(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
+	test_util.AssertUsageReportingTestsConfigured(t)
+	client := seatsio.NewSeatsioClient(test_util.UsageReportingTestsApiUrl(), test_util.UsageReportingTestsSecretKey())
 
 	report, err := client.UsageReports.DetailsForMonth(test_util.RequestContext(), 2021, 11)
 
@@ -36,8 +36,8 @@ func TestUsageReportForMonth(t *testing.T) {
 
 func TestUsageReportForEventInMonth(t *testing.T) {
 	t.Parallel()
-	test_util.AssertDemoCompanySecretKeySet(t)
-	client := seatsio.NewSeatsioClient(test_util.BaseUrl, test_util.DemoCompanySecretKey())
+	test_util.AssertUsageReportingTestsConfigured(t)
+	client := seatsio.NewSeatsioClient(test_util.UsageReportingTestsApiUrl(), test_util.UsageReportingTestsSecretKey())
 
 	report1, report2, err := client.UsageReports.DetailsForEventInMonth(test_util.RequestContext(), 580293, 2021, 11)
 
