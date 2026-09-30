@@ -195,6 +195,7 @@ func TestDetailedReportItemPropertiesForTable(t *testing.T) {
 	reportItem := report.Items["T1"][0]
 	require.False(t, reportItem.BookAsAWhole)
 	require.Equal(t, 6, reportItem.NumSeats)
+	require.Equal(t, events.TableTypeBookByTable, reportItem.TableType)
 }
 
 func TestWithSeasonBookingsNotPropagatedReturnsANewInstanceRatherThanMutatingTheOriginal(t *testing.T) {

@@ -82,6 +82,7 @@ func TestReportItemPropertiesForTable(t *testing.T) {
 	item := chartReport.Items["T1"][0]
 	require.False(t, item.BookAsAWhole)
 	require.Equal(t, 6, item.NumSeats)
+	require.Equal(t, events.TableTypeBookBySeat, item.TableType)
 }
 
 func TestByLabel(t *testing.T) {

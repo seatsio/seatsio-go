@@ -8,6 +8,15 @@ const (
 	AreaTypeFixedOccupancy    AreaType = "fixedOccupancy"
 )
 
+type TableType string
+
+const (
+	TableTypeBookByTable       TableType = "bookByTable"
+	TableTypeBookBySeat        TableType = "bookBySeat"
+	TableTypeVariableOccupancy TableType = "variableOccupancy"
+	TableTypeGeneralAdmission  TableType = "generalAdmission"
+)
+
 type EventObjectInfo struct {
 	Status                         string                    `json:"status,omitempty"`
 	Label                          string                    `json:"label,omitempty"`
@@ -53,6 +62,7 @@ type EventObjectInfo struct {
 	NumNotForSale                  int                       `json:"numNotForSale,omitempty"`
 	Zone                           string                    `json:"zone,omitempty"`
 	AreaType                       AreaType                  `json:"areaType,omitempty"`
+	TableType                      TableType                 `json:"tableType,omitempty"`
 	Floor                          Floor                     `json:"floor,omitempty"`
 	ResaleListingId                string                    `json:"resaleListingId,omitempty"`
 }
