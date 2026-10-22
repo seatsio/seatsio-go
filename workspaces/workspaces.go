@@ -12,12 +12,27 @@ type Workspaces struct {
 }
 
 type CreateWorkspaceParams struct {
-	Name   string `json:"name"`
-	IsTest bool   `json:"isTest"`
+	Name        string      `json:"name"`
+	IsTest      bool        `json:"isTest"`
+	ForSaleMode ForSaleMode `json:"forSaleMode,omitempty"`
 }
 
 type UpdateWorkspaceParams struct {
-	Name string `json:"name"`
+	Name        string      `json:"name"`
+	ForSaleMode ForSaleMode `json:"forSaleMode,omitempty"`
+}
+
+type ForSaleMode string
+
+const (
+	RATE_LIMITED       ForSaleMode = "RATE_LIMITED"
+	UNLIMITED_BILLABLE ForSaleMode = "UNLIMITED_BILLABLE"
+)
+
+type WorkspaceOption func(options *workspaceOptions)
+
+type workspaceOptions struct {
+	forSaleMode ForSaleMode
 }
 
 type RemoveSecretKeyParams struct {
@@ -40,19 +55,20 @@ const (
 	Inactive WorkspaceStatus = "/inactive"
 )
 
-func (workspaces Workspaces) CreateTestWorkspace(context context.Context, name string) (*Workspace, error) {
-	return workspaces.createWorkspace(context, name, true)
+func (workspaces Workspaces) CreateTestWorkspace(context context.Context, name string, opts ...WorkspaceOption) (*Workspace, error) {
+	return workspaces.createWorkspace(context, name, true, opts)
 }
 
-func (workspaces Workspaces) CreateProductionWorkspace(context context.Context, name string) (*Workspace, error) {
-	return workspaces.createWorkspace(context, name, false)
+func (workspaces Workspaces) CreateProductionWorkspace(context context.Context, name string, opts ...WorkspaceOption) (*Workspace, error) {
+	return workspaces.createWorkspace(context, name, false, opts)
 }
 
-func (workspaces Workspaces) createWorkspace(context context.Context, name string, isTest bool) (*Workspace, error) {
+func (workspaces Workspaces) createWorkspace(context context.Context, name string, isTest bool, opts []WorkspaceOption) (*Workspace, error) {
 	var workspace Workspace
+	options := toWorkspaceOptions(opts)
 	result, err := workspaces.Client.R().
 		SetContext(context).
-		SetBody(CreateWorkspaceParams{Name: name, IsTest: isTest}).
+		SetBody(CreateWorkspaceParams{Name: name, IsTest: isTest, ForSaleMode: options.forSaleMode}).
 		SetSuccessResult(&workspace).
 		Post("/workspaces")
 	return shared.AssertOk(result, err, &workspace)
@@ -132,10 +148,11 @@ func (workspaces Workspaces) SetDefaultWorkspace(context context.Context, key st
 	return shared.AssertOkNoBody(result, err)
 }
 
-func (workspaces Workspaces) Update(context context.Context, key string, Name string) error {
+func (workspaces Workspaces) Update(context context.Context, key string, Name string, opts ...WorkspaceOption) error {
+	options := toWorkspaceOptions(opts)
 	result, err := workspaces.Client.R().
 		SetContext(context).
-		SetBody(UpdateWorkspaceParams{Name}).
+		SetBody(UpdateWorkspaceParams{Name: Name, ForSaleMode: options.forSaleMode}).
 		SetPathParam("key", key).
 		Post("/workspaces/{key}")
 	return shared.AssertOkNoBody(result, err)
@@ -181,4 +198,18 @@ func (workspaceNS) WithFilter(filterValue string) shared.PaginationParamsOption 
 	return func(Params *shared.PaginationParams) {
 		Params.QueryParams["filter"] = filterValue
 	}
+}
+
+func (workspaceNS) WithForSaleMode(forSaleMode ForSaleMode) WorkspaceOption {
+	return func(options *workspaceOptions) {
+		options.forSaleMode = forSaleMode
+	}
+}
+
+func toWorkspaceOptions(opts []WorkspaceOption) workspaceOptions {
+	options := workspaceOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
 }
