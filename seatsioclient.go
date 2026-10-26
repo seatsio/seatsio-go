@@ -12,6 +12,7 @@ import (
 	"github.com/seatsio/seatsio-go/v13/shared"
 	"github.com/seatsio/seatsio-go/v13/ticketbuyers"
 	"github.com/seatsio/seatsio-go/v13/workspaces"
+	"time"
 )
 
 type seatsioClientNS struct {
@@ -76,6 +77,14 @@ func (c *SeatsioClient) SetMaxRetries(count int) error {
 		return errors.New("retry count must not be negative")
 	}
 	ClientSupport.apiClient.SetCommonRetryCount(count)
+	return nil
+}
+
+func (c *SeatsioClient) SetTimeout(timeout time.Duration) error {
+	if timeout <= 0 {
+		return errors.New("timeout must be positive")
+	}
+	ClientSupport.apiClient.SetTimeout(timeout)
 	return nil
 }
 

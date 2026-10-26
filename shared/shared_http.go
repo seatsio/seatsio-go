@@ -4,9 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/imroc/req/v3"
-	"net/http"
+	"net"
 	"strings"
 	"time"
+)
+
+const (
+	DefaultTimeout = 30 * time.Second
+	DialTimeout    = 10 * time.Second
 )
 
 type AdditionalHeader func(headers *map[string]string)
@@ -14,14 +19,12 @@ type AdditionalHeader func(headers *map[string]string)
 func ApiClient(secretKey string, baseUrl string, additionalHeaders ...AdditionalHeader) *req.Client {
 	client := req.C().SetBaseURL(baseUrl).
 		SetCommonBasicAuth(secretKey, "").
-		SetTimeout(10*time.Second).
+		SetTimeout(DefaultTimeout).
+		SetDial((&net.Dialer{Timeout: DialTimeout}).DialContext).
 		SetCommonRetryCount(5).
 		SetCommonRetryBackoffInterval(400*time.Millisecond, 10*time.Second).
 		SetCommonRetryCondition(func(resp *req.Response, err error) bool {
-			if err != nil {
-				return resp.Response == nil && isIdempotent(resp)
-			}
-			return resp.StatusCode == 429
+			return err == nil && resp.StatusCode == 429
 		}).
 		SetHTTP2ReadIdleTimeout(30 * time.Second)
 	headers := make(map[string]string)
@@ -32,15 +35,6 @@ func ApiClient(secretKey string, baseUrl string, additionalHeaders ...Additional
 		client.SetCommonHeader(key, value)
 	}
 	return client
-}
-
-func isIdempotent(resp *req.Response) bool {
-	switch resp.Request.Method {
-	case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
-		return true
-	default:
-		return false
-	}
 }
 
 func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, error) {

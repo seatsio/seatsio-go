@@ -500,3 +500,16 @@ client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.Clie
 ```
 
 Passing in 0 disables exponential backoff completely. In that case, the client will never retry a failed request.
+
+## Timeouts
+
+By default, a request times out after 30 seconds, and establishing the connection times out after 10 seconds. Requests that time out are not retried.
+
+To change the timeout, call `SetTimeout` on the `SeatsioClient`:
+
+```go
+client := seatsio.NewSeatsioClient(seatsio.EU, <COMPANY ADMIN KEY>, seatsio.ClientSupport.WorkspaceKey(<WORKSPACE PUBLIC KEY>))
+err := client.SetTimeout(60 * time.Second)
+```
+
+`SetTimeout` returns an error if the timeout is not positive.
