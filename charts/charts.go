@@ -187,6 +187,16 @@ func (charts *Charts) List(context context.Context) *shared.Lister[Chart] {
 	return &shared.Lister[Chart]{PageFetcher: &pageFetcher}
 }
 
+func (charts *Charts) Events(context context.Context, chartKey string) *shared.Lister[events.Event] {
+	pageFetcher := shared.PageFetcher[events.Event]{
+		Client:    charts.Client,
+		Url:       "/charts/{key}/events",
+		UrlParams: map[string]string{"key": chartKey},
+		Context:   &context,
+	}
+	return &shared.Lister[events.Event]{PageFetcher: &pageFetcher}
+}
+
 func (charts *Charts) ListFirstPage(context context.Context, opts ...shared.PaginationParamsOption) (*shared.Page[Chart], error) {
 	return charts.List(context).ListFirstPage(opts...)
 }
