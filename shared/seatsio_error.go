@@ -10,8 +10,10 @@ type SeatsioErrorResponse struct {
 }
 
 type SeatsioError struct {
-	Code    string
-	Message string
+	Code           string
+	Message        string
+	IdempotencyKey string
+	outcomeUnknown bool
 }
 
 func (m *SeatsioError) Error() string {
