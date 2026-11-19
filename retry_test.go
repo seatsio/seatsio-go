@@ -12,8 +12,13 @@ import (
 )
 
 func serverDroppingFirstRequest(t *testing.T, attempts *atomic.Int32) *httptest.Server {
+	return serverDroppingFirstRequestRecordingKeys(t, attempts, nil)
+}
+
+func serverDroppingFirstRequestRecordingKeys(t *testing.T, attempts *atomic.Int32, keys *keyRecorder) *httptest.Server {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		keys.record(r)
 		if attempts.Add(1) == 1 {
 			conn, _, err := w.(http.Hijacker).Hijack()
 			if err == nil {
@@ -53,7 +58,9 @@ func TestDoesNotRetryPostWhenConnectionFails(t *testing.T) {
 func TestRetriesPostOn429(t *testing.T) {
 	t.Parallel()
 	var attempts atomic.Int32
+	var keys keyRecorder
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		keys.record(r)
 		if attempts.Add(1) == 1 {
 			w.WriteHeader(http.StatusTooManyRequests)
 			return
@@ -63,13 +70,36 @@ func TestRetriesPostOn429(t *testing.T) {
 	defer server.Close()
 
 	response, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10*time.Millisecond).
+		SetCommonRetryFixedInterval(10 * time.Millisecond).
 		R().
 		Post("/events")
 
 	require.NoError(t, err)
 	require.Equal(t, 204, response.StatusCode)
 	require.Equal(t, int32(2), attempts.Load())
+	require.Len(t, keys.all(), 2)
+	require.NotEmpty(t, keys.all()[0])
+	require.Equal(t, keys.all()[0], keys.all()[1])
+}
+
+func TestSetMaxRetriesOnlyChangesItsOwnClient(t *testing.T) {
+	t.Parallel()
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts.Add(1)
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer server.Close()
+	client := NewSeatsioClient(server.URL, "aSecretKey")
+	client.apiClient.SetCommonRetryFixedInterval(10 * time.Millisecond)
+	otherClient := NewSeatsioClient(server.URL, "aSecretKey")
+
+	require.NoError(t, client.SetMaxRetries(2))
+	require.NoError(t, otherClient.SetMaxRetries(0))
+
+	_, _ = client.apiClient.R().Get("/events/anEvent")
+
+	require.Equal(t, int32(3), attempts.Load())
 }
 
 type unparseableEvent struct {
@@ -89,7 +119,7 @@ func TestDoesNotRetryWhenResponseBodyCannotBeParsed(t *testing.T) {
 
 	var event unparseableEvent
 	_, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10*time.Millisecond).
+		SetCommonRetryFixedInterval(10 * time.Millisecond).
 		R().
 		SetSuccessResult(&event).
 		Get("/events/anEvent")
@@ -97,4 +127,3 @@ func TestDoesNotRetryWhenResponseBodyCannotBeParsed(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, int32(1), attempts.Load())
 }
-

@@ -46,11 +46,20 @@ type TestCompany struct {
 }
 
 func CreateTestCompany(t *testing.T) *TestCompany {
+	return createTestCompany(t, map[string]any{})
+}
+
+func CreateTestCompanyWithIdempotencyEnabled(t *testing.T) *TestCompany {
+	return createTestCompany(t, map[string]any{"idempotencyEnabled": true})
+}
+
+func createTestCompany(t *testing.T, params map[string]any) *TestCompany {
 	var testCompany TestCompany
 	result, err := req.C().
 		SetBaseURL(BaseURL()).
 		SetCommonBasicAuth(SystemApiSecret(), "").
 		R().
+		SetBody(params).
 		SetSuccessResult(&testCompany).
 		Post("/system/private/create-test-company")
 	_, e := shared.AssertOk(result, err, &testCompany)
