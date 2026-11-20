@@ -597,23 +597,7 @@ func TestSendsTheKeyOnTheWire(t *testing.T) {
 
 func TestRetriesWritesWhenTheResponseBodyIsIncomplete(t *testing.T) {
 	t.Parallel()
-	tests := map[string]func(w http.ResponseWriter){
-		"truncated body": func(w http.ResponseWriter) {
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Content-Length", "100")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"key":`))
-			w.(http.Flusher).Flush()
-			dropConnection(w)
-		},
-		"stalled body": func(w http.ResponseWriter) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"key":`))
-			w.(http.Flusher).Flush()
-			time.Sleep(300 * time.Millisecond)
-		},
-	}
+	tests := incompleteBodyResponses()
 	for name, firstResponse := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -643,6 +627,74 @@ func TestRetriesWritesWhenTheResponseBodyIsIncomplete(t *testing.T) {
 			require.Equal(t, keys.all()[0], keys.all()[1])
 		})
 	}
+}
+
+func incompleteBodyResponses() map[string]func(w http.ResponseWriter) {
+	return map[string]func(w http.ResponseWriter){
+		"truncated body": func(w http.ResponseWriter) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Content-Length", "100")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"key":`))
+			w.(http.Flusher).Flush()
+			dropConnection(w)
+		},
+		"stalled body": func(w http.ResponseWriter) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"key":`))
+			w.(http.Flusher).Flush()
+			time.Sleep(300 * time.Millisecond)
+		},
+	}
+}
+
+// A write that received a 2xx status but not its complete body may have succeeded, so the caller must be told to
+// recover with the same key, whether write retries were disabled or ran out.
+func TestOutcomeIsUnknownWhenASuccessfulResponseBodyIsIncomplete(t *testing.T) {
+	t.Parallel()
+	for name, response := range incompleteBodyResponses() {
+		for _, retryWrites := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s, write retries %v", name, retryWrites), func(t *testing.T) {
+				t.Parallel()
+				var keys keyRecorder
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					keys.record(r)
+					response(w)
+				}))
+				t.Cleanup(server.Close)
+				client := shared.ApiClient("aSecretKey", server.URL).
+					SetTimeout(150 * time.Millisecond).
+					SetCommonRetryCount(1).
+					SetCommonRetryFixedInterval(10 * time.Millisecond)
+				shared.SetRetryWritesOnConnectionFailure(client, retryWrites)
+
+				var event unparseableEvent
+				response, err := client.R().SetSuccessResult(&event).Post("/events")
+				result, err := shared.AssertOk(response, err, &event)
+
+				require.Nil(t, result)
+				require.Error(t, err)
+				require.True(t, ClientSupport.IsOutcomeUnknown(err))
+				key, ok := ClientSupport.IdempotencyKeyOf(err)
+				require.True(t, ok)
+				require.Equal(t, keys.all()[0], key.String())
+			})
+		}
+	}
+}
+
+// A complete success body that cannot be parsed is not a connection failure: the request was executed.
+func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *testing.T) {
+	t.Parallel()
+	server, _ := respondingServer(t, http.StatusOK, `{"key":`)
+
+	var event unparseableEvent
+	response, err := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0).R().SetSuccessResult(&event).Post("/events")
+	_, err = shared.AssertOk(response, err, &event)
+
+	require.Error(t, err)
+	require.False(t, ClientSupport.IsOutcomeUnknown(err))
 }
 
 func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {

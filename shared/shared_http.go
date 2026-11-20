@@ -217,12 +217,16 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 }
 
 // isOutcomeUnknown reports whether a failed request may or may not have been executed by the server: no status was
-// received, or the status was a 5xx.
+// received, the status was a 5xx, or the status was a 2xx but the connection broke or timed out while the body was
+// being read.
 func isOutcomeUnknown(result *req.Response, err error) bool {
 	if result == nil || result.Response == nil {
 		return true
 	}
-	return result.StatusCode >= 500
+	if result.StatusCode >= 500 {
+		return true
+	}
+	return result.IsSuccessState() && isConnectionFailure(result, err)
 }
 
 func requestError(key string, outcomeUnknown bool, err error) error {

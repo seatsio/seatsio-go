@@ -516,7 +516,8 @@ If the connection fails after the server executed a request but before you recei
 
 ```go
 _, err := client.Events.Create(ctx, params)
-// IsOutcomeUnknown is true for a connection failure, a timeout or a 5xx; any other error would happen again on a retry
+// IsOutcomeUnknown is true for a connection failure, a timeout (also while a successful response was being read) or a 5xx;
+// any other error would happen again on a retry
 if seatsio.ClientSupport.IsOutcomeUnknown(err) {
     if key, ok := seatsio.ClientSupport.IdempotencyKeyOf(err); ok {
         retryCtx := seatsio.ClientSupport.WithIdempotencyKey(ctx, key)

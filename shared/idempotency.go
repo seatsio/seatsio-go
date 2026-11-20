@@ -72,7 +72,8 @@ func (e *RequestError) Temporary() bool {
 }
 
 // IsOutcomeUnknown reports whether err is a failed POST, PUT, PATCH or DELETE request that the server may or may not
-// have executed: the connection failed or timed out before a status was received, or the server answered with a 5xx.
+// have executed: the connection failed or timed out before a status was received or while a successful response was
+// being read, or the server answered with a 5xx.
 // Only such a request is worth retrying with the same idempotency key; any other error happens again on a retry.
 func IsOutcomeUnknown(err error) bool {
 	var requestErr *RequestError
