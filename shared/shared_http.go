@@ -2,12 +2,9 @@ package shared
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"math"
 	"math/rand"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -18,13 +15,19 @@ import (
 type AdditionalHeader func(headers *map[string]string)
 
 func ApiClient(secretKey string, baseUrl string, additionalHeaders ...AdditionalHeader) *req.Client {
+	return ApiClientWithRetries(secretKey, baseUrl, NewRetries(SystemClock), additionalHeaders...)
+}
+
+// ApiClientWithRetries creates an API client that keeps its retry state in retries. Don't share retries between clients
+// with different secret keys.
+func ApiClientWithRetries(secretKey string, baseUrl string, retries *Retries, additionalHeaders ...AdditionalHeader) *req.Client {
 	client := req.C().SetBaseURL(baseUrl).
 		SetCommonBasicAuth(secretKey, "").
 		SetTimeout(10 * time.Second).
-		SetCommonRetryCount(5).
-		SetCommonRetryInterval(interruptibleRetryInterval(backoffInterval(400*time.Millisecond, 10*time.Second))).
-		SetCommonRetryCondition(retryCondition(false)).
-		WrapRoundTripFunc(addIdempotencyKey).
+		SetCommonRetryCount(int(retries.maxRetries.Load())).
+		SetCommonRetryInterval(retries.interval).
+		SetCommonRetryCondition(retryCondition).
+		WrapRoundTripFunc(retries.sendWrites).
 		SetHTTP2ReadIdleTimeout(30 * time.Second)
 	headers := make(map[string]string)
 	for _, opt := range additionalHeaders {
@@ -36,62 +39,25 @@ func ApiClient(secretKey string, baseUrl string, additionalHeaders ...Additional
 	return client
 }
 
-// SetRetryWritesOnConnectionFailure controls whether POST, PUT, PATCH and DELETE requests are retried (with the same
-// idempotency key) when the connection fails or times out before the complete response was received. GET requests are
-// always retried in that case. 429 and 409 IDEMPOTENCY_KEY_IN_USE responses are retried regardless of this setting.
-func SetRetryWritesOnConnectionFailure(client *req.Client, enabled bool) {
-	client.SetCommonRetryCondition(retryCondition(enabled))
-}
-
-func retryCondition(retryWritesOnConnectionFailure bool) req.RetryConditionFunc {
-	return func(resp *req.Response, err error) bool {
-		if err != nil {
-			if resp.Request != nil && resp.Request.Context().Err() != nil {
-				return false
-			}
-			return isConnectionFailure(resp, err) && (retryWritesOnConnectionFailure || isSafeMethod(resp.Request.Method))
-		}
-		return resp.StatusCode == 429 || isKeyInUse(resp)
+// retryCondition is req's retry condition. req retries GET, HEAD, OPTIONS and TRACE requests: on a 429, and on a
+// connection failure while the context is active. Other requests are retried by Retries.sendWrites, not by req.
+func retryCondition(resp *req.Response, err error) bool {
+	if resp.Request == nil || !isSafeMethod(resp.Request.Method) {
+		return false
 	}
-}
-
-// isConnectionFailure reports whether err means the complete response was not received: either no response at all, or
-// the connection broke or timed out while the body was being read. A complete body that cannot be parsed is not one.
-func isConnectionFailure(resp *req.Response, err error) bool {
-	if resp.Response == nil {
-		return true
+	if err != nil {
+		return resp.Request.Context().Err() == nil && isResponseLost(resp, err)
 	}
-	var netErr net.Error
-	return errors.Is(err, io.ErrUnexpectedEOF) || errors.As(err, &netErr)
+	return resp.StatusCode == 429
 }
 
-// backoffInterval is req's capped exponential backoff with jitter (SetCommonRetryBackoffInterval), which req does not
-// export.
-func backoffInterval(min, max time.Duration) req.GetRetryIntervalFunc {
-	return func(_ *req.Response, attempt int) time.Duration {
+// backoff is req's capped exponential backoff with jitter (SetCommonRetryBackoffInterval), which req does not export.
+// attempt starts at 1.
+func backoff(min, max time.Duration) func(attempt int) time.Duration {
+	return func(attempt int) time.Duration {
 		capped := math.Min(float64(max), float64(min)*math.Exp2(float64(attempt)))
 		half := int64(capped / 2)
 		return time.Duration(half + rand.Int63n(half))
-	}
-}
-
-// interruptibleRetryInterval waits for the interval itself and then tells req not to wait any longer. req waits between
-// retries with time.Sleep, which a cancelled or expired context cannot interrupt, so a 429 or 409 retry could otherwise
-// keep the caller waiting up to 10 seconds after the context ended. When the context ends, the next attempt fails
-// before anything is sent, and the retry condition stops.
-func interruptibleRetryInterval(interval req.GetRetryIntervalFunc) req.GetRetryIntervalFunc {
-	return func(resp *req.Response, attempt int) time.Duration {
-		wait := interval(resp, attempt)
-		if resp == nil || resp.Request == nil {
-			return wait
-		}
-		timer := time.NewTimer(wait)
-		defer timer.Stop()
-		select {
-		case <-timer.C:
-		case <-resp.Request.Context().Done():
-		}
-		return 0
 	}
 }
 
@@ -133,18 +99,9 @@ func isSafeMethod(method string) bool {
 // second time for a company without idempotency. Header names are case-insensitive, so the server reads it all the same.
 const idempotencyKeyWireHeader = "idempotency-key"
 
-// addIdempotencyKey runs right before each attempt is handed to the transport, after the client's common headers were
-// merged into the request, so it also sees a key set as a common header.
-func addIdempotencyKey(rt req.RoundTripper) req.RoundTripFunc {
-	return func(r *req.Request) (*req.Response, error) {
-		if !isSafeMethod(r.Method) {
-			setIdempotencyKey(r)
-		}
-		return rt.RoundTrip(r)
-	}
-}
-
-func setIdempotencyKey(r *req.Request) {
+// setIdempotencyKey runs right before the first attempt is handed to the transport, after the client's common headers
+// were merged into the request, so it also sees a key set as a common header. Retries reuse the request, and so the key.
+func setIdempotencyKey(r *req.Request) error {
 	if r.Headers == nil {
 		r.Headers = make(http.Header)
 	}
@@ -153,13 +110,17 @@ func setIdempotencyKey(r *req.Request) {
 		r.Headers[idempotencyKeyWireHeader] = callerKey
 	}
 	if len(r.Headers[idempotencyKeyWireHeader]) > 0 {
-		return
+		return nil
 	}
 	key, ok := IdempotencyKeyFromContext(r.Context())
+	if ok && key.IsZero() {
+		return errZeroIdempotencyKey
+	}
 	if !ok {
 		key = NewIdempotencyKey()
 	}
 	r.Headers[idempotencyKeyWireHeader] = []string{key.String()}
+	return nil
 }
 
 func AssertOk[T interface{}](result *req.Response, err error, data *T) (*T, error) {
@@ -197,43 +158,72 @@ func AssertOkArray[T interface{}](result *req.Response, err error, data *[]T) ([
 func AssertOkWithoutResult(result *req.Response, err error) error {
 	key := sentIdempotencyKey(result)
 	if err != nil {
-		return requestError(key, isOutcomeUnknown(result, err), err)
-	}
-	if !result.IsSuccessState() {
-		outcomeUnknown := result.StatusCode >= 500
-		if !strings.Contains(result.GetHeader("content-type"), "application/json") {
-			return requestError(key, outcomeUnknown, unexpectedResponseError(result))
+		if key == "" {
+			return err
 		}
-		apiError, err := firstApiErrorIfAny(result)
-		if err != nil {
-			return requestError(key, outcomeUnknown, err)
+		requestErr := &RequestError{IdempotencyKey: key, Err: err}
+		if result != nil && result.Response != nil {
+			status := idempotencyKeyStatusOf(result.Header)
+			requestErr.IdempotencyKeyHonored, requestErr.Replayed = status.keyHonoredOrNil(), status == statusReplayed
 		}
-		if apiError == nil {
-			return requestError(key, outcomeUnknown, unexpectedResponseError(result))
+		if w := writeOf(result); w != nil && (result.Response == nil || isResponseLost(result, err)) {
+			requestErr.outcomeUnknown, requestErr.safeToRetryWithSameKey = w.failureWithoutResponse()
 		}
-		return &SeatsioError{Message: apiError.Message, Code: apiError.Code, IdempotencyKey: key, outcomeUnknown: outcomeUnknown && key != ""}
+		return requestErr
 	}
-	return nil
-}
-
-// isOutcomeUnknown reports whether a failed request may or may not have been executed by the server: no status was
-// received, the status was a 5xx, or the status was a 2xx but the connection broke or timed out while the body was
-// being read.
-func isOutcomeUnknown(result *req.Response, err error) bool {
-	if result == nil || result.Response == nil {
-		return true
+	if result.IsSuccessState() {
+		return nil
 	}
-	if result.StatusCode >= 500 {
-		return true
-	}
-	return result.IsSuccessState() && isConnectionFailure(result, err)
-}
-
-func requestError(key string, outcomeUnknown bool, err error) error {
+	apiError, parseErr := firstApiError(result)
 	if key == "" {
-		return err
+		if parseErr != nil {
+			return parseErr
+		}
+		return &SeatsioError{Message: apiError.Message, Code: apiError.Code}
 	}
-	return &RequestError{IdempotencyKey: key, Err: err, outcomeUnknown: outcomeUnknown}
+	status := idempotencyKeyStatusOf(result.Header)
+	outcomeUnknown := result.StatusCode >= 500 || isKeyInUse(result)
+	keyHonored := status.keyHonored()
+	if !status.known() {
+		w := writeOf(result)
+		keyHonored = w != nil && w.routeHonorsKeys()
+	}
+	safeToRetryWithSameKey := outcomeUnknown && keyHonored && status != statusReplayed
+	if parseErr != nil {
+		return &RequestError{
+			IdempotencyKey:         key,
+			IdempotencyKeyHonored:  status.keyHonoredOrNil(),
+			Replayed:               status == statusReplayed,
+			Err:                    parseErr,
+			outcomeUnknown:         outcomeUnknown,
+			safeToRetryWithSameKey: safeToRetryWithSameKey,
+		}
+	}
+	return &SeatsioError{
+		Message:                apiError.Message,
+		Code:                   apiError.Code,
+		IdempotencyKey:         key,
+		IdempotencyKeyHonored:  status.keyHonoredOrNil(),
+		Replayed:               status == statusReplayed,
+		outcomeUnknown:         outcomeUnknown,
+		safeToRetryWithSameKey: safeToRetryWithSameKey,
+	}
+}
+
+// firstApiError returns the first error of a seats.io error response, or an error that describes the response when it
+// isn't one: not JSON, unparsable, or without errors. It never panics.
+func firstApiError(result *req.Response) (*SeatsioErrorTO, error) {
+	if !strings.Contains(result.GetHeader("content-type"), "application/json") {
+		return nil, unexpectedResponseError(result)
+	}
+	apiError, err := firstApiErrorIfAny(result)
+	if err != nil {
+		return nil, err
+	}
+	if apiError == nil {
+		return nil, unexpectedResponseError(result)
+	}
+	return apiError, nil
 }
 
 func WithAdditionalHeader(key string, value string) AdditionalHeader {

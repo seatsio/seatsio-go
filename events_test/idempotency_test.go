@@ -88,7 +88,9 @@ func TestGeneratedIdempotencyKeyIsAvailableOnAFailedRequest(t *testing.T) {
 	require.True(t, ok)
 }
 
-func proxyThatForwardsButDropsTheFirstResponse(t *testing.T) string {
+// proxyThatDropsResponse forwards every request to the API, and copies the response back, except the response of
+// request number drop (counting from 1), which it drops. It returns its URL and the number of requests it received.
+func proxyThatDropsResponse(t *testing.T, drop int32) (string, *atomic.Int32) {
 	t.Helper()
 	var requests atomic.Int32
 	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +104,7 @@ func proxyThatForwardsButDropsTheFirstResponse(t *testing.T) string {
 			return
 		}
 		defer response.Body.Close()
-		if requests.Add(1) == 1 {
+		if requests.Add(1) == drop {
 			conn, _, err := w.(http.Hijacker).Hijack()
 			if assert.NoError(t, err) {
 				_ = conn.Close()
@@ -116,22 +118,43 @@ func proxyThatForwardsButDropsTheFirstResponse(t *testing.T) string {
 		_, _ = io.Copy(w, response.Body)
 	}))
 	t.Cleanup(proxy.Close)
-	return proxy.URL
+	return proxy.URL, &requests
 }
 
+// The first create teaches the client that the server honors keys for it; the response of the second is lost, so the
+// client retries it with the same key, and gets the replayed response.
 func TestRetryAfterALostResponseCreatesOneEvent(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompanyWithIdempotencyEnabled(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
-	client := seatsio.NewSeatsioClient(proxyThatForwardsButDropsTheFirstResponse(t), company.Admin.SecretKey)
-	client.SetRetryWritesOnConnectionFailure(true)
+	proxyUrl, requests := proxyThatDropsResponse(t, 2)
+	client := seatsio.NewSeatsioClient(proxyUrl, company.Admin.SecretKey)
 	realClient := seatsio.NewSeatsioClient(test_util.BaseUrl, company.Admin.SecretKey)
 
-	event, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	first, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+	require.NoError(t, err)
+	second, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
 	require.NoError(t, err)
 
+	require.Equal(t, int32(3), requests.Load())
 	all, err := realClient.Events.ListAll(test_util.RequestContext())
 	require.NoError(t, err)
-	require.Len(t, all, 1)
-	require.Equal(t, event.Id, all[0].Id)
+	require.Len(t, all, 2)
+	require.ElementsMatch(t, []int64{first.Id, second.Id}, []int64{all[0].Id, all[1].Id})
+}
+
+// The client doesn't know yet whether the server honors keys for the first create, so it doesn't retry it.
+func TestALostResponseOfTheFirstRequestToARouteIsNotRetried(t *testing.T) {
+	t.Parallel()
+	company := test_util.CreateTestCompanyWithIdempotencyEnabled(t)
+	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
+	proxyUrl, requests := proxyThatDropsResponse(t, 1)
+	client := seatsio.NewSeatsioClient(proxyUrl, company.Admin.SecretKey)
+
+	_, err := client.Events.Create(test_util.RequestContext(), &events.CreateEventParams{ChartKey: chartKey})
+
+	require.Error(t, err)
+	require.Equal(t, int32(1), requests.Load())
+	require.True(t, seatsio.ClientSupport.IsOutcomeUnknown(err))
+	require.False(t, seatsio.ClientSupport.IsSafeToRetryWithSameKey(err))
 }

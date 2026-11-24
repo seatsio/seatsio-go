@@ -69,10 +69,7 @@ func TestRetriesPostOn429(t *testing.T) {
 	}))
 	defer server.Close()
 
-	response, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10 * time.Millisecond).
-		R().
-		Post("/events")
+	response, err := newTestClient(server.URL).R().Post("/events")
 
 	require.NoError(t, err)
 	require.Equal(t, 204, response.StatusCode)

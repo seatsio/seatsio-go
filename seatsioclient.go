@@ -33,6 +33,7 @@ type SeatsioClient struct {
 	baseUrl      string
 	secretKey    string
 	apiClient    *req.Client
+	retries      *shared.Retries
 	workspaceKey string
 	Workspaces   *workspaces.Workspaces
 	Charts       *charts.Charts
@@ -48,11 +49,16 @@ type SeatsioClient struct {
 }
 
 func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
-	apiClient := shared.ApiClient(secretKey, baseUrl, additionalHeaders...)
+	return newSeatsioClient(baseUrl, secretKey, shared.NewRetries(shared.SystemClock), additionalHeaders...)
+}
+
+func newSeatsioClient(baseUrl string, secretKey string, retries *shared.Retries, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
+	apiClient := shared.ApiClientWithRetries(secretKey, baseUrl, retries, additionalHeaders...)
 	client := &SeatsioClient{
 		baseUrl:    baseUrl,
 		secretKey:  secretKey,
 		apiClient:  apiClient,
+		retries:    retries,
 		Workspaces: &workspaces.Workspaces{Client: apiClient},
 		Charts: &charts.Charts{
 			Client:  apiClient,
@@ -71,19 +77,14 @@ func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...sha
 	return client
 }
 
+// SetMaxRetries sets how often the client retries a request after the first attempt (default 5). It is the limit on
+// all retries of a call together, whatever their reason; 0 disables retries.
 func (c *SeatsioClient) SetMaxRetries(count int) error {
 	if count < 0 {
 		return errors.New("retry count must not be negative")
 	}
-	c.apiClient.SetCommonRetryCount(count)
+	c.retries.SetMaxRetries(c.apiClient, count)
 	return nil
-}
-
-// SetRetryWritesOnConnectionFailure controls whether POST, PUT and DELETE requests are retried, with the same
-// idempotency key, when the connection fails or times out before the complete response was received. Enable it only if
-// idempotency is enabled for your company. 429 and 409 IDEMPOTENCY_KEY_IN_USE responses are always retried.
-func (c *SeatsioClient) SetRetryWritesOnConnectionFailure(enabled bool) {
-	shared.SetRetryWritesOnConnectionFailure(c.apiClient, enabled)
 }
 
 type IdempotencyKey = shared.IdempotencyKey
@@ -106,6 +107,10 @@ func (seatsioClientNS) IdempotencyKeyOf(err error) (IdempotencyKey, bool) {
 
 func (seatsioClientNS) IsOutcomeUnknown(err error) bool {
 	return shared.IsOutcomeUnknown(err)
+}
+
+func (seatsioClientNS) IsSafeToRetryWithSameKey(err error) bool {
+	return shared.IsSafeToRetryWithSameKey(err)
 }
 
 func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalHeader {

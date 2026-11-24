@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -77,96 +78,6 @@ func dropConnection(w http.ResponseWriter) {
 	}
 }
 
-func TestDoesNotRetryWritesByDefaultWhenConnectionFails(t *testing.T) {
-	t.Parallel()
-	for _, method := range writeMethods {
-		t.Run(method, func(t *testing.T) {
-			t.Parallel()
-			var attempts atomic.Int32
-			server := serverDroppingFirstRequest(t, &attempts)
-
-			_, err := shared.ApiClient("aSecretKey", server.URL).R().Send(method, "/events")
-
-			require.Error(t, err)
-			require.Equal(t, int32(1), attempts.Load())
-		})
-	}
-}
-
-func TestRetriesWritesWithSameIdempotencyKeyWhenEnabled(t *testing.T) {
-	t.Parallel()
-	for _, method := range writeMethods {
-		t.Run(method, func(t *testing.T) {
-			t.Parallel()
-			var attempts atomic.Int32
-			var keys keyRecorder
-			server := serverDroppingFirstRequestRecordingKeys(t, &attempts, &keys)
-			client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryFixedInterval(10 * time.Millisecond)
-			shared.SetRetryWritesOnConnectionFailure(client, true)
-
-			_, err := client.R().Send(method, "/events")
-
-			require.NoError(t, err)
-			require.Equal(t, int32(2), attempts.Load())
-			require.Len(t, keys.all(), 2)
-			require.NotEmpty(t, keys.all()[0])
-			require.Equal(t, keys.all()[0], keys.all()[1])
-		})
-	}
-}
-
-func TestDoesNotRetryWritesAfterRetriesAreDisabledAgain(t *testing.T) {
-	t.Parallel()
-	var attempts atomic.Int32
-	server := serverDroppingFirstRequest(t, &attempts)
-	client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryFixedInterval(10 * time.Millisecond)
-	shared.SetRetryWritesOnConnectionFailure(client, true)
-	shared.SetRetryWritesOnConnectionFailure(client, false)
-
-	_, err := client.R().Post("/events")
-
-	require.Error(t, err)
-	require.Equal(t, int32(1), attempts.Load())
-}
-
-func TestRetriesWritesOn429AndKeyInUseWhenWriteRetriesAreEnabled(t *testing.T) {
-	t.Parallel()
-	tests := map[string]struct {
-		status int
-		body   string
-	}{
-		"429":        {http.StatusTooManyRequests, ``},
-		"key in use": {http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			var attempts atomic.Int32
-			var keys keyRecorder
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				keys.record(r)
-				if attempts.Add(1) == 1 {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(test.status)
-					_, _ = w.Write([]byte(test.body))
-					return
-				}
-				w.WriteHeader(http.StatusNoContent)
-			}))
-			t.Cleanup(server.Close)
-			client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryFixedInterval(10 * time.Millisecond)
-			shared.SetRetryWritesOnConnectionFailure(client, true)
-
-			response, err := client.R().Post("/events")
-
-			require.NoError(t, err)
-			require.Equal(t, 204, response.StatusCode)
-			require.Len(t, keys.all(), 2)
-			require.Equal(t, keys.all()[0], keys.all()[1])
-		})
-	}
-}
-
 func TestDoesNotSendIdempotencyKeyOnGet(t *testing.T) {
 	t.Parallel()
 	server, keys := respondingServer(t, http.StatusNoContent, "")
@@ -196,25 +107,13 @@ func TestUsesIdempotencyKeyFromContext(t *testing.T) {
 	}
 }
 
-func TestKeyFromContextSurvivesRetry(t *testing.T) {
-	t.Parallel()
-	var attempts atomic.Int32
-	var keys keyRecorder
-	server := serverDroppingFirstRequestRecordingKeys(t, &attempts, &keys)
-	client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryFixedInterval(10 * time.Millisecond)
-	shared.SetRetryWritesOnConnectionFailure(client, true)
-	key := shared.NewIdempotencyKey()
-
-	_, err := client.R().SetContext(shared.WithIdempotencyKey(context.Background(), key)).Post("/events")
-
-	require.NoError(t, err)
-	require.Equal(t, []string{key.String(), key.String()}, keys.all())
-}
-
 func TestParseIdempotencyKey(t *testing.T) {
 	t.Parallel()
 	valid := uuid.NewString()
 	key, err := ClientSupport.ParseIdempotencyKey(valid)
+	require.NoError(t, err)
+	require.Equal(t, valid, key.String())
+	key, err = ClientSupport.ParseIdempotencyKey(strings.ToUpper(valid))
 	require.NoError(t, err)
 	require.Equal(t, valid, key.String())
 
@@ -226,25 +125,15 @@ func TestParseIdempotencyKey(t *testing.T) {
 		"6ba7b810-9dad-41d1-00b4-00c04fd430c8", // v4 with the reserved NCS variant
 		"6ba7b810-9dad-41d1-c0b4-00c04fd430c8", // v4 with the Microsoft variant
 		"6ba7b810-9dad-41d1-e0b4-00c04fd430c8", // v4 with the reserved future variant
+		"1-1-1-1-1",
+		"{" + valid + "}",
+		"urn:uuid:" + valid,
+		strings.ReplaceAll(valid, "-", ""),
+		" " + valid,
 	} {
 		_, err := ClientSupport.ParseIdempotencyKey(invalid)
 		require.ErrorContains(t, err, "is not a v4 UUID", invalid)
 	}
-}
-
-func TestZeroIdempotencyKeyIsIgnored(t *testing.T) {
-	t.Parallel()
-	server, keys := respondingServer(t, http.StatusNoContent, "")
-
-	_, err := shared.ApiClient("aSecretKey", server.URL).
-		R().
-		SetContext(shared.WithIdempotencyKey(context.Background(), shared.IdempotencyKey{})).
-		Post("/events")
-
-	require.NoError(t, err)
-	require.Len(t, keys.all(), 1)
-	_, parseErr := shared.ParseIdempotencyKey(keys.all()[0])
-	require.NoError(t, parseErr)
 }
 
 func TestIdempotencyKeyIsAvailableOnConnectionError(t *testing.T) {
@@ -327,89 +216,6 @@ func TestIdempotencyKeyOf(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestRetriesWithSameKeyWhileKeyIsInUse(t *testing.T) {
-	t.Parallel()
-	var attempts atomic.Int32
-	var keys keyRecorder
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		keys.record(r)
-		if attempts.Add(1) == 1 {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusConflict)
-			_, _ = w.Write([]byte(`{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`))
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer server.Close()
-
-	response, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10 * time.Millisecond).
-		R().
-		Post("/events")
-
-	require.NoError(t, err)
-	require.Equal(t, 204, response.StatusCode)
-	require.Len(t, keys.all(), 2)
-	require.Equal(t, keys.all()[0], keys.all()[1])
-}
-
-func TestDoesNotRetryOtherConflicts(t *testing.T) {
-	t.Parallel()
-	server, keys := respondingServer(t, http.StatusConflict, `{"errors":[{"code":"SOMETHING_ELSE","message":"conflict"}]}`)
-
-	_, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10 * time.Millisecond).
-		R().
-		Post("/events")
-
-	require.NoError(t, err)
-	require.Len(t, keys.all(), 1)
-}
-
-func TestDoesNotRetryConflictWithoutAnErrorCode(t *testing.T) {
-	t.Parallel()
-	for name, body := range map[string]string{
-		"no errors":      `{"errors":[]}`,
-		"empty object":   `{}`,
-		"malformed json": `{"errors":`,
-		"empty body":     ``,
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			server, keys := respondingServer(t, http.StatusConflict, body)
-
-			_, err := shared.ApiClient("aSecretKey", server.URL).
-				SetCommonRetryFixedInterval(10 * time.Millisecond).
-				R().
-				Post("/events")
-
-			require.NoError(t, err)
-			require.Len(t, keys.all(), 1)
-		})
-	}
-}
-
-func TestKeyInUseErrorIsReturnedWhenRetriesRunOut(t *testing.T) {
-	t.Parallel()
-	server, keys := respondingServer(t, http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`)
-
-	response, err := shared.ApiClient("aSecretKey", server.URL).
-		SetCommonRetryFixedInterval(10 * time.Millisecond).
-		SetCommonRetryCount(2).
-		R().
-		Post("/events")
-	e := shared.AssertOkWithoutResult(response, err)
-
-	require.Len(t, keys.all(), 3)
-	require.Equal(t, keys.all()[0], keys.all()[1])
-	require.Equal(t, keys.all()[0], keys.all()[2])
-	var apiErr *shared.SeatsioError
-	require.ErrorAs(t, e, &apiErr)
-	require.Equal(t, "IDEMPOTENCY_KEY_IN_USE", apiErr.Code)
-	require.Equal(t, keys.all()[0], apiErr.IdempotencyKey)
 }
 
 func TestErrorResponseWithoutErrorsIsAnUnexpectedResponse(t *testing.T) {
@@ -595,40 +401,6 @@ func TestSendsTheKeyOnTheWire(t *testing.T) {
 	require.NoError(t, shared.AssertOkWithoutResult(response, err))
 }
 
-func TestRetriesWritesWhenTheResponseBodyIsIncomplete(t *testing.T) {
-	t.Parallel()
-	tests := incompleteBodyResponses()
-	for name, firstResponse := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			var attempts atomic.Int32
-			var keys keyRecorder
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				keys.record(r)
-				if attempts.Add(1) == 1 {
-					firstResponse(w)
-					return
-				}
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{"key":"anEvent"}`))
-			}))
-			t.Cleanup(server.Close)
-			client := shared.ApiClient("aSecretKey", server.URL).
-				SetTimeout(150 * time.Millisecond).
-				SetCommonRetryFixedInterval(10 * time.Millisecond)
-			shared.SetRetryWritesOnConnectionFailure(client, true)
-
-			var event unparseableEvent
-			_, err := client.R().SetSuccessResult(&event).Post("/events")
-
-			require.NoError(t, err)
-			require.Equal(t, "anEvent", event.Key)
-			require.Equal(t, int32(2), attempts.Load())
-			require.Equal(t, keys.all()[0], keys.all()[1])
-		})
-	}
-}
-
 func incompleteBodyResponses() map[string]func(w http.ResponseWriter) {
 	return map[string]func(w http.ResponseWriter){
 		"truncated body": func(w http.ResponseWriter) {
@@ -646,41 +418,6 @@ func incompleteBodyResponses() map[string]func(w http.ResponseWriter) {
 			w.(http.Flusher).Flush()
 			time.Sleep(300 * time.Millisecond)
 		},
-	}
-}
-
-// A write that received a 2xx status but not its complete body may have succeeded, so the caller must be told to
-// recover with the same key, whether write retries were disabled or ran out.
-func TestOutcomeIsUnknownWhenASuccessfulResponseBodyIsIncomplete(t *testing.T) {
-	t.Parallel()
-	for name, response := range incompleteBodyResponses() {
-		for _, retryWrites := range []bool{false, true} {
-			t.Run(fmt.Sprintf("%s, write retries %v", name, retryWrites), func(t *testing.T) {
-				t.Parallel()
-				var keys keyRecorder
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					keys.record(r)
-					response(w)
-				}))
-				t.Cleanup(server.Close)
-				client := shared.ApiClient("aSecretKey", server.URL).
-					SetTimeout(150 * time.Millisecond).
-					SetCommonRetryCount(1).
-					SetCommonRetryFixedInterval(10 * time.Millisecond)
-				shared.SetRetryWritesOnConnectionFailure(client, retryWrites)
-
-				var event unparseableEvent
-				response, err := client.R().SetSuccessResult(&event).Post("/events")
-				result, err := shared.AssertOk(response, err, &event)
-
-				require.Nil(t, result)
-				require.Error(t, err)
-				require.True(t, ClientSupport.IsOutcomeUnknown(err))
-				key, ok := ClientSupport.IdempotencyKeyOf(err)
-				require.True(t, ok)
-				require.Equal(t, keys.all()[0], key.String())
-			})
-		}
 	}
 }
 

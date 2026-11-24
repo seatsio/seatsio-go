@@ -20,18 +20,52 @@ func TestRetryConditionDoesNotRetryWhenContextIsCancelled(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	connectionError := errors.New("connection reset")
 
-	for _, method := range []string{http.MethodGet, http.MethodPost} {
-		require.False(t, retryCondition(true)(failedResponse(ctx, method), connectionError), method)
+	require.False(t, retryCondition(failedResponse(ctx, http.MethodGet), errors.New("connection reset")))
+}
+
+func TestRetryConditionRetriesGetsOnConnectionErrorsWhileContextIsActive(t *testing.T) {
+	t.Parallel()
+
+	require.True(t, retryCondition(failedResponse(context.Background(), http.MethodGet), errors.New("connection reset")))
+}
+
+// Writes are retried by Retries.sendWrites, never by req.
+func TestRetryConditionNeverRetriesWrites(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+		require.False(t, retryCondition(failedResponse(context.Background(), method), errors.New("connection reset")), method)
 	}
 }
 
-func TestRetryConditionRetriesConnectionErrorsWhileContextIsActive(t *testing.T) {
+func TestIdempotencyKeyStatusOf(t *testing.T) {
 	t.Parallel()
-	connectionError := errors.New("connection reset")
-
-	for _, method := range []string{http.MethodGet, http.MethodPost} {
-		require.True(t, retryCondition(true)(failedResponse(context.Background(), method), connectionError), method)
+	tests := map[string]struct {
+		status  idempotencyKeyStatus
+		known   bool
+		honored bool
+	}{
+		"executed":    {statusExecuted, true, true},
+		"replayed":    {statusReplayed, true, true},
+		"in-use":      {statusInUse, true, true},
+		"reused":      {statusReused, true, true},
+		"ignored":     {statusIgnored, true, false},
+		" IGNORED ":   {statusIgnored, true, false},
+		"Executed":    {statusExecuted, true, true},
+		"":            {statusUnknown, false, false},
+		"maybe":       {statusUnknown, false, false},
+		"in_use":      {statusUnknown, false, false},
+		"executed, x": {statusUnknown, false, false},
+	}
+	for value, test := range tests {
+		header := http.Header{}
+		if value != "" {
+			header.Set(IdempotencyKeyStatusHeader, value)
+		}
+		status := idempotencyKeyStatusOf(header)
+		require.Equal(t, test.status, status, value)
+		require.Equal(t, test.known, status.known(), value)
+		require.Equal(t, test.honored, status.keyHonored(), value)
 	}
 }
