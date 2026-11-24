@@ -202,7 +202,8 @@ func (w *write) failureWithoutResponse() (outcomeUnknown bool, safeToRetryWithSa
 }
 
 // waitBeforeRetry reports whether another attempt may start, after waiting for it. maxRetries is the hard limit and is
-// checked first; the retry window can only refuse a retry that maxRetries allows.
+// checked first; the retry window can only refuse a retry that maxRetries allows. The window is checked again after the
+// wait, which can end late, for example when the process was paused.
 func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write) bool {
 	if int64(retryCount) >= s.maxRetries.Load() {
 		return false
@@ -214,7 +215,10 @@ func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write)
 	if ctx.Err() != nil {
 		return false
 	}
-	return s.clock.Sleep(ctx, delay) == nil
+	if s.clock.Sleep(ctx, delay) != nil {
+		return false
+	}
+	return !w.mayHaveReachedTheServer || w.startsWithinRetryWindow(0)
 }
 
 type failureKind int

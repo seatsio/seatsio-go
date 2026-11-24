@@ -701,7 +701,9 @@ func TestLostResponsesAreNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
 
 	err := client.post("/events")
 
-	require.Equal(t, 1+4, requests.count())
+	// The third sleep ends 6 minutes after the first attempt, so no fourth attempt starts.
+	require.Equal(t, 1+3, requests.count())
+	require.Equal(t, 3, client.clock.sleepCount())
 	requireOutcome(t, err, true, false)
 }
 
@@ -711,9 +713,24 @@ func TestRetriesOn429StopOnceTheKeyMayHaveExpired(t *testing.T) {
 	client := newTestClient(server.URL)
 	client.clock.extraPerSleep = 2 * time.Minute
 
-	require.Error(t, client.post("/events"))
+	err := client.post("/events")
 
-	require.Equal(t, 4, requests.count())
+	require.Equal(t, 3, requests.count())
+	requireOutcome(t, err, false, false)
+}
+
+// A wait that ends past the window, e.g. because the process was paused, does not start another attempt.
+func TestARetryDoesNotStartWhenTheWaitEndsPastTheWindow(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, tooMany, executed)
+	client := newTestClient(server.URL)
+	client.clock.extraPerSleep = 6 * time.Minute
+
+	err := client.post("/events")
+
+	require.Equal(t, 1, requests.count())
+	require.Equal(t, 1, client.clock.sleepCount())
+	requireOutcome(t, err, false, false)
 }
 
 func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
@@ -725,10 +742,12 @@ func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing
 	}}, requests))
 	t.Cleanup(server.Close)
 	client := newTestClient(server.URL)
+	start := client.clock.Now()
 	client.clock.onSleep = func(int) {
 		server.Close()
+		// The retry still starts within the window, but the next one would not: every backoff is longer than this.
 		client.clock.mu.Lock()
-		client.clock.now = client.clock.now.Add(6 * time.Minute)
+		client.clock.now = start.Add(5*time.Minute - 100*time.Millisecond)
 		client.clock.mu.Unlock()
 	}
 
@@ -737,6 +756,51 @@ func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing
 	require.Equal(t, 1, requests.count())
 	require.Equal(t, 1, client.clock.sleepCount())
 	requireOutcome(t, err, false, true)
+}
+
+// A 429 says nothing about an earlier attempt of the same call, which may have run.
+func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
+	t.Parallel()
+	for name, first := range map[string]step{"lost": lost(), "key in use": keyInUse} {
+		t.Run(name+", within the window", func(t *testing.T) {
+			t.Parallel()
+			server, requests := scriptedServer(t, executed, first, tooMany)
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+			client.withMaxRetries(2)
+
+			err := client.post("/events")
+
+			require.Equal(t, 1+3, requests.count())
+			requireSameKey(t, requests.keys()[1:])
+			requireOutcome(t, err, true, true)
+		})
+		t.Run(name+", past the window", func(t *testing.T) {
+			t.Parallel()
+			server, requests := scriptedServer(t, executed, first, tooMany)
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+			client.clock.extraPerSleep = 2 * time.Minute
+
+			err := client.post("/events")
+
+			// The third sleep ends 6 minutes after the first attempt, so no fourth attempt starts.
+			require.Equal(t, 1+3, requests.count())
+			requireOutcome(t, err, true, false)
+		})
+	}
+}
+
+func TestA429OnTheFirstAttemptLeavesTheOutcomeKnown(t *testing.T) {
+	t.Parallel()
+	server, _ := scriptedServer(t, executed, tooMany)
+	client := newTestClient(server.URL)
+	require.NoError(t, client.post("/events"))
+	client.withMaxRetries(2)
+
+	err := client.post("/events")
+
+	requireOutcome(t, err, false, false)
 }
 
 // --- 429 and 409 ---

@@ -159,8 +159,9 @@ func (e *RequestError) IsSafeToRetryWithSameKey() bool {
 
 // IsOutcomeUnknown reports whether err is a failed POST, PUT, PATCH or DELETE request that the server may or may not
 // have executed: the response was lost after the request was sent (a timeout, a connection reset, an incomplete body),
-// the server answered with a 5xx, or it answered 409 IDEMPOTENCY_KEY_IN_USE after the client ran out of retries. It is
-// false when the request never reached the server, for every other 4xx, and for errors of GET requests.
+// the server answered with a 5xx, it answered 409 IDEMPOTENCY_KEY_IN_USE after the client ran out of retries, or it
+// answered 429 after an earlier attempt of the same call may have run. It is false when the request never reached the
+// server, for every other 4xx, and for errors of GET requests.
 func IsOutcomeUnknown(err error) bool {
 	var requestErr *RequestError
 	if errors.As(err, &requestErr) {

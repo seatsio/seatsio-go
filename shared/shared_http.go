@@ -182,13 +182,17 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 		return &SeatsioError{Message: apiError.Message, Code: apiError.Code}
 	}
 	status := idempotencyKeyStatusOf(result.Header)
+	w := writeOf(result)
 	outcomeUnknown := result.StatusCode >= 500 || isKeyInUse(result)
 	keyHonored := status.keyHonored()
 	if !status.known() {
-		w := writeOf(result)
 		keyHonored = w != nil && w.routeHonorsKeys()
 	}
 	safeToRetryWithSameKey := outcomeUnknown && keyHonored && status != statusReplayed
+	if result.StatusCode == http.StatusTooManyRequests && w != nil && w.mayHaveRun {
+		// The 429 says nothing about an earlier attempt of this call, which may have run.
+		outcomeUnknown, safeToRetryWithSameKey = true, w.routeHonorsKeys() && w.startsWithinRetryWindow(0)
+	}
 	if parseErr != nil {
 		return &RequestError{
 			IdempotencyKey:         key,
