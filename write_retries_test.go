@@ -407,6 +407,24 @@ func TestConcretePathsOfTheSameTemplateShareTheMemory(t *testing.T) {
 	require.Equal(t, "/events/event2/actions/book", requests.all()[2].path)
 }
 
+func TestSetDefaultWorkspaceIsRetriedLikeAnyOtherRoute(t *testing.T) {
+	t.Parallel()
+	noContent := reply(http.StatusNoContent, "executed", "")
+	server, requests := scriptedServer(t, noContent, lost(), noContent)
+	client := newTestClient(server.URL)
+	_, err := client.R().SetPathParam("key", "workspace1").Post("/workspaces/actions/set-default/{key}")
+	require.NoError(t, err)
+
+	_, err = client.R().SetPathParam("key", "workspace2").Post("/workspaces/actions/set-default/{key}")
+
+	require.NoError(t, err)
+	require.Equal(t, 3, requests.count())
+	all := requests.all()
+	require.Equal(t, "/workspaces/actions/set-default/workspace2", all[2].path)
+	require.NotEmpty(t, all[2].header.Get("Idempotency-Key"))
+	require.Equal(t, all[1].header.Get("Idempotency-Key"), all[2].header.Get("Idempotency-Key"))
+}
+
 func TestClientsDontShareTheMemory(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, executed, lost(), executed)
