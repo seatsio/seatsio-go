@@ -707,6 +707,18 @@ func TestLostResponsesAreNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
 	requireOutcome(t, err, true, false)
 }
 
+func TestKeyInUseIsNotSafeToRetryOnceTheRetryWaitEndsBeyondTheWindow(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, keyInUse)
+	client := newTestClient(server.URL)
+	client.clock.extraPerSleep = 11 * time.Minute
+
+	err := client.post("/events")
+
+	require.Equal(t, 1, requests.count())
+	requireOutcome(t, err, true, false)
+}
+
 func TestRetriesOn429StopOnceTheKeyMayHaveExpired(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, tooMany)
