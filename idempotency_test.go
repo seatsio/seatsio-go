@@ -117,22 +117,22 @@ func TestParseIdempotencyKey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, valid, key.String())
 
-	for _, invalid := range []string{
-		"",
-		"not-a-uuid",
-		"6ba7b810-9dad-11d1-80b4-00c04fd430c8", // v1
-		uuid.Nil.String(),
-		"6ba7b810-9dad-41d1-00b4-00c04fd430c8", // v4 with the reserved NCS variant
-		"6ba7b810-9dad-41d1-c0b4-00c04fd430c8", // v4 with the Microsoft variant
-		"6ba7b810-9dad-41d1-e0b4-00c04fd430c8", // v4 with the reserved future variant
-		"1-1-1-1-1",
-		"{" + valid + "}",
-		"urn:uuid:" + valid,
-		strings.ReplaceAll(valid, "-", ""),
-		" " + valid,
+	for name, invalid := range map[string]string{
+		"empty":                       "",
+		"notAUuid":                    "not-a-uuid",
+		"v1":                          "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+		"nil":                         uuid.Nil.String(),
+		"v4WithReservedNcsVariant":    "6ba7b810-9dad-41d1-00b4-00c04fd430c8",
+		"v4WithMicrosoftVariant":      "6ba7b810-9dad-41d1-c0b4-00c04fd430c8",
+		"v4WithReservedFutureVariant": "6ba7b810-9dad-41d1-e0b4-00c04fd430c8",
+		"tooFewDigits":                "1-1-1-1-1",
+		"braces":                      "{" + valid + "}",
+		"urnPrefix":                   "urn:uuid:" + valid,
+		"withoutDashes":               strings.ReplaceAll(valid, "-", ""),
+		"leadingSpace":                " " + valid,
 	} {
 		_, err := ClientSupport.ParseIdempotencyKey(invalid)
-		require.ErrorContains(t, err, "is not a v4 UUID", invalid)
+		require.ErrorContains(t, err, "is not a v4 UUID", name)
 	}
 }
 
@@ -346,8 +346,6 @@ func TestGetErrorsHaveNoUnknownOutcome(t *testing.T) {
 	require.False(t, ClientSupport.IsOutcomeUnknown(e))
 }
 
-// The transport resends a request with a canonical Idempotency-Key header by itself when a reused connection breaks
-// before the first response byte, regardless of the client's retry settings.
 func TestTransportDoesNotResendAWriteWhenAReusedConnectionBreaks(t *testing.T) {
 	t.Parallel()
 	for name, setKey := range map[string]func(r *req.Request){
@@ -421,7 +419,6 @@ func incompleteBodyResponses() map[string]func(w http.ResponseWriter) {
 	}
 }
 
-// A complete success body that cannot be parsed is not a connection failure: the request was executed.
 func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *testing.T) {
 	t.Parallel()
 	server, _ := respondingServer(t, http.StatusOK, `{"key":`)
@@ -465,7 +462,6 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 				response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Post("/events")
 				e := shared.AssertOkWithoutResult(response, err)
 
-				// the first retry waits at least 400ms
 				require.Less(t, time.Since(start), 300*time.Millisecond)
 				require.Error(t, e)
 				require.Len(t, keys.all(), 1)

@@ -88,8 +88,6 @@ func TestGeneratedIdempotencyKeyIsAvailableOnAFailedRequest(t *testing.T) {
 	require.True(t, ok)
 }
 
-// proxyThatDropsResponse forwards every request to the API, and copies the response back, except the response of
-// request number drop (counting from 1), which it drops. It returns its URL and the number of requests it received.
 func proxyThatDropsResponse(t *testing.T, drop int32) (string, *atomic.Int32) {
 	t.Helper()
 	var requests atomic.Int32
@@ -121,8 +119,6 @@ func proxyThatDropsResponse(t *testing.T, drop int32) (string, *atomic.Int32) {
 	return proxy.URL, &requests
 }
 
-// The first create teaches the client that the server honors keys for it; the response of the second is lost, so the
-// client retries it with the same key, and gets the replayed response.
 func TestRetryAfterALostResponseCreatesOneEvent(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompanyWithIdempotencyEnabled(t)
@@ -143,7 +139,6 @@ func TestRetryAfterALostResponseCreatesOneEvent(t *testing.T) {
 	require.ElementsMatch(t, []int64{first.Id, second.Id}, []int64{all[0].Id, all[1].Id})
 }
 
-// The client doesn't know yet whether the server honors keys for the first create, so it doesn't retry it.
 func TestALostResponseOfTheFirstRequestToARouteIsNotRetried(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompanyWithIdempotencyEnabled(t)

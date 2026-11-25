@@ -30,7 +30,6 @@ func TestRetryConditionRetriesGetsOnConnectionErrorsWhileContextIsActive(t *test
 	require.True(t, retryCondition(failedResponse(context.Background(), http.MethodGet), errors.New("connection reset")))
 }
 
-// Writes are retried by Retries.sendWrites, never by req.
 func TestRetryConditionNeverRetriesWrites(t *testing.T) {
 	t.Parallel()
 

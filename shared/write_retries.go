@@ -20,15 +20,10 @@ import (
 
 const defaultMaxRetries = 5
 
-// retryWindow bounds the retries of a write once an attempt may have reached the server. The server keeps an
-// Idempotency-Key for 10 minutes from the first attempt; a retry after that would run as a new request.
 const retryWindow = 5 * time.Minute
 
-// Clock is the time source of the retries. It only exists so that tests don't have to wait.
 type Clock interface {
-	// Now returns the current time. time.Now carries a monotonic reading, so differences don't jump with the wall clock.
 	Now() time.Time
-	// Sleep waits for d, or until ctx ends, in which case it returns the context's error.
 	Sleep(ctx context.Context, d time.Duration) error
 }
 
@@ -49,19 +44,13 @@ func (systemClock) Sleep(ctx context.Context, d time.Duration) error {
 	}
 }
 
-// SystemClock is the real clock.
 var SystemClock Clock = systemClock{}
 
-// Retries is the retry state of one API client: the maximum number of retries, the clock, and per operation whether the
-// server honors idempotency keys for it. Not shared between clients, because that depends on the company of the
-// secret key.
 type Retries struct {
 	clock      Clock
 	maxRetries atomic.Int64
 	backoff    func(attempt int) time.Duration
-	// routes maps "METHOD path template" to whether the last response with a known Idempotency-Key-Status said the
-	// route honors keys. No entry means unknown.
-	routes sync.Map
+	routes     sync.Map
 }
 
 func NewRetries(clock Clock) *Retries {
@@ -70,7 +59,6 @@ func NewRetries(clock Clock) *Retries {
 	return retries
 }
 
-// SetMaxRetries sets the number of retries after the first attempt, for every reason together. 0 disables retries.
 func (s *Retries) SetMaxRetries(client *req.Client, count int) {
 	s.maxRetries.Store(int64(count))
 	client.SetCommonRetryCount(count)
@@ -87,8 +75,6 @@ func (s *Retries) honorsKeys(route string) bool {
 	return ok && honored.(bool)
 }
 
-// interval is the wait between two attempts of a GET. It waits itself, and then tells req not to wait any longer: req
-// waits with time.Sleep, which a cancelled or expired context cannot interrupt.
 func (s *Retries) interval(resp *req.Response, attempt int) time.Duration {
 	ctx := context.Background()
 	if resp != nil && resp.Request != nil {
@@ -100,17 +86,12 @@ func (s *Retries) interval(resp *req.Response, attempt int) time.Duration {
 
 type writeContextKey struct{}
 
-// write holds the attempts of one POST, PUT, PATCH or DELETE call, all sent with the same idempotency key.
 type write struct {
-	retries *Retries
-	route   string
-	start   time.Time
-	// mayHaveReachedTheServer is set once a response arrived or a response was lost. From then on, retries must start
-	// within the retry window.
+	retries                 *Retries
+	route                   string
+	start                   time.Time
 	mayHaveReachedTheServer bool
-	// mayHaveRun is set by a lost response, a 409 IDEMPOTENCY_KEY_IN_USE, or a failure that isn't a network failure. It
-	// decides whether a later failure to send leaves the outcome unknown.
-	mayHaveRun bool
+	mayHaveRun              bool
 }
 
 func writeOf(resp *req.Response) *write {
@@ -121,10 +102,6 @@ func writeOf(resp *req.Response) *write {
 	return w
 }
 
-// sendWrites sends every request that isn't a GET, HEAD, OPTIONS or TRACE with an idempotency key, and retries it with
-// the same key: after a 429 or a 409 IDEMPOTENCY_KEY_IN_USE, when it was never sent, and when its response was lost on
-// a route that the server said honors keys. All retries count against maxRetries. req's own retries are switched off
-// for these requests by the retry condition.
 func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 	return func(r *req.Request) (*req.Response, error) {
 		if isSafeMethod(r.Method) {
@@ -149,8 +126,6 @@ func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 	}
 }
 
-// routeTemplate is the path before req fills in the path parameters, e.g. /events/{event}/actions/book, without a
-// query string.
 func routeTemplate(rawURL string) string {
 	if i := strings.IndexByte(rawURL, '?'); i >= 0 {
 		return rawURL[:i]
@@ -158,7 +133,6 @@ func routeTemplate(rawURL string) string {
 	return rawURL
 }
 
-// attempted records the outcome of an attempt and reports whether it may be retried, retries left and time permitting.
 func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
 	if resp != nil && resp.Response != nil {
 		w.mayHaveReachedTheServer = true
@@ -196,14 +170,10 @@ func (w *write) startsWithinRetryWindow(delay time.Duration) bool {
 	return w.retries.clock.Now().Add(delay).Sub(w.start) <= retryWindow
 }
 
-// failureWithoutResponse returns the outcome of a write whose last attempt got no (complete) response.
 func (w *write) failureWithoutResponse() (outcomeUnknown bool, safeToRetryWithSameKey bool) {
 	return w.mayHaveRun, !w.mayHaveRun || (w.routeHonorsKeys() && w.startsWithinRetryWindow(0))
 }
 
-// waitBeforeRetry reports whether another attempt may start, after waiting for it. maxRetries is the hard limit and is
-// checked first; the retry window can only refuse a retry that maxRetries allows. The window is checked again after the
-// wait, which can end late, for example when the process was paused.
 func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write) bool {
 	if int64(retryCount) >= s.maxRetries.Load() {
 		return false
@@ -224,18 +194,11 @@ func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write)
 type failureKind int
 
 const (
-	// neverSent: no connection was obtained, so no byte of the request reached the server (connection refused,
-	// connect timeout, DNS failure, TLS handshake failure).
 	neverSent failureKind = iota
-	// responseLost: the request may have reached the server and run.
 	responseLost
-	// notRetryable: not a network failure; a retry would fail the same way.
 	notRetryable
 )
 
-// classifyFailure classifies a failed attempt that got no response. Only an attempt that never got a connection is
-// never sent: req's transport reports a connection (GotConn) before it writes the request, for HTTP/1 and HTTP/2.
-// When in doubt, the response was lost.
 func classifyFailure(err error, gotConn bool) failureKind {
 	if gotConn {
 		return responseLost
@@ -246,15 +209,10 @@ func classifyFailure(err error, gotConn bool) failureKind {
 	return notRetryable
 }
 
-// isResponseLost reports whether err means that the complete response was not received: the connection broke or timed
-// out while the body was being read. A complete body that cannot be parsed is not one.
 func isResponseLost(resp *req.Response, err error) bool {
 	return resp.Response == nil || isNetworkError(err)
 }
 
-// isNetworkError reports whether err is a failure of the connection: a dial, read or write error, a DNS failure, a
-// timeout, or a connection closed too early. *url.Error is unwrapped first: it implements net.Error for every error,
-// an unsupported protocol scheme included.
 func isNetworkError(err error) bool {
 	var urlErr *url.Error
 	if errors.As(err, &urlErr) {

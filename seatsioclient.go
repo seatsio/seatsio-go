@@ -77,8 +77,6 @@ func newSeatsioClient(baseUrl string, secretKey string, retries *shared.Retries,
 	return client
 }
 
-// SetMaxRetries sets how often the client retries a request after the first attempt (default 5). It is the limit on
-// all retries of a call together, whatever their reason; 0 disables retries.
 func (c *SeatsioClient) SetMaxRetries(count int) error {
 	if count < 0 {
 		return errors.New("retry count must not be negative")

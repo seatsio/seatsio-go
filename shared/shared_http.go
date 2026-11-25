@@ -18,8 +18,6 @@ func ApiClient(secretKey string, baseUrl string, additionalHeaders ...Additional
 	return ApiClientWithRetries(secretKey, baseUrl, NewRetries(SystemClock), additionalHeaders...)
 }
 
-// ApiClientWithRetries creates an API client that keeps its retry state in retries. Don't share retries between clients
-// with different secret keys.
 func ApiClientWithRetries(secretKey string, baseUrl string, retries *Retries, additionalHeaders ...AdditionalHeader) *req.Client {
 	client := req.C().SetBaseURL(baseUrl).
 		SetCommonBasicAuth(secretKey, "").
@@ -39,8 +37,6 @@ func ApiClientWithRetries(secretKey string, baseUrl string, retries *Retries, ad
 	return client
 }
 
-// retryCondition is req's retry condition. req retries GET, HEAD, OPTIONS and TRACE requests: on a 429, and on a
-// connection failure while the context is active. Other requests are retried by Retries.sendWrites, not by req.
 func retryCondition(resp *req.Response, err error) bool {
 	if resp.Request == nil || !isSafeMethod(resp.Request.Method) {
 		return false
@@ -51,8 +47,6 @@ func retryCondition(resp *req.Response, err error) bool {
 	return resp.StatusCode == 429
 }
 
-// backoff is req's capped exponential backoff with jitter (SetCommonRetryBackoffInterval), which req does not export.
-// attempt starts at 1.
 func backoff(min, max time.Duration) func(attempt int) time.Duration {
 	return func(attempt int) time.Duration {
 		capped := math.Min(float64(max), float64(min)*math.Exp2(float64(attempt)))
@@ -93,14 +87,8 @@ func isSafeMethod(method string) bool {
 	}
 }
 
-// idempotencyKeyWireHeader is the header the key is sent in. It is deliberately not in canonical form: the transport
-// treats a request with a canonical Idempotency-Key header as replayable, and silently resends it on a reused
-// connection that breaks before the response arrives, even when retries are disabled. That would execute the write a
-// second time for a company without idempotency. Header names are case-insensitive, so the server reads it all the same.
 const idempotencyKeyWireHeader = "idempotency-key"
 
-// setIdempotencyKey runs right before the first attempt is handed to the transport, after the client's common headers
-// were merged into the request, so it also sees a key set as a common header. Retries reuse the request, and so the key.
 func setIdempotencyKey(r *req.Request) error {
 	if r.Headers == nil {
 		r.Headers = make(http.Header)
@@ -190,11 +178,9 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	}
 	safeToRetryWithSameKey := outcomeUnknown && keyHonored && status != statusReplayed
 	if w != nil && !w.startsWithinRetryWindow(0) {
-		// The server may have forgotten the key by now, so retrying with it could run the write again.
 		safeToRetryWithSameKey = false
 	}
 	if result.StatusCode == http.StatusTooManyRequests && w != nil && w.mayHaveRun {
-		// The 429 says nothing about an earlier attempt of this call, which may have run.
 		outcomeUnknown, safeToRetryWithSameKey = true, w.routeHonorsKeys() && w.startsWithinRetryWindow(0)
 	}
 	if parseErr != nil {
@@ -218,8 +204,6 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	}
 }
 
-// firstApiError returns the first error of a seats.io error response, or an error that describes the response when it
-// isn't one: not JSON, unparsable, or without errors. It never panics.
 func firstApiError(result *req.Response) (*SeatsioErrorTO, error) {
 	if !strings.Contains(result.GetHeader("content-type"), "application/json") {
 		return nil, unexpectedResponseError(result)

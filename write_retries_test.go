@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// fakeClock never really sleeps. Every Sleep advances it by the delay plus extraPerSleep, and then calls onSleep.
 type fakeClock struct {
 	mu            sync.Mutex
 	now           time.Time
@@ -75,7 +74,6 @@ func (c *testClient) post(path string) error {
 	return shared.AssertOkWithoutResult(response, err)
 }
 
-// recordedRequest is what the fake server received.
 type recordedRequest struct {
 	method string
 	path   string
@@ -121,7 +119,6 @@ func (r *requestRecorder) keys() []string {
 	return keys
 }
 
-// step answers one request. A server runs its steps in order and repeats the last one.
 type step func(w http.ResponseWriter)
 
 func reply(status int, keyStatus string, body string) step {
@@ -168,7 +165,6 @@ func scriptedServer(t *testing.T, steps ...step) (*httptest.Server, *requestReco
 	return server, requests
 }
 
-// reservedAddress returns an address that nothing listens on, until startScriptedServerOn starts a server there.
 func reservedAddress(t *testing.T) string {
 	t.Helper()
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -212,8 +208,6 @@ func requireSameKey(t *testing.T, keys []string) {
 		require.Equal(t, keys[0], key)
 	}
 }
-
-// --- route memory (core-v2 guide, section 8) ---
 
 func TestALostResponseIsRetriedWithTheSameKeyOnARouteThatHonorsKeys(t *testing.T) {
 	t.Parallel()
@@ -566,7 +560,6 @@ func TestAnIncompleteBodyIsRetriedOnARouteThatHonorsKeys(t *testing.T) {
 	}
 }
 
-// A write that received a 2xx status but not its complete body may have succeeded.
 func TestOutcomeIsUnknownWhenASuccessfulResponseBodyIsIncomplete(t *testing.T) {
 	t.Parallel()
 	for name, incomplete := range incompleteBodyResponses() {
@@ -595,8 +588,6 @@ func TestOutcomeIsUnknownWhenASuccessfulResponseBodyIsIncomplete(t *testing.T) {
 		}
 	}
 }
-
-// --- maxRetries is the hard limit ---
 
 func TestLostResponsesCountAgainstMaxRetries(t *testing.T) {
 	t.Parallel()
@@ -673,8 +664,6 @@ func TestMaxRetriesZeroGivesOneAttemptForEveryKindOfFailure(t *testing.T) {
 	})
 }
 
-// One call is never sent, then gets a 429, then a 409 IDEMPOTENCY_KEY_IN_USE (which marks the route as honoring keys),
-// then loses its response. A client that counted each kind of failure separately would retry the lost response.
 func TestAllKindsOfFailureShareOneRetryCount(t *testing.T) {
 	t.Parallel()
 	address := reservedAddress(t)
@@ -708,8 +697,6 @@ func TestSetMaxRetriesAppliesToWritesOfItsOwnClientOnly(t *testing.T) {
 	require.Equal(t, 3, requests.count())
 }
 
-// --- the retry window ---
-
 func TestLostResponsesAreNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, executed, lost())
@@ -719,7 +706,6 @@ func TestLostResponsesAreNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
 
 	err := client.post("/events")
 
-	// The third sleep ends 6 minutes after the first attempt, so no fourth attempt starts.
 	require.Equal(t, 1+3, requests.count())
 	require.Equal(t, 3, client.clock.sleepCount())
 	requireOutcome(t, err, true, false)
@@ -749,7 +735,6 @@ func TestRetriesOn429StopOnceTheKeyMayHaveExpired(t *testing.T) {
 	requireOutcome(t, err, false, false)
 }
 
-// A wait that ends past the window, e.g. because the process was paused, does not start another attempt.
 func TestARetryDoesNotStartWhenTheWaitEndsPastTheWindow(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, tooMany, executed)
@@ -775,7 +760,6 @@ func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing
 	start := client.clock.Now()
 	client.clock.onSleep = func(int) {
 		server.Close()
-		// The retry still starts within the window, but the next one would not: every backoff is longer than this.
 		client.clock.mu.Lock()
 		client.clock.now = start.Add(5*time.Minute - 100*time.Millisecond)
 		client.clock.mu.Unlock()
@@ -788,7 +772,6 @@ func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing
 	requireOutcome(t, err, false, true)
 }
 
-// A 429 says nothing about an earlier attempt of the same call, which may have run.
 func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
 	t.Parallel()
 	for name, first := range map[string]step{"lost": lost(), "key in use": keyInUse} {
@@ -814,7 +797,6 @@ func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
 
 			err := client.post("/events")
 
-			// The third sleep ends 6 minutes after the first attempt, so no fourth attempt starts.
 			require.Equal(t, 1+3, requests.count())
 			requireOutcome(t, err, true, false)
 		})
@@ -832,8 +814,6 @@ func TestA429OnTheFirstAttemptLeavesTheOutcomeKnown(t *testing.T) {
 
 	requireOutcome(t, err, false, false)
 }
-
-// --- 429 and 409 ---
 
 func TestWritesAreRetriedOn429AndKeyInUseWithTheSameKey(t *testing.T) {
 	t.Parallel()
@@ -899,8 +879,6 @@ func TestCallerKeySurvivesARetry(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{key.String(), key.String()}, requests.keys())
 }
-
-// --- error values (porting guide, table 2.4) ---
 
 func TestErrorValuesOfErrorResponses(t *testing.T) {
 	t.Parallel()
@@ -978,8 +956,6 @@ func TestAnOperationWithUnknownOutcomeCanBeRetriedWithTheKeyOfTheError(t *testin
 	require.Equal(t, 3, requests.count())
 	require.Equal(t, requests.keys()[1], requests.keys()[2])
 }
-
-// --- other ---
 
 func TestGetsAreRetriedByReqOnly(t *testing.T) {
 	t.Parallel()
