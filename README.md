@@ -494,7 +494,7 @@ For a write request, both error types also have these fields (see [Idempotency](
 
 `seatsio.ClientSupport.IsOutcomeUnknown(err)` tells you whether the request may or may not have been executed: it's `true` when the response was lost after the request was sent (a timeout, a connection reset, an incomplete response body), when the server answered with a 5xx, when it answered `409` with error code `IDEMPOTENCY_KEY_IN_USE` after the client ran out of retries (an earlier request with the same key was still being processed), or when it answered `429` to an automatic retry after an earlier attempt of the same call may have been executed. It's `false` when the request never reached the server (connection refused, DNS or TLS failure), for every other 4xx, and for the errors of `GET` requests.
 
-`seatsio.ClientSupport.IsSafeToRetryWithSameKey(err)` tells you whether you can make the same call again with the same key (see [Idempotency](#idempotency)) without risking executing it twice, and whether that could give a different result. `seatsio.ClientSupport.IdempotencyKeyOf(err)` returns that key. Both errors also have the methods `IsOutcomeUnknown()` and `IsSafeToRetryWithSameKey()`.
+`seatsio.ClientSupport.IsSafeToRetryWithSameKey(err)` tells you whether you can make the same call again with the same key (see [Idempotency](#idempotency)) without risking executing it twice. It is `true` when the request never reached the server, and when its outcome is unknown, the server honors keys for that operation, the response wasn't a replay, and the first attempt started less than 5 minutes ago. `seatsio.ClientSupport.IdempotencyKeyOf(err)` returns that key. Both errors also have the methods `IsOutcomeUnknown()` and `IsSafeToRetryWithSameKey()`.
 
 ## Rate limiting - exponential backoff
 
@@ -530,7 +530,8 @@ If the connection fails after the server executed a request but before you recei
 ```go
 _, err := client.Events.Create(ctx, params)
 // true when the request never reached the server, or when its outcome is unknown (a lost response, a 5xx,
-// a 409 IDEMPOTENCY_KEY_IN_USE) and the server honors idempotency keys for it
+// a 409 IDEMPOTENCY_KEY_IN_USE), the server honors idempotency keys for it, and the first attempt
+// was less than 5 minutes ago. Never true for a response that was itself a replay.
 if seatsio.ClientSupport.IsSafeToRetryWithSameKey(err) {
     key, _ := seatsio.ClientSupport.IdempotencyKeyOf(err)
     retryCtx := seatsio.ClientSupport.WithIdempotencyKey(ctx, key)
