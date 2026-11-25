@@ -683,6 +683,16 @@ func TestAllKindsOfFailureShareOneRetryCount(t *testing.T) {
 	requireOutcome(t, err, true, true)
 }
 
+func TestWritesAreRetriedFiveTimesByDefault(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, tooMany)
+	client := newTestClient(server.URL)
+
+	require.Error(t, client.post("/events"))
+
+	require.Equal(t, 1+5, requests.count())
+}
+
 func TestSetMaxRetriesAppliesToWritesOfItsOwnClientOnly(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, tooMany)

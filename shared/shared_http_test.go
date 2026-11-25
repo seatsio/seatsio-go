@@ -68,3 +68,14 @@ func TestIdempotencyKeyStatusOf(t *testing.T) {
 		require.Equal(t, test.honored, status.keyHonored(), value)
 	}
 }
+
+func TestSetIdempotencyKeyMovesClientWideCommonHeaderToTheLowerCaseHeader(t *testing.T) {
+	t.Parallel()
+	request := req.C().R()
+	request.Headers = http.Header{IdempotencyKeyHeader: []string{"aCommonKey"}}
+
+	require.NoError(t, setIdempotencyKey(request))
+
+	require.Equal(t, []string{"aCommonKey"}, request.Headers[idempotencyKeyWireHeader])
+	require.NotContains(t, request.Headers, IdempotencyKeyHeader)
+}
