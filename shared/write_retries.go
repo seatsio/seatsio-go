@@ -141,17 +141,12 @@ func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
 		}
 		return resp.StatusCode == 429
 	}
-	switch classifyFailure(err, gotConn) {
-	case neverSent:
+	if neverSent(err, gotConn) {
 		w.lastNeverSent = true
 		return true
-	case responseLost:
-		w.mayHaveRun = true
-		return w.honorsKeys()
-	default:
-		w.mayHaveRun = true
-		return false
 	}
+	w.mayHaveRun = true
+	return w.honorsKeys()
 }
 
 func (w *write) honorsKeys() bool {
@@ -191,22 +186,8 @@ func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write)
 	return w.mayRetryAfter(0)
 }
 
-type failureKind int
-
-const (
-	neverSent failureKind = iota
-	responseLost
-	notRetryable
-)
-
-func classifyFailure(err error, gotConn bool) failureKind {
-	if gotConn {
-		return responseLost
-	}
-	if isNetworkError(err) || isTLSError(err) || errors.Is(err, context.Canceled) {
-		return neverSent
-	}
-	return notRetryable
+func neverSent(err error, gotConn bool) bool {
+	return !gotConn && (isNetworkError(err) || isTLSError(err) || errors.Is(err, context.Canceled))
 }
 
 func isResponseLost(resp *req.Response, err error) bool {

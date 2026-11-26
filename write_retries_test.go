@@ -1006,7 +1006,7 @@ func TestGetsAreRetriedByReqOnly(t *testing.T) {
 	require.Equal(t, []string{"", ""}, requests.keys())
 }
 
-func TestFailuresThatAreNotNetworkFailuresAreNotRetried(t *testing.T) {
+func TestAnUnknownFailureIsNotRetriedBeforeKeysAreKnownToBeHonored(t *testing.T) {
 	t.Parallel()
 	client := newTestClient("unknown-scheme://localhost")
 
@@ -1014,6 +1014,18 @@ func TestFailuresThatAreNotNetworkFailuresAreNotRetried(t *testing.T) {
 
 	require.Zero(t, client.clock.sleepCount())
 	requireOutcome(t, err, true, false)
+}
+
+func TestAnUnknownFailureIsRetriedWhenKeysAreHonored(t *testing.T) {
+	t.Parallel()
+	server, _ := scriptedServer(t, executed)
+	client := newTestClient(server.URL).withMaxRetries(2)
+	require.NoError(t, client.post("/events"))
+
+	err := client.post("unknown-scheme://localhost/events")
+
+	require.Equal(t, 2, client.clock.sleepCount())
+	requireOutcome(t, err, true, true)
 }
 
 func TestDoesNotRetryALostResponseWhenTheContextIsCancelled(t *testing.T) {
