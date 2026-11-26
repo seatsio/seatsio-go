@@ -139,7 +139,7 @@ func TestRetryAfterALostResponseCreatesOneEvent(t *testing.T) {
 	require.ElementsMatch(t, []int64{first.Id, second.Id}, []int64{all[0].Id, all[1].Id})
 }
 
-func TestALostResponseOfTheFirstRequestToARouteIsNotRetried(t *testing.T) {
+func TestALostResponseOfTheFirstWriteOfAClientIsNotRetried(t *testing.T) {
 	t.Parallel()
 	company := test_util.CreateTestCompanyWithIdempotencyEnabled(t)
 	chartKey := test_util.CreateTestChart(t, company.Admin.SecretKey)
