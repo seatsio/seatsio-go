@@ -551,6 +551,8 @@ The client retries a write with the same key:
 
 All these retries count against `SetMaxRetries` (default 5; 0 turns them off). Once an attempt of a request may have been executed (its response was lost, or the key was in use), the client doesn't start a retry more than 5 minutes after the first attempt, well within the lifetime of the key. When the server can't be reached at all (connection refused, connect timeout, DNS or TLS failure), the client stops retrying 30 seconds after the first attempt, so a write against an unreachable server takes at most about 40 seconds with the default settings. These limits can only stop retries earlier, never add any. A `422` and an invalid key are never retried. Each `SeatsioClient` has its own memory.
 
+Because of that memory, create one `SeatsioClient` and share it across your application (it's safe for concurrent use by multiple goroutines), instead of creating a new one per request. A client that is created per request starts with an empty memory, so it never retries after a lost response, and idempotency can't protect you from executing an operation twice.
+
 There is a small remaining risk: if seats.io switches idempotency off (globally, or for your company) between the last response that said keys are honored and a lost response, the retry can execute the operation a second time. The next response with `ignored` corrects the client's memory, so this window is short.
 
 `GET` requests are retried after a `429`, and when the connection fails or times out before the complete response was received.
