@@ -171,23 +171,21 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	}
 	status := idempotencyKeyStatusOf(result.Header)
 	w := writeOf(result)
-	outcomeUnknown := result.StatusCode >= 500 || isKeyInUse(result)
+	replayed := status == statusReplayed
+	outcomeUnknown := result.StatusCode >= 500 || isKeyInUse(result) || (w != nil && w.mayHaveRun && !replayed)
 	keyHonored := status.keyHonored()
 	if !status.known() {
 		keyHonored = w != nil && w.honorsKeys()
 	}
-	safeToRetryWithSameKey := outcomeUnknown && keyHonored && status != statusReplayed
+	safeToRetryWithSameKey := outcomeUnknown && keyHonored && !replayed
 	if w != nil && !w.startsWithinRetryWindow(0) {
 		safeToRetryWithSameKey = false
-	}
-	if result.StatusCode == http.StatusTooManyRequests && w != nil && w.mayHaveRun {
-		outcomeUnknown, safeToRetryWithSameKey = true, w.honorsKeys() && w.startsWithinRetryWindow(0)
 	}
 	if parseErr != nil {
 		return &RequestError{
 			IdempotencyKey:         key,
 			IdempotencyKeyHonored:  status.keyHonoredOrNil(),
-			Replayed:               status == statusReplayed,
+			Replayed:               replayed,
 			Err:                    parseErr,
 			outcomeUnknown:         outcomeUnknown,
 			safeToRetryWithSameKey: safeToRetryWithSameKey,
@@ -198,7 +196,7 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 		Code:                   apiError.Code,
 		IdempotencyKey:         key,
 		IdempotencyKeyHonored:  status.keyHonoredOrNil(),
-		Replayed:               status == statusReplayed,
+		Replayed:               replayed,
 		outcomeUnknown:         outcomeUnknown,
 		safeToRetryWithSameKey: safeToRetryWithSameKey,
 	}

@@ -815,6 +815,37 @@ func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
 	}
 }
 
+func TestAnErrorAfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		final          step
+		outcomeUnknown bool
+		safe           bool
+	}{
+		"400 without status": {reply(http.StatusBadRequest, "", apiError("BAD")), true, true},
+		"403 from a proxy":   {reply(http.StatusForbidden, "", "forbidden"), true, true},
+		"400 executed":       {reply(http.StatusBadRequest, "executed", apiError("BAD")), true, true},
+		"400 ignored":        {reply(http.StatusBadRequest, "ignored", apiError("BAD")), true, false},
+		"400 replayed":       {reply(http.StatusBadRequest, "replayed", apiError("BAD")), false, false},
+		"422 reused":         {reply(http.StatusUnprocessableEntity, "reused", apiError("IDEMPOTENCY_KEY_REUSED")), true, true},
+		"400 invalid key":    {reply(http.StatusBadRequest, "", apiError("INVALID_IDEMPOTENCY_KEY")), true, true},
+		"404":                {reply(http.StatusNotFound, "", apiError("NOT_FOUND")), true, true},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			server, requests := scriptedServer(t, executed, lost(), test.final)
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+
+			err := client.post("/events")
+
+			require.Equal(t, 3, requests.count())
+			requireOutcome(t, err, test.outcomeUnknown, test.safe)
+		})
+	}
+}
+
 func TestA429OnTheFirstAttemptLeavesTheOutcomeKnown(t *testing.T) {
 	t.Parallel()
 	server, _ := scriptedServer(t, executed, tooMany)
