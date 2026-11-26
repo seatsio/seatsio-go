@@ -544,6 +544,24 @@ func (events *Events) MoveEventToNewChartCopy(context context.Context, eventKey 
 	return shared.AssertOk(result, err, &event)
 }
 
+type MoveEventsToNewChartCopyRequest struct {
+	Events []string `json:"events"`
+}
+
+func (events *Events) MoveEventsToNewChartCopy(context context.Context, eventKeys []string) ([]Event, error) {
+	var movedEvents CreateEventResult
+	result, err := events.Client.R().
+		SetContext(context).
+		SetBody(&MoveEventsToNewChartCopyRequest{Events: eventKeys}).
+		SetSuccessResult(&movedEvents).
+		Post("/events/actions/move-to-new-chart-copy")
+	err = shared.AssertOkWithoutResult(result, err)
+	if err != nil {
+		return nil, err
+	}
+	return movedEvents.Events, nil
+}
+
 func (events *Events) lister(context context.Context) *shared.Lister[Event] {
 	pageFetcher := shared.PageFetcher[Event]{
 		Client:    events.Client,
