@@ -20,6 +20,8 @@ const defaultMaxRetries = 5
 
 const retryWindow = 5 * time.Minute
 
+const neverSentRetryWindow = 30 * time.Second
+
 type Clock interface {
 	Now() time.Time
 	Sleep(ctx context.Context, d time.Duration) error
@@ -84,10 +86,10 @@ func (s *Retries) interval(resp *req.Response, attempt int) time.Duration {
 type writeContextKey struct{}
 
 type write struct {
-	retries                 *Retries
-	start                   time.Time
-	mayHaveReachedTheServer bool
-	mayHaveRun              bool
+	retries       *Retries
+	start         time.Time
+	mayHaveRun    bool
+	lastNeverSent bool
 }
 
 func writeOf(resp *req.Response) *write {
@@ -123,8 +125,8 @@ func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 }
 
 func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
+	w.lastNeverSent = false
 	if resp != nil && resp.Response != nil {
-		w.mayHaveReachedTheServer = true
 		w.retries.remember(idempotencyKeyStatusOf(resp.Header))
 		if err != nil {
 			if !isResponseLost(resp, err) {
@@ -141,12 +143,13 @@ func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
 	}
 	switch classifyFailure(err, gotConn) {
 	case neverSent:
+		w.lastNeverSent = true
 		return true
 	case responseLost:
-		w.mayHaveReachedTheServer, w.mayHaveRun = true, true
+		w.mayHaveRun = true
 		return w.honorsKeys()
 	default:
-		w.mayHaveReachedTheServer, w.mayHaveRun = true, true
+		w.mayHaveRun = true
 		return false
 	}
 }
@@ -156,7 +159,18 @@ func (w *write) honorsKeys() bool {
 }
 
 func (w *write) startsWithinRetryWindow(delay time.Duration) bool {
-	return w.retries.clock.Now().Add(delay).Sub(w.start) <= retryWindow
+	return w.startsWithin(retryWindow, delay)
+}
+
+func (w *write) startsWithin(window time.Duration, delay time.Duration) bool {
+	return w.retries.clock.Now().Add(delay).Sub(w.start) <= window
+}
+
+func (w *write) mayRetryAfter(delay time.Duration) bool {
+	if w.mayHaveRun && !w.startsWithinRetryWindow(delay) {
+		return false
+	}
+	return !w.lastNeverSent || w.startsWithin(neverSentRetryWindow, delay)
 }
 
 func (w *write) failureWithoutResponse() (outcomeUnknown bool, safeToRetryWithSameKey bool) {
@@ -168,16 +182,13 @@ func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write)
 		return false
 	}
 	delay := s.backoff(retryCount + 1)
-	if w.mayHaveReachedTheServer && !w.startsWithinRetryWindow(delay) {
-		return false
-	}
-	if ctx.Err() != nil {
+	if !w.mayRetryAfter(delay) || ctx.Err() != nil {
 		return false
 	}
 	if s.clock.Sleep(ctx, delay) != nil {
 		return false
 	}
-	return !w.mayHaveReachedTheServer || w.startsWithinRetryWindow(0)
+	return w.mayRetryAfter(0)
 }
 
 type failureKind int

@@ -620,14 +620,30 @@ func TestKeyInUseErrorIsReturnedWhenRetriesRunOut(t *testing.T) {
 	requireOutcome(t, err, true, true)
 }
 
-func TestARequestThatWasNeverSentIsRetriedWhateverTheTimeIfNoAttemptWasSent(t *testing.T) {
+func TestARequestThatWasNeverSentStopsBeingRetried30SecondsAfterTheFirstAttempt(t *testing.T) {
 	t.Parallel()
-	client := newTestClient(closedServerURL(t)).withMaxRetries(3)
-	client.clock.extraPerSleep = 10 * time.Minute
+	client := newTestClient(closedServerURL(t)).withMaxRetries(10)
+	client.clock.extraPerSleep = 10 * time.Second
 
 	err := client.post("/events")
 
 	require.Equal(t, 3, client.clock.sleepCount())
+	requireOutcome(t, err, false, true)
+}
+
+func TestARequestThatWasNeverSentIsNotRetriedWhenTheWaitWouldEndPast30Seconds(t *testing.T) {
+	t.Parallel()
+	client := newTestClient(closedServerURL(t)).withMaxRetries(10)
+	start := client.clock.Now()
+	client.clock.onSleep = func(int) {
+		client.clock.mu.Lock()
+		client.clock.now = start.Add(29500 * time.Millisecond)
+		client.clock.mu.Unlock()
+	}
+
+	err := client.post("/events")
+
+	require.Equal(t, 1, client.clock.sleepCount())
 	requireOutcome(t, err, false, true)
 }
 
@@ -735,7 +751,7 @@ func TestKeyInUseIsNotSafeToRetryOnceTheRetryWaitEndsBeyondTheWindow(t *testing.
 	requireOutcome(t, err, true, false)
 }
 
-func TestRetriesOn429StopOnceTheKeyMayHaveExpired(t *testing.T) {
+func TestA429OnlyWriteKeepsRetryingPastTheRetryWindow(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, tooMany)
 	client := newTestClient(server.URL)
@@ -743,13 +759,13 @@ func TestRetriesOn429StopOnceTheKeyMayHaveExpired(t *testing.T) {
 
 	err := client.post("/events")
 
-	require.Equal(t, 3, requests.count())
+	require.Equal(t, 1+5, requests.count())
 	requireOutcome(t, err, false, false)
 }
 
 func TestARetryDoesNotStartWhenTheWaitEndsPastTheWindow(t *testing.T) {
 	t.Parallel()
-	server, requests := scriptedServer(t, tooMany, executed)
+	server, requests := scriptedServer(t, keyInUse, executed)
 	client := newTestClient(server.URL)
 	client.clock.extraPerSleep = 6 * time.Minute
 
@@ -757,31 +773,7 @@ func TestARetryDoesNotStartWhenTheWaitEndsPastTheWindow(t *testing.T) {
 
 	require.Equal(t, 1, requests.count())
 	require.Equal(t, 1, client.clock.sleepCount())
-	requireOutcome(t, err, false, false)
-}
-
-func TestARequestThatWasNeverSentIsNotRetriedOnceTheKeyMayHaveExpired(t *testing.T) {
-	t.Parallel()
-	requests := &requestRecorder{}
-	server := httptest.NewServer(scriptedHandler([]step{func(w http.ResponseWriter) {
-		w.Header().Set("Connection", "close")
-		tooMany(w)
-	}}, requests))
-	t.Cleanup(server.Close)
-	client := newTestClient(server.URL)
-	start := client.clock.Now()
-	client.clock.onSleep = func(int) {
-		server.Close()
-		client.clock.mu.Lock()
-		client.clock.now = start.Add(5*time.Minute - 100*time.Millisecond)
-		client.clock.mu.Unlock()
-	}
-
-	err := client.post("/events")
-
-	require.Equal(t, 1, requests.count())
-	require.Equal(t, 1, client.clock.sleepCount())
-	requireOutcome(t, err, false, true)
+	requireOutcome(t, err, true, false)
 }
 
 func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
