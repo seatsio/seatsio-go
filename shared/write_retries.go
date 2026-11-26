@@ -191,7 +191,7 @@ func neverSent(err error, gotConn bool) bool {
 }
 
 func isResponseLost(resp *req.Response, err error) bool {
-	return resp.Response == nil || isNetworkError(err)
+	return resp.Response == nil || isNetworkError(err) || errors.Is(err, context.Canceled)
 }
 
 func isNetworkError(err error) bool {

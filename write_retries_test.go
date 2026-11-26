@@ -1048,6 +1048,40 @@ func TestDoesNotRetryALostResponseWhenTheContextIsCancelled(t *testing.T) {
 	require.ErrorIs(t, ctx.Err(), context.Canceled)
 }
 
+func TestOutcomeIsUnknownWhenTheContextIsCancelledWhileTheBodyIsRead(t *testing.T) {
+	t.Parallel()
+	for _, honored := range []bool{false, true} {
+		t.Run(fmt.Sprintf("keys honored %v", honored), func(t *testing.T) {
+			t.Parallel()
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			first := ignored
+			if honored {
+				first = executed
+			}
+			server, requests := scriptedServer(t, first, func(w http.ResponseWriter) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{"key":`))
+				w.(http.Flusher).Flush()
+				time.Sleep(50 * time.Millisecond)
+				cancel()
+				time.Sleep(300 * time.Millisecond)
+			})
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+
+			var event unparseableEvent
+			response, err := client.R().SetContext(ctx).SetSuccessResult(&event).Post("/events")
+			_, err = shared.AssertOk(response, err, &event)
+
+			require.ErrorIs(t, err, context.Canceled)
+			require.Equal(t, 2, requests.count())
+			requireOutcome(t, err, true, honored)
+		})
+	}
+}
+
 func TestAZeroKeyInTheContextFailsBeforeSending(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, executed)
