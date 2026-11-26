@@ -547,13 +547,11 @@ The client retries a write with the same key:
 
 - when the server answers `429`, or `409` with error code `IDEMPOTENCY_KEY_IN_USE`;
 - when the request never reached the server (connection refused, connect timeout, DNS or TLS failure);
-- when the response was lost after the request was sent, but only if the server has confirmed that it honors idempotency keys for that operation. The client remembers the `Idempotency-Key-Status` of the last response for each operation (for example "book objects in an event", whatever the event), so the first call of an operation is never retried after a lost response, and calls of an operation that answered `ignored` aren't either.
+- when the response was lost after the request was sent, but only if the server has confirmed that it honors idempotency keys. Idempotency is switched on or off for all write requests at once, so the client remembers the `Idempotency-Key-Status` of the last response that had one, whatever the operation. The first write of a client is never retried after a lost response, and no write is retried after one while the last status was `ignored`.
 
 All these retries count against `SetMaxRetries` (default 5; 0 turns them off). Once a request may have reached the server, the client doesn't start a retry more than 5 minutes after the first attempt, well within the lifetime of the key; this can only stop retries earlier, never add any. A `422` and an invalid key are never retried. Each `SeatsioClient` has its own memory.
 
-There is a small remaining risk: if seats.io switches idempotency off (globally, or for your company) between the last response that said an operation honors keys and a lost response, the retry can execute the operation a second time. The next response with `ignored` corrects the client's memory, so this window is short.
-
-The server doesn't answer a `PUT` with a status, so a `PUT` is never remembered as honoring keys: it's retried after a `429` or when it was never sent, but not after a lost response.
+There is a small remaining risk: if seats.io switches idempotency off (globally, or for your company) between the last response that said keys are honored and a lost response, the retry can execute the operation a second time. The next response with `ignored` corrects the client's memory, so this window is short.
 
 `GET` requests are retried after a `429`, and when the connection fails or times out before the complete response was received.
 

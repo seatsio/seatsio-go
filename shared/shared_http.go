@@ -174,14 +174,14 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	outcomeUnknown := result.StatusCode >= 500 || isKeyInUse(result)
 	keyHonored := status.keyHonored()
 	if !status.known() {
-		keyHonored = w != nil && w.routeHonorsKeys()
+		keyHonored = w != nil && w.honorsKeys()
 	}
 	safeToRetryWithSameKey := outcomeUnknown && keyHonored && status != statusReplayed
 	if w != nil && !w.startsWithinRetryWindow(0) {
 		safeToRetryWithSameKey = false
 	}
 	if result.StatusCode == http.StatusTooManyRequests && w != nil && w.mayHaveRun {
-		outcomeUnknown, safeToRetryWithSameKey = true, w.routeHonorsKeys() && w.startsWithinRetryWindow(0)
+		outcomeUnknown, safeToRetryWithSameKey = true, w.honorsKeys() && w.startsWithinRetryWindow(0)
 	}
 	if parseErr != nil {
 		return &RequestError{

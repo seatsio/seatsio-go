@@ -209,7 +209,7 @@ func requireSameKey(t *testing.T, keys []string) {
 	}
 }
 
-func TestALostResponseIsRetriedWithTheSameKeyOnARouteThatHonorsKeys(t *testing.T) {
+func TestALostResponseIsRetriedWithTheSameKeyWhenKeysAreHonored(t *testing.T) {
 	t.Parallel()
 	for _, method := range []string{http.MethodPost, http.MethodDelete} {
 		t.Run(method, func(t *testing.T) {
@@ -232,7 +232,7 @@ func TestALostResponseIsRetriedWithTheSameKeyOnARouteThatHonorsKeys(t *testing.T
 	}
 }
 
-func TestALostResponseIsNotRetriedOnARouteThatIgnoresKeys(t *testing.T) {
+func TestALostResponseIsNotRetriedWhenKeysAreIgnored(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, ignored, lost(), executed)
 	client := newTestClient(server.URL)
@@ -247,7 +247,7 @@ func TestALostResponseIsNotRetriedOnARouteThatIgnoresKeys(t *testing.T) {
 	require.Equal(t, requests.keys()[1], key.String())
 }
 
-func TestALostResponseIsNotRetriedOnARouteThatNeverSentAStatus(t *testing.T) {
+func TestALostResponseIsNotRetriedWhenNoResponseHadAStatus(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, noStatus, lost(), executed)
 	client := newTestClient(server.URL)
@@ -259,7 +259,7 @@ func TestALostResponseIsNotRetriedOnARouteThatNeverSentAStatus(t *testing.T) {
 	requireOutcome(t, err, true, false)
 }
 
-func TestTheFirstRequestToARouteIsNotRetriedAfterALostResponse(t *testing.T) {
+func TestTheFirstRequestOfAClientIsNotRetriedAfterALostResponse(t *testing.T) {
 	t.Parallel()
 	for _, method := range writeMethods {
 		t.Run(method, func(t *testing.T) {
@@ -306,7 +306,7 @@ func TestARequestThatWasNeverSentIsSafeToRetryWithTheSameKey(t *testing.T) {
 	require.True(t, ok)
 }
 
-func TestALostResponseIsSafeToRetryWithTheSameKeyOnARouteThatHonorsKeys(t *testing.T) {
+func TestALostResponseIsSafeToRetryWithTheSameKeyWhenKeysAreHonored(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, executed, lost())
 	client := newTestClient(server.URL)
@@ -319,31 +319,47 @@ func TestALostResponseIsSafeToRetryWithTheSameKeyOnARouteThatHonorsKeys(t *testi
 	requireOutcome(t, err, true, true)
 }
 
-func TestRoutesAreRememberedSeparately(t *testing.T) {
+func TestTheServersAnswerForOneOperationAppliesToAllOperations(t *testing.T) {
 	t.Parallel()
-	server, requests := scriptedServer(t, executed, lost(), executed)
+	for name, second := range map[string]func(client *testClient) error{
+		"another path": func(client *testClient) error { return client.post("/charts") },
+		"another method": func(client *testClient) error {
+			response, err := client.R().Delete("/events/anEvent")
+			return shared.AssertOkWithoutResult(response, err)
+		},
+		"a PUT": func(client *testClient) error {
+			response, err := client.R().Put("/events/anEvent")
+			return shared.AssertOkWithoutResult(response, err)
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			server, requests := scriptedServer(t, executed, lost(), executed)
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+
+			require.NoError(t, second(client))
+
+			require.Equal(t, 3, requests.count())
+			requireSameKey(t, requests.keys()[1:])
+		})
+	}
+}
+
+func TestAnOperationThatIgnoresKeysStopsRetriesOfAllOperations(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, executed, ignored, lost(), executed)
 	client := newTestClient(server.URL)
 	require.NoError(t, client.post("/events"))
+	require.NoError(t, client.post("/charts"))
 
-	err := client.post("/charts")
+	err := client.post("/events")
 
-	require.Equal(t, 2, requests.count())
+	require.Equal(t, 3, requests.count())
 	requireOutcome(t, err, true, false)
 }
 
-func TestMethodsAreRememberedSeparately(t *testing.T) {
-	t.Parallel()
-	server, requests := scriptedServer(t, executed, lost(), executed)
-	client := newTestClient(server.URL)
-	require.NoError(t, client.post("/events/anEvent"))
-
-	_, err := client.R().Delete("/events/anEvent")
-
-	require.Error(t, err)
-	require.Equal(t, 2, requests.count())
-}
-
-func TestTheLatestKnownStatusOfARouteWins(t *testing.T) {
+func TestTheLatestKnownStatusWins(t *testing.T) {
 	t.Parallel()
 	for name, second := range map[string]step{
 		"200": reply(http.StatusOK, "ignored", eventBody),
@@ -387,21 +403,7 @@ func TestAResponseWithoutAStatusLeavesTheMemoryAlone(t *testing.T) {
 	}
 }
 
-func TestConcretePathsOfTheSameTemplateShareTheMemory(t *testing.T) {
-	t.Parallel()
-	server, requests := scriptedServer(t, executed, lost(), executed)
-	client := newTestClient(server.URL)
-	_, err := client.R().SetPathParam("event", "event1").Post("/events/{event}/actions/book")
-	require.NoError(t, err)
-
-	_, err = client.R().SetPathParam("event", "event2").SetQueryParam("expand", "x").Post("/events/{event}/actions/book")
-
-	require.NoError(t, err)
-	require.Equal(t, 3, requests.count())
-	require.Equal(t, "/events/event2/actions/book", requests.all()[2].path)
-}
-
-func TestSetDefaultWorkspaceIsRetriedLikeAnyOtherRoute(t *testing.T) {
+func TestSetDefaultWorkspaceIsRetriedLikeAnyOtherOperation(t *testing.T) {
 	t.Parallel()
 	noContent := reply(http.StatusNoContent, "executed", "")
 	server, requests := scriptedServer(t, noContent, lost(), noContent)
@@ -469,7 +471,7 @@ func TestAnUnknownStatusLeavesTheMemoryAlone(t *testing.T) {
 	require.Equal(t, 4, requests.count())
 }
 
-func TestAnUnknownStatusDoesNotMarkARouteAsHonoringKeys(t *testing.T) {
+func TestAnUnknownStatusDoesNotMarkKeysAsHonored(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, reply(http.StatusOK, "maybe", eventBody), lost(), executed)
 	client := newTestClient(server.URL)
@@ -491,7 +493,7 @@ func TestTheStatusIsCaseInsensitive(t *testing.T) {
 	require.Equal(t, 3, requests.count())
 }
 
-func TestStatusesThatMarkARouteAsHonoringKeys(t *testing.T) {
+func TestStatusesThatMarkKeysAsHonored(t *testing.T) {
 	t.Parallel()
 	for name, first := range map[string]step{
 		"in-use":   keyInUse,
@@ -539,7 +541,7 @@ func TestAnErrorWithoutAStatusSaysNothingAboutTheKey(t *testing.T) {
 	require.NotEmpty(t, apiErr.IdempotencyKey)
 }
 
-func TestAnIncompleteBodyIsRetriedOnARouteThatHonorsKeys(t *testing.T) {
+func TestAnIncompleteBodyIsRetriedWhenKeysAreHonored(t *testing.T) {
 	t.Parallel()
 	for name, incomplete := range incompleteBodyResponses() {
 		t.Run(name, func(t *testing.T) {
@@ -564,7 +566,7 @@ func TestOutcomeIsUnknownWhenASuccessfulResponseBodyIsIncomplete(t *testing.T) {
 	t.Parallel()
 	for name, incomplete := range incompleteBodyResponses() {
 		for _, honored := range []bool{false, true} {
-			t.Run(fmt.Sprintf("%s, route honors keys %v", name, honored), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s, keys honored %v", name, honored), func(t *testing.T) {
 				t.Parallel()
 				first := ignored
 				if honored {
@@ -651,7 +653,7 @@ func TestMaxRetriesZeroGivesOneAttemptForEveryKindOfFailure(t *testing.T) {
 
 		require.Zero(t, client.clock.sleepCount())
 	})
-	t.Run("lost on a route that honors keys", func(t *testing.T) {
+	t.Run("lost when keys are honored", func(t *testing.T) {
 		t.Parallel()
 		server, requests := scriptedServer(t, executed, lost(), executed)
 		client := newTestClient(server.URL).withMaxRetries(0)
@@ -901,20 +903,20 @@ func TestErrorValuesOfErrorResponses(t *testing.T) {
 		honored        *bool
 		replayed       bool
 	}{
-		"5xx executed":                   {nil, reply(500, "executed", apiError("BOOM")), true, true, &yes, false},
-		"5xx in-use":                     {nil, reply(500, "in-use", apiError("BOOM")), true, true, &yes, false},
-		"5xx ignored":                    {nil, reply(500, "ignored", apiError("BOOM")), true, false, &no, false},
-		"5xx without status, unknown":    {nil, reply(502, "", "bad gateway"), true, false, nil, false},
-		"5xx without status, honored":    {executed, reply(502, "", "bad gateway"), true, true, nil, false},
-		"5xx without status, ignored":    {ignored, reply(502, "", "bad gateway"), true, false, nil, false},
-		"5xx replayed":                   {nil, reply(500, "replayed", apiError("BOOM")), true, false, &yes, true},
-		"400":                            {nil, reply(400, "executed", apiError("BAD")), false, false, &yes, false},
-		"404":                            {nil, reply(404, "", apiError("NOT_FOUND")), false, false, nil, false},
-		"409":                            {nil, reply(409, "executed", apiError("CONFLICT")), false, false, &yes, false},
-		"422 reused":                     {nil, reply(422, "reused", apiError("IDEMPOTENCY_KEY_REUSED")), false, false, &yes, false},
-		"key in use after the last try":  {nil, keyInUse, true, true, &yes, false},
-		"400 invalid idempotency key":    {nil, reply(400, "", apiError("INVALID_IDEMPOTENCY_KEY")), false, false, nil, false},
-		"non-json 5xx, route honors key": {executed, reply(503, "", "unavailable"), true, true, nil, false},
+		"5xx executed":                  {nil, reply(500, "executed", apiError("BOOM")), true, true, &yes, false},
+		"5xx in-use":                    {nil, reply(500, "in-use", apiError("BOOM")), true, true, &yes, false},
+		"5xx ignored":                   {nil, reply(500, "ignored", apiError("BOOM")), true, false, &no, false},
+		"5xx without status, unknown":   {nil, reply(502, "", "bad gateway"), true, false, nil, false},
+		"5xx without status, honored":   {executed, reply(502, "", "bad gateway"), true, true, nil, false},
+		"5xx without status, ignored":   {ignored, reply(502, "", "bad gateway"), true, false, nil, false},
+		"5xx replayed":                  {nil, reply(500, "replayed", apiError("BOOM")), true, false, &yes, true},
+		"400":                           {nil, reply(400, "executed", apiError("BAD")), false, false, &yes, false},
+		"404":                           {nil, reply(404, "", apiError("NOT_FOUND")), false, false, nil, false},
+		"409":                           {nil, reply(409, "executed", apiError("CONFLICT")), false, false, &yes, false},
+		"422 reused":                    {nil, reply(422, "reused", apiError("IDEMPOTENCY_KEY_REUSED")), false, false, &yes, false},
+		"key in use after the last try": {nil, keyInUse, true, true, &yes, false},
+		"400 invalid idempotency key":   {nil, reply(400, "", apiError("INVALID_IDEMPOTENCY_KEY")), false, false, nil, false},
+		"non-json 5xx, keys honored":    {executed, reply(503, "", "unavailable"), true, true, nil, false},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

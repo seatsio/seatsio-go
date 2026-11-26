@@ -9,8 +9,6 @@ import (
 	"net"
 	"net/http/httptrace"
 	"net/url"
-	"strings"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -47,10 +45,10 @@ func (systemClock) Sleep(ctx context.Context, d time.Duration) error {
 var SystemClock Clock = systemClock{}
 
 type Retries struct {
-	clock      Clock
-	maxRetries atomic.Int64
-	backoff    func(attempt int) time.Duration
-	routes     sync.Map
+	clock       Clock
+	maxRetries  atomic.Int64
+	backoff     func(attempt int) time.Duration
+	keysHonored atomic.Bool
 }
 
 func NewRetries(clock Clock) *Retries {
@@ -64,15 +62,14 @@ func (s *Retries) SetMaxRetries(client *req.Client, count int) {
 	client.SetCommonRetryCount(count)
 }
 
-func (s *Retries) remember(route string, status idempotencyKeyStatus) {
+func (s *Retries) remember(status idempotencyKeyStatus) {
 	if status.known() {
-		s.routes.Store(route, status.keyHonored())
+		s.keysHonored.Store(status.keyHonored())
 	}
 }
 
-func (s *Retries) honorsKeys(route string) bool {
-	honored, ok := s.routes.Load(route)
-	return ok && honored.(bool)
+func (s *Retries) honorsKeys() bool {
+	return s.keysHonored.Load()
 }
 
 func (s *Retries) interval(resp *req.Response, attempt int) time.Duration {
@@ -88,7 +85,6 @@ type writeContextKey struct{}
 
 type write struct {
 	retries                 *Retries
-	route                   string
 	start                   time.Time
 	mayHaveReachedTheServer bool
 	mayHaveRun              bool
@@ -110,7 +106,7 @@ func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 		if err := setIdempotencyKey(r); err != nil {
 			return &req.Response{Request: r, Err: err}, err
 		}
-		w := &write{retries: s, route: r.Method + " " + routeTemplate(r.RawURL), start: s.clock.Now()}
+		w := &write{retries: s, start: s.clock.Now()}
 		ctx := context.WithValue(r.Context(), writeContextKey{}, w)
 		defer r.SetContext(ctx)
 		for retryCount := 0; ; retryCount++ {
@@ -126,23 +122,16 @@ func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 	}
 }
 
-func routeTemplate(rawURL string) string {
-	if i := strings.IndexByte(rawURL, '?'); i >= 0 {
-		return rawURL[:i]
-	}
-	return rawURL
-}
-
 func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
 	if resp != nil && resp.Response != nil {
 		w.mayHaveReachedTheServer = true
-		w.retries.remember(w.route, idempotencyKeyStatusOf(resp.Header))
+		w.retries.remember(idempotencyKeyStatusOf(resp.Header))
 		if err != nil {
 			if !isResponseLost(resp, err) {
 				return false
 			}
 			w.mayHaveRun = true
-			return w.routeHonorsKeys()
+			return w.honorsKeys()
 		}
 		if isKeyInUse(resp) {
 			w.mayHaveRun = true
@@ -155,15 +144,15 @@ func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
 		return true
 	case responseLost:
 		w.mayHaveReachedTheServer, w.mayHaveRun = true, true
-		return w.routeHonorsKeys()
+		return w.honorsKeys()
 	default:
 		w.mayHaveReachedTheServer, w.mayHaveRun = true, true
 		return false
 	}
 }
 
-func (w *write) routeHonorsKeys() bool {
-	return w.retries.honorsKeys(w.route)
+func (w *write) honorsKeys() bool {
+	return w.retries.honorsKeys()
 }
 
 func (w *write) startsWithinRetryWindow(delay time.Duration) bool {
@@ -171,7 +160,7 @@ func (w *write) startsWithinRetryWindow(delay time.Duration) bool {
 }
 
 func (w *write) failureWithoutResponse() (outcomeUnknown bool, safeToRetryWithSameKey bool) {
-	return w.mayHaveRun, !w.mayHaveRun || (w.routeHonorsKeys() && w.startsWithinRetryWindow(0))
+	return w.mayHaveRun, !w.mayHaveRun || (w.honorsKeys() && w.startsWithinRetryWindow(0))
 }
 
 func (s *Retries) waitBeforeRetry(ctx context.Context, retryCount int, w *write) bool {
