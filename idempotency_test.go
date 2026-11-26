@@ -151,7 +151,7 @@ func TestIdempotencyKeyIsAvailableOnConnectionError(t *testing.T) {
 func TestGetErrorsAreNotWrapped(t *testing.T) {
 	t.Parallel()
 	server, _ := connectionDroppingServer(t)
-	client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0)
+	client := newTestClient(server.URL).withMaxRetries(0)
 
 	response, err := client.R().Get("/events/anEvent")
 	e := shared.AssertOkWithoutResult(response, err)
@@ -324,7 +324,7 @@ func TestIsOutcomeUnknown(t *testing.T) {
 			t.Parallel()
 			server := test.server(t)
 
-			response, err := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0).R().Post("/events")
+			response, err := newTestClient(server.URL).withMaxRetries(0).R().Post("/events")
 			e := shared.AssertOkWithoutResult(response, err)
 
 			require.Error(t, e)
@@ -339,7 +339,7 @@ func TestGetErrorsHaveNoUnknownOutcome(t *testing.T) {
 	t.Parallel()
 	server, _ := connectionDroppingServer(t)
 
-	response, err := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0).R().Get("/events/anEvent")
+	response, err := newTestClient(server.URL).withMaxRetries(0).R().Get("/events/anEvent")
 	e := shared.AssertOkWithoutResult(response, err)
 
 	require.Error(t, e)
@@ -366,7 +366,7 @@ func TestTransportDoesNotResendAWriteWhenAReusedConnectionBreaks(t *testing.T) {
 				dropConnection(w)
 			}))
 			t.Cleanup(server.Close)
-			client := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0)
+			client := newTestClient(server.URL).withMaxRetries(0)
 
 			_, err := client.R().Post("/events")
 			require.NoError(t, err)
@@ -424,7 +424,7 @@ func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *test
 	server, _ := respondingServer(t, http.StatusOK, `{"key":`)
 
 	var event unparseableEvent
-	response, err := shared.ApiClient("aSecretKey", server.URL).SetCommonRetryCount(0).R().SetSuccessResult(&event).Post("/events")
+	response, err := newTestClient(server.URL).withMaxRetries(0).R().SetSuccessResult(&event).Post("/events")
 	_, err = shared.AssertOk(response, err, &event)
 
 	require.Error(t, err)
