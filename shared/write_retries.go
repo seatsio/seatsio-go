@@ -117,14 +117,14 @@ func (s *Retries) sendWrites(rt req.RoundTripper) req.RoundTripFunc {
 				GotConn: func(httptrace.GotConnInfo) { gotConn.Store(true) },
 			}))
 			resp, err := rt.RoundTrip(r)
-			if !w.attempted(resp, err, gotConn.Load()) || !s.waitBeforeRetry(ctx, retryCount, w) {
+			if !w.shouldRetryAfter(resp, err, gotConn.Load()) || !s.waitBeforeRetry(ctx, retryCount, w) {
 				return resp, err
 			}
 		}
 	}
 }
 
-func (w *write) attempted(resp *req.Response, err error, gotConn bool) bool {
+func (w *write) shouldRetryAfter(resp *req.Response, err error, gotConn bool) bool {
 	w.lastNeverSent = false
 	if resp != nil && resp.Response != nil {
 		w.retries.remember(idempotencyKeyStatusOf(resp.Header))
