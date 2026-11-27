@@ -466,21 +466,11 @@ func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *test
 	require.Equal(t, keys.all()[0], key.String())
 }
 
-func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
-	t.Parallel()
-	tests := map[string]struct {
-		method string
-		status int
-		body   string
-		// Writes return the last response they got. A GET goes through req's own
-		// retry loop, which tries once more with the dead context and returns its error.
-		returnsLastResponse bool
-	}{
-		"POST 429":        {http.MethodPost, http.StatusTooManyRequests, ``, true},
-		"POST key in use": {http.MethodPost, http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`, true},
-		"GET 429":         {http.MethodGet, http.StatusTooManyRequests, ``, false},
-	}
-	contexts := map[string]struct {
+func endingContexts() map[string]struct {
+	newContext func() (context.Context, context.CancelFunc)
+	err        error
+} {
+	return map[string]struct {
 		newContext func() (context.Context, context.CancelFunc)
 		err        error
 	}{
@@ -493,8 +483,19 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 			return context.WithTimeout(context.Background(), 50*time.Millisecond)
 		}, context.DeadlineExceeded},
 	}
+}
+
+func TestAWriteReturnsItsLastResponseWhenTheContextEndsDuringARetryWait(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		status int
+		body   string
+	}{
+		"429":        {http.StatusTooManyRequests, ``},
+		"key in use": {http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`},
+	}
 	for name, test := range tests {
-		for contextName, ending := range contexts {
+		for contextName, ending := range endingContexts() {
 			t.Run(name+" "+contextName, func(t *testing.T) {
 				t.Parallel()
 				server, keys := respondingServer(t, test.status, test.body)
@@ -502,20 +503,36 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 				defer cancel()
 
 				start := time.Now()
-				response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Send(test.method, "/events")
+				response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Post("/events")
 				e := shared.AssertOkWithoutResult(response, err)
 
 				require.Less(t, time.Since(start), 300*time.Millisecond)
-				require.Error(t, e)
 				require.Len(t, keys.all(), 1)
-				if test.returnsLastResponse {
-					require.NoError(t, err, "the last response comes back, not the context error")
-					require.Equal(t, test.status, response.StatusCode)
-					require.NotErrorIs(t, e, ending.err)
-				} else {
-					require.ErrorIs(t, e, ending.err)
-				}
+				require.NoError(t, err)
+				require.Equal(t, test.status, response.StatusCode)
+				require.Error(t, e)
+				require.NotErrorIs(t, e, ending.err)
 			})
 		}
+	}
+}
+
+func TestAGetReturnsTheContextErrorWhenTheContextEndsDuringARetryWait(t *testing.T) {
+	t.Parallel()
+	for contextName, ending := range endingContexts() {
+		t.Run(contextName, func(t *testing.T) {
+			t.Parallel()
+			server, keys := respondingServer(t, http.StatusTooManyRequests, ``)
+			ctx, cancel := ending.newContext()
+			defer cancel()
+
+			start := time.Now()
+			response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Get("/events")
+			e := shared.AssertOkWithoutResult(response, err)
+
+			require.Less(t, time.Since(start), 300*time.Millisecond)
+			require.Len(t, keys.all(), 1)
+			require.ErrorIs(t, e, ending.err)
+		})
 	}
 }
