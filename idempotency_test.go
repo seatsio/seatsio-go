@@ -220,14 +220,44 @@ func TestIdempotencyKeyOf(t *testing.T) {
 
 func TestErrorResponseWithoutErrorsIsAnUnexpectedResponse(t *testing.T) {
 	t.Parallel()
-	server, _ := respondingServer(t, http.StatusBadRequest, `{"errors":[]}`)
+	for _, method := range []string{http.MethodGet, http.MethodPost} {
+		t.Run(method, func(t *testing.T) {
+			t.Parallel()
+			server, _ := respondingServer(t, http.StatusBadRequest, `{"errors":[]}`)
 
-	response, err := shared.ApiClient("aSecretKey", server.URL).R().Post("/events")
-	e := shared.AssertOkWithoutResult(response, err)
+			response, err := shared.ApiClient("aSecretKey", server.URL).R().Send(method, "/events")
+			e := shared.AssertOkWithoutResult(response, err)
 
-	var apiErr *shared.SeatsioError
-	require.False(t, errors.As(e, &apiErr))
-	require.ErrorContains(t, e, "server returned error 400")
+			var apiErr *shared.SeatsioError
+			require.False(t, errors.As(e, &apiErr))
+			require.ErrorContains(t, e, "server returned error 400")
+		})
+	}
+}
+
+type temporaryError bool
+
+func (e temporaryError) Error() string   { return "temporary?" }
+func (e temporaryError) Temporary() bool { return bool(e) }
+
+func TestRequestErrorIsTemporaryWhenItsCauseIs(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		cause     error
+		temporary bool
+	}{
+		"temporary":         {temporaryError(true), true},
+		"not temporary":     {temporaryError(false), false},
+		"wrapped temporary": {fmt.Errorf("wrapped: %w", temporaryError(true)), true},
+		"no Temporary":      {errors.New("boom"), false},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			e := &shared.RequestError{Err: test.cause}
+
+			require.Equal(t, test.temporary, e.Temporary())
+		})
+	}
 }
 
 func TestGeneratesADifferentKeyForEachRequest(t *testing.T) {
@@ -434,11 +464,13 @@ func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *test
 func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
+		method string
 		status int
 		body   string
 	}{
-		"429":        {http.StatusTooManyRequests, ``},
-		"key in use": {http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`},
+		"POST 429":        {http.MethodPost, http.StatusTooManyRequests, ``},
+		"POST key in use": {http.MethodPost, http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`},
+		"GET 429":         {http.MethodGet, http.StatusTooManyRequests, ``},
 	}
 	contexts := map[string]func() (context.Context, context.CancelFunc){
 		"cancelled": func() (context.Context, context.CancelFunc) {
@@ -459,7 +491,7 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 				defer cancel()
 
 				start := time.Now()
-				response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Post("/events")
+				response, err := shared.ApiClient("aSecretKey", server.URL).R().SetContext(ctx).Send(test.method, "/events")
 				e := shared.AssertOkWithoutResult(response, err)
 
 				require.Less(t, time.Since(start), 300*time.Millisecond)

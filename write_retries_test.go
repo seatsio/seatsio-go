@@ -306,6 +306,108 @@ func TestARequestThatWasNeverSentIsSafeToRetryWithTheSameKey(t *testing.T) {
 	require.True(t, ok)
 }
 
+func TestEveryKindOfRequestThatWasNeverSentIsSafeToRetryWithTheSameKey(t *testing.T) {
+	t.Parallel()
+	tests := map[string]func(t *testing.T) (client *testClient, ctx context.Context, requests *requestRecorder){
+		"unknown host": func(t *testing.T) (*testClient, context.Context, *requestRecorder) {
+			return newTestClient("http://seatsio-go-test.invalid"), context.Background(), nil
+		},
+		"untrusted certificate": func(t *testing.T) (*testClient, context.Context, *requestRecorder) {
+			requests := &requestRecorder{}
+			server := httptest.NewTLSServer(scriptedHandler([]step{executed}, requests))
+			t.Cleanup(server.Close)
+			return newTestClient(server.URL), context.Background(), requests
+		},
+		"connect timeout": func(t *testing.T) (*testClient, context.Context, *requestRecorder) {
+			server, requests := scriptedServer(t, executed)
+			client := newTestClient(server.URL)
+			client.SetDial((&net.Dialer{Timeout: time.Nanosecond}).DialContext)
+			return client, context.Background(), requests
+		},
+		"context cancelled before connecting": func(t *testing.T) (*testClient, context.Context, *requestRecorder) {
+			server, requests := scriptedServer(t, executed)
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			return newTestClient(server.URL), ctx, requests
+		},
+	}
+	for name, setUp := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			client, ctx, requests := setUp(t)
+			client.withMaxRetries(0)
+
+			response, err := client.R().SetContext(ctx).Post("/events")
+			err = shared.AssertOkWithoutResult(response, err)
+
+			requireOutcome(t, err, false, true)
+			key, ok := ClientSupport.IdempotencyKeyOf(err)
+			require.True(t, ok)
+			require.Equal(t, sentIdempotencyKey(t, response), key.String())
+			if requests != nil {
+				require.Zero(t, requests.count())
+			}
+		})
+	}
+}
+
+func sentIdempotencyKey(t *testing.T, response *req.Response) string {
+	t.Helper()
+	require.NotNil(t, response)
+	require.NotNil(t, response.Request)
+	keys := response.Request.Headers["idempotency-key"]
+	require.Len(t, keys, 1)
+	return keys[0]
+}
+
+func TestThe30SecondLimitStopsApplyingOnceTheServerAnswers(t *testing.T) {
+	t.Parallel()
+	address := reservedAddress(t)
+	requests := &requestRecorder{}
+	client := newTestClient("http://" + address).withMaxRetries(5)
+	client.clock.extraPerSleep = 10 * time.Second
+	client.clock.onSleep = func(sleeps int) {
+		if sleeps == 1 {
+			startScriptedServerOn(t, address, requests, tooMany)
+		}
+	}
+
+	err := client.post("/events")
+
+	require.Equal(t, 5, client.clock.sleepCount())
+	require.Equal(t, 5, requests.count())
+	require.Greater(t, client.clock.Now().Sub(time.Date(2026, 11, 24, 12, 0, 0, 0, time.UTC)), 30*time.Second)
+	requireOutcome(t, err, false, false)
+}
+
+func TestAnIncompleteBodyKeepsTheKeyStatusOfItsHeaders(t *testing.T) {
+	t.Parallel()
+	for name, incomplete := range incompleteBodyResponses() {
+		for _, keyStatus := range []string{"executed", "replayed"} {
+			t.Run(name+", "+keyStatus, func(t *testing.T) {
+				t.Parallel()
+				server, _ := scriptedServer(t, func(w http.ResponseWriter) {
+					w.Header().Set(shared.IdempotencyKeyStatusHeader, keyStatus)
+					incomplete(w)
+				})
+				client := newTestClient(server.URL).withMaxRetries(0)
+				client.SetTimeout(150 * time.Millisecond)
+
+				var event unparseableEvent
+				response, err := client.R().SetSuccessResult(&event).Post("/events")
+				_, err = shared.AssertOk(response, err, &event)
+
+				var requestErr *shared.RequestError
+				require.ErrorAs(t, err, &requestErr)
+				require.NotNil(t, requestErr.IdempotencyKeyHonored)
+				require.True(t, *requestErr.IdempotencyKeyHonored)
+				require.Equal(t, keyStatus == "replayed", requestErr.Replayed)
+				requireOutcome(t, err, true, true)
+			})
+		}
+	}
+}
+
 func TestALostResponseIsSafeToRetryWithTheSameKeyWhenKeysAreHonored(t *testing.T) {
 	t.Parallel()
 	server, requests := scriptedServer(t, executed, lost())
