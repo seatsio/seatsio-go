@@ -12,6 +12,7 @@ type SeatsioErrorResponse struct {
 type SeatsioError struct {
 	Code    string
 	Message string
+	IdempotencyDetails
 }
 
 func (m *SeatsioError) Error() string {

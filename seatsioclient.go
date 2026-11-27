@@ -1,6 +1,7 @@
 package seatsio
 
 import (
+	"context"
 	"errors"
 	"github.com/imroc/req/v3"
 	"github.com/seatsio/seatsio-go/v13/charts"
@@ -14,9 +15,7 @@ import (
 	"github.com/seatsio/seatsio-go/v13/workspaces"
 )
 
-type seatsioClientNS struct {
-	apiClient *req.Client
-}
+type seatsioClientNS struct{}
 
 var ClientSupport seatsioClientNS
 
@@ -33,6 +32,8 @@ const (
 type SeatsioClient struct {
 	baseUrl      string
 	secretKey    string
+	apiClient    *req.Client
+	retries      *shared.Retries
 	workspaceKey string
 	Workspaces   *workspaces.Workspaces
 	Charts       *charts.Charts
@@ -48,10 +49,16 @@ type SeatsioClient struct {
 }
 
 func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
-	apiClient := shared.ApiClient(secretKey, baseUrl, additionalHeaders...)
+	return newSeatsioClient(baseUrl, secretKey, shared.NewRetries(shared.SystemClock), additionalHeaders...)
+}
+
+func newSeatsioClient(baseUrl string, secretKey string, retries *shared.Retries, additionalHeaders ...shared.AdditionalHeader) *SeatsioClient {
+	apiClient := shared.ApiClientWithRetries(secretKey, baseUrl, retries, additionalHeaders...)
 	client := &SeatsioClient{
 		baseUrl:    baseUrl,
 		secretKey:  secretKey,
+		apiClient:  apiClient,
+		retries:    retries,
 		Workspaces: &workspaces.Workspaces{Client: apiClient},
 		Charts: &charts.Charts{
 			Client:  apiClient,
@@ -67,7 +74,6 @@ func NewSeatsioClient(baseUrl string, secretKey string, additionalHeaders ...sha
 		EventLog:     &eventlog.EventLog{Client: apiClient},
 		TicketBuyers: &ticketbuyers.TicketBuyers{Client: apiClient},
 	}
-	ClientSupport.apiClient = apiClient
 	return client
 }
 
@@ -75,8 +81,34 @@ func (c *SeatsioClient) SetMaxRetries(count int) error {
 	if count < 0 {
 		return errors.New("retry count must not be negative")
 	}
-	ClientSupport.apiClient.SetCommonRetryCount(count)
+	c.retries.SetMaxRetries(c.apiClient, count)
 	return nil
+}
+
+type IdempotencyKey = shared.IdempotencyKey
+
+func (seatsioClientNS) NewIdempotencyKey() IdempotencyKey {
+	return shared.NewIdempotencyKey()
+}
+
+func (seatsioClientNS) ParseIdempotencyKey(s string) (IdempotencyKey, error) {
+	return shared.ParseIdempotencyKey(s)
+}
+
+func (seatsioClientNS) WithIdempotencyKey(ctx context.Context, key IdempotencyKey) context.Context {
+	return shared.WithIdempotencyKey(ctx, key)
+}
+
+func (seatsioClientNS) IdempotencyKeyOf(err error) (IdempotencyKey, bool) {
+	return shared.IdempotencyKeyOf(err)
+}
+
+func (seatsioClientNS) IsOutcomeUnknown(err error) bool {
+	return shared.IsOutcomeUnknown(err)
+}
+
+func (seatsioClientNS) IsSafeToRetryWithSameKey(err error) bool {
+	return shared.IsSafeToRetryWithSameKey(err)
 }
 
 func (seatsioClientNS) WorkspaceKey(key string) shared.AdditionalHeader {
