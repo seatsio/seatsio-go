@@ -96,13 +96,41 @@ func (s idempotencyKeyStatus) keyHonoredOrNil() *bool {
 	return &honored
 }
 
-type RequestError struct {
+type IdempotencyDetails struct {
 	IdempotencyKey         string
 	IdempotencyKeyHonored  *bool
 	Replayed               bool
-	Err                    error
 	outcomeUnknown         bool
 	safeToRetryWithSameKey bool
+}
+
+func (d *IdempotencyDetails) IsOutcomeUnknown() bool {
+	return d.outcomeUnknown
+}
+
+func (d *IdempotencyDetails) IsSafeToRetryWithSameKey() bool {
+	return d.safeToRetryWithSameKey
+}
+
+func (d *IdempotencyDetails) idempotencyDetails() *IdempotencyDetails {
+	return d
+}
+
+type idempotencyFailure interface {
+	idempotencyDetails() *IdempotencyDetails
+}
+
+func idempotencyDetailsOf(err error) (*IdempotencyDetails, bool) {
+	var failure idempotencyFailure
+	if errors.As(err, &failure) {
+		return failure.idempotencyDetails(), true
+	}
+	return nil, false
+}
+
+type RequestError struct {
+	IdempotencyDetails
+	Err error
 }
 
 func (e *RequestError) Error() string {
@@ -123,48 +151,22 @@ func (e *RequestError) Temporary() bool {
 	return errors.As(e.Err, &t) && t.Temporary()
 }
 
-func (e *RequestError) IsOutcomeUnknown() bool {
-	return e.outcomeUnknown
-}
-
-func (e *RequestError) IsSafeToRetryWithSameKey() bool {
-	return e.safeToRetryWithSameKey
-}
-
 func IsOutcomeUnknown(err error) bool {
-	var requestErr *RequestError
-	if errors.As(err, &requestErr) {
-		return requestErr.outcomeUnknown
-	}
-	var apiErr *SeatsioError
-	if errors.As(err, &apiErr) {
-		return apiErr.outcomeUnknown
-	}
-	return false
+	details, ok := idempotencyDetailsOf(err)
+	return ok && details.outcomeUnknown
 }
 
 func IsSafeToRetryWithSameKey(err error) bool {
-	var requestErr *RequestError
-	if errors.As(err, &requestErr) {
-		return requestErr.safeToRetryWithSameKey
-	}
-	var apiErr *SeatsioError
-	if errors.As(err, &apiErr) {
-		return apiErr.safeToRetryWithSameKey
-	}
-	return false
+	details, ok := idempotencyDetailsOf(err)
+	return ok && details.safeToRetryWithSameKey
 }
 
 func IdempotencyKeyOf(err error) (IdempotencyKey, bool) {
-	var raw string
-	var requestErr *RequestError
-	var apiErr *SeatsioError
-	if errors.As(err, &requestErr) {
-		raw = requestErr.IdempotencyKey
-	} else if errors.As(err, &apiErr) {
-		raw = apiErr.IdempotencyKey
+	details, ok := idempotencyDetailsOf(err)
+	if !ok {
+		return IdempotencyKey{}, false
 	}
-	key, parseErr := ParseIdempotencyKey(raw)
+	key, parseErr := ParseIdempotencyKey(details.IdempotencyKey)
 	return key, parseErr == nil
 }
 

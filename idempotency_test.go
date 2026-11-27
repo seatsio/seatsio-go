@@ -200,12 +200,12 @@ func TestIdempotencyKeyOf(t *testing.T) {
 	}{
 		"nil":           {nil, "", false},
 		"foreign error": {errors.New("boom"), "", false},
-		"request error": {&shared.RequestError{IdempotencyKey: k, Err: errors.New("boom")}, k, true},
-		"api error":     {&shared.SeatsioError{Code: "c", IdempotencyKey: k}, k, true},
-		"wrapped":       {fmt.Errorf("wrapped: %w", &shared.SeatsioError{IdempotencyKey: k}), k, true},
-		"joined":        {errors.Join(errors.New("a"), &shared.RequestError{IdempotencyKey: k, Err: errors.New("b")}), k, true},
+		"request error": {&shared.RequestError{IdempotencyDetails: shared.IdempotencyDetails{IdempotencyKey: k}, Err: errors.New("boom")}, k, true},
+		"api error":     {&shared.SeatsioError{Code: "c", IdempotencyDetails: shared.IdempotencyDetails{IdempotencyKey: k}}, k, true},
+		"wrapped":       {fmt.Errorf("wrapped: %w", &shared.SeatsioError{IdempotencyDetails: shared.IdempotencyDetails{IdempotencyKey: k}}), k, true},
+		"joined":        {errors.Join(errors.New("a"), &shared.RequestError{IdempotencyDetails: shared.IdempotencyDetails{IdempotencyKey: k}, Err: errors.New("b")}), k, true},
 		"empty key":     {&shared.RequestError{Err: errors.New("boom")}, "", false},
-		"invalid key":   {&shared.RequestError{IdempotencyKey: "k", Err: errors.New("boom")}, "", false},
+		"invalid key":   {&shared.RequestError{IdempotencyDetails: shared.IdempotencyDetails{IdempotencyKey: "k"}, Err: errors.New("boom")}, "", false},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

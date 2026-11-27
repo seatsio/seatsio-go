@@ -149,7 +149,7 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 		if key == "" {
 			return err
 		}
-		requestErr := &RequestError{IdempotencyKey: key, Err: err}
+		requestErr := &RequestError{IdempotencyDetails: IdempotencyDetails{IdempotencyKey: key}, Err: err}
 		if result != nil && result.Response != nil {
 			status := idempotencyKeyStatusOf(result.Header)
 			requestErr.IdempotencyKeyHonored, requestErr.Replayed = status.keyHonoredOrNil(), status == statusReplayed
@@ -181,25 +181,17 @@ func AssertOkWithoutResult(result *req.Response, err error) error {
 	if w != nil && !w.startsWithinRetryWindow(0) {
 		safeToRetryWithSameKey = false
 	}
-	if parseErr != nil {
-		return &RequestError{
-			IdempotencyKey:         key,
-			IdempotencyKeyHonored:  status.keyHonoredOrNil(),
-			Replayed:               replayed,
-			Err:                    parseErr,
-			outcomeUnknown:         outcomeUnknown,
-			safeToRetryWithSameKey: safeToRetryWithSameKey,
-		}
-	}
-	return &SeatsioError{
-		Message:                apiError.Message,
-		Code:                   apiError.Code,
+	details := IdempotencyDetails{
 		IdempotencyKey:         key,
 		IdempotencyKeyHonored:  status.keyHonoredOrNil(),
 		Replayed:               replayed,
 		outcomeUnknown:         outcomeUnknown,
 		safeToRetryWithSameKey: safeToRetryWithSameKey,
 	}
+	if parseErr != nil {
+		return &RequestError{IdempotencyDetails: details, Err: parseErr}
+	}
+	return &SeatsioError{Message: apiError.Message, Code: apiError.Code, IdempotencyDetails: details}
 }
 
 func firstApiError(result *req.Response) (*SeatsioErrorTO, error) {

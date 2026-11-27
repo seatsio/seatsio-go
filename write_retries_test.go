@@ -914,9 +914,11 @@ func TestAWriteThatMayHaveRunIsNotResentWhenAnotherOperationIgnoresKeysDuringThe
 	for name, steps := range map[string]struct {
 		script     []step
 		otherAfter int
+		safe       bool
 	}{
-		"after a lost response":    {[]step{executed, lost(), ignored, executed}, 1},
-		"after a 429 that follows": {[]step{executed, lost(), tooMany, ignored, executed}, 2},
+		"after a lost response":    {[]step{executed, lost(), ignored, executed}, 1, false},
+		"after a 429 that follows": {[]step{executed, lost(), tooMany, ignored, executed}, 2, false},
+		"after a key in use":       {[]step{executed, keyInUse, ignored, executed}, 1, true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -932,7 +934,7 @@ func TestAWriteThatMayHaveRunIsNotResentWhenAnotherOperationIgnoresKeysDuringThe
 			err := client.post("/events")
 
 			require.Equal(t, len(steps.script)-1, requests.count())
-			requireOutcome(t, err, true, false)
+			requireOutcome(t, err, true, steps.safe)
 		})
 	}
 }
