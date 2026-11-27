@@ -451,14 +451,19 @@ func incompleteBodyResponses() map[string]func(w http.ResponseWriter) {
 
 func TestOutcomeIsKnownWhenACompleteSuccessfulResponseBodyCannotBeParsed(t *testing.T) {
 	t.Parallel()
-	server, _ := respondingServer(t, http.StatusOK, `{"key":`)
+	server, keys := respondingServer(t, http.StatusOK, `{"key":`)
 
 	var event unparseableEvent
 	response, err := newTestClient(server.URL).withMaxRetries(0).R().SetSuccessResult(&event).Post("/events")
 	_, err = shared.AssertOk(response, err, &event)
 
-	require.Error(t, err)
-	require.False(t, ClientSupport.IsOutcomeUnknown(err))
+	var requestErr *shared.RequestError
+	require.ErrorAs(t, err, &requestErr)
+	requireOutcome(t, err, false, false)
+	require.Len(t, keys.all(), 1)
+	key, ok := shared.IdempotencyKeyOf(err)
+	require.True(t, ok)
+	require.Equal(t, keys.all()[0], key.String())
 }
 
 func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
@@ -467,27 +472,33 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 		method string
 		status int
 		body   string
+		// Writes return the last response they got. A GET goes through req's own
+		// retry loop, which tries once more with the dead context and returns its error.
+		returnsLastResponse bool
 	}{
-		"POST 429":        {http.MethodPost, http.StatusTooManyRequests, ``},
-		"POST key in use": {http.MethodPost, http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`},
-		"GET 429":         {http.MethodGet, http.StatusTooManyRequests, ``},
+		"POST 429":        {http.MethodPost, http.StatusTooManyRequests, ``, true},
+		"POST key in use": {http.MethodPost, http.StatusConflict, `{"errors":[{"code":"IDEMPOTENCY_KEY_IN_USE","message":"in use"}]}`, true},
+		"GET 429":         {http.MethodGet, http.StatusTooManyRequests, ``, false},
 	}
-	contexts := map[string]func() (context.Context, context.CancelFunc){
-		"cancelled": func() (context.Context, context.CancelFunc) {
+	contexts := map[string]struct {
+		newContext func() (context.Context, context.CancelFunc)
+		err        error
+	}{
+		"cancelled": {func() (context.Context, context.CancelFunc) {
 			ctx, cancel := context.WithCancel(context.Background())
 			time.AfterFunc(50*time.Millisecond, cancel)
 			return ctx, cancel
-		},
-		"expired": func() (context.Context, context.CancelFunc) {
+		}, context.Canceled},
+		"expired": {func() (context.Context, context.CancelFunc) {
 			return context.WithTimeout(context.Background(), 50*time.Millisecond)
-		},
+		}, context.DeadlineExceeded},
 	}
 	for name, test := range tests {
-		for contextName, newContext := range contexts {
+		for contextName, ending := range contexts {
 			t.Run(name+" "+contextName, func(t *testing.T) {
 				t.Parallel()
 				server, keys := respondingServer(t, test.status, test.body)
-				ctx, cancel := newContext()
+				ctx, cancel := ending.newContext()
 				defer cancel()
 
 				start := time.Now()
@@ -497,6 +508,13 @@ func TestStopsWaitingForARetryWhenTheContextEnds(t *testing.T) {
 				require.Less(t, time.Since(start), 300*time.Millisecond)
 				require.Error(t, e)
 				require.Len(t, keys.all(), 1)
+				if test.returnsLastResponse {
+					require.NoError(t, err, "the last response comes back, not the context error")
+					require.Equal(t, test.status, response.StatusCode)
+					require.NotErrorIs(t, e, ending.err)
+				} else {
+					require.ErrorIs(t, e, ending.err)
+				}
 			})
 		}
 	}
