@@ -909,6 +909,68 @@ func TestA429AfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
 	}
 }
 
+func TestAWriteThatMayHaveRunIsNotResentWhenAnotherOperationIgnoresKeysDuringTheWait(t *testing.T) {
+	t.Parallel()
+	for name, steps := range map[string]struct {
+		script     []step
+		otherAfter int
+	}{
+		"after a lost response":    {[]step{executed, lost(), ignored, executed}, 1},
+		"after a 429 that follows": {[]step{executed, lost(), tooMany, ignored, executed}, 2},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			server, requests := scriptedServer(t, steps.script...)
+			client := newTestClient(server.URL)
+			require.NoError(t, client.post("/events"))
+			client.clock.onSleep = func(sleeps int) {
+				if sleeps == steps.otherAfter {
+					require.NoError(t, client.post("/charts"))
+				}
+			}
+
+			err := client.post("/events")
+
+			require.Equal(t, len(steps.script)-1, requests.count())
+			requireOutcome(t, err, true, false)
+		})
+	}
+}
+
+func TestAWriteThatMayHaveRunIsNotResentAfterA429ThatIgnoresKeys(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, executed, lost(), reply(http.StatusTooManyRequests, "ignored", ""), executed)
+	client := newTestClient(server.URL)
+	require.NoError(t, client.post("/events"))
+
+	err := client.post("/events")
+
+	require.Equal(t, 3, requests.count())
+	requireOutcome(t, err, true, false)
+}
+
+func TestKeyInUseWithoutAStatusIsRetriedBeforeKeysAreKnownToBeHonored(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, reply(http.StatusConflict, "", apiError("IDEMPOTENCY_KEY_IN_USE")), executed)
+	client := newTestClient(server.URL)
+
+	require.NoError(t, client.post("/events"))
+
+	require.Equal(t, 2, requests.count())
+	requireSameKey(t, requests.keys())
+}
+
+func TestA429IsRetriedWhenKeysAreIgnored(t *testing.T) {
+	t.Parallel()
+	server, requests := scriptedServer(t, ignored, tooMany, ignored)
+	client := newTestClient(server.URL)
+	require.NoError(t, client.post("/events"))
+
+	require.NoError(t, client.post("/events"))
+
+	require.Equal(t, 3, requests.count())
+}
+
 func TestAnErrorAfterAnAttemptThatMayHaveRunLeavesTheOutcomeUnknown(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {

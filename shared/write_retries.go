@@ -47,11 +47,17 @@ func (systemClock) Sleep(ctx context.Context, d time.Duration) error {
 var SystemClock Clock = systemClock{}
 
 type Retries struct {
-	clock       Clock
-	maxRetries  atomic.Int64
-	backoff     func(attempt int) time.Duration
-	keysHonored atomic.Bool
+	clock      Clock
+	maxRetries atomic.Int64
+	backoff    func(attempt int) time.Duration
+	keySupport atomic.Int32
 }
+
+const (
+	keySupportUnknown int32 = iota
+	keySupportHonored
+	keySupportIgnored
+)
 
 func NewRetries(clock Clock) *Retries {
 	retries := &Retries{clock: clock, backoff: backoff(400*time.Millisecond, 10*time.Second)}
@@ -65,13 +71,19 @@ func (s *Retries) SetMaxRetries(client *req.Client, count int) {
 }
 
 func (s *Retries) remember(status idempotencyKeyStatus) {
-	if status.known() {
-		s.keysHonored.Store(status.keyHonored())
+	if status == statusIgnored {
+		s.keySupport.Store(keySupportIgnored)
+	} else if status.keyHonored() {
+		s.keySupport.Store(keySupportHonored)
 	}
 }
 
 func (s *Retries) honorsKeys() bool {
-	return s.keysHonored.Load()
+	return s.keySupport.Load() == keySupportHonored
+}
+
+func (s *Retries) ignoresKeys() bool {
+	return s.keySupport.Load() == keySupportIgnored
 }
 
 func (s *Retries) interval(resp *req.Response, attempt int) time.Duration {
@@ -162,7 +174,7 @@ func (w *write) startsWithin(window time.Duration, delay time.Duration) bool {
 }
 
 func (w *write) mayRetryAfter(delay time.Duration) bool {
-	if w.mayHaveRun && !w.startsWithinRetryWindow(delay) {
+	if w.mayHaveRun && (w.retries.ignoresKeys() || !w.startsWithinRetryWindow(delay)) {
 		return false
 	}
 	return !w.lastNeverSent || w.startsWithin(neverSentRetryWindow, delay)
